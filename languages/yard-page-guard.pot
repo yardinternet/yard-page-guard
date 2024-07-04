@@ -1,0 +1,67 @@
+# Copyright (C) 2024 Yard | Digital Agency
+# This file is distributed under the same license as the Yard Page Guard plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Yard Page Guard 0.0.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/yard-page-guard\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-07-05T04:46:13+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.9.0\n"
+"X-Domain: yard-page-guard\n"
+
+#. Plugin Name of the plugin
+msgid "Yard Page Guard"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://www.yard.nl"
+msgstr ""
+
+#. Description of the plugin
+msgid "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates."
+msgstr ""
+
+#. Author of the plugin
+msgid "Yard | Digital Agency"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "http://www.yard.nl"
+msgstr ""
+
+#: src/PageGuard/Metabox/Metabox.php:13
+msgid "Houdbaarsheidsmodule"
+msgstr ""
+
+#: src/PageGuard/Metabox/Metabox.php:36
+msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
+msgstr ""
+
+#: src/PageGuard/Metabox/Metabox.php:43
+msgid "U heeft geen toestemming om de houdbaarsheids module te bewerken."
+msgstr ""
+
+#: src/PageGuard/Metabox/Metabox.php:55
+msgid "Inhoudseigenaar"
+msgstr ""
+
+#: src/PageGuard/Metabox/Metabox.php:57
+msgid "Maak een keuze"
+msgstr ""
+
+#: src/PageGuard/Metabox/Metabox.php:77
+msgid "Gecontroleerd?"
+msgstr ""
+
+#: src/PageGuard/Metabox/Metabox.php:84
+msgid "Herinnering"
+msgstr ""
+
+#: src/PageGuard/Metabox/Metabox.php:86
+msgid "De herinnering wordt via de e-mail verstuurd op de ingestelde datum."
+msgstr ""

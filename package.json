@@ -1,0 +1,21 @@
+{
+	"name": "yard-page-guard",
+	"version": "0.0.1",
+	"description": "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.",
+	"author": "Yard | Digital Agency",
+	"license": "MIT License",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "wp-scripts plugin-zip",
+		"start": "wp-scripts start"
+	},
+	"devDependencies": {
+		"@wordpress/prettier-config": "^2.16.0",
+		"@wordpress/scripts": "^27.9.0"
+	}
+}
