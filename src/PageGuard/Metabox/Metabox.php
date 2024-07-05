@@ -12,7 +12,7 @@ class Metabox
 			'yard_page_guard_metaboxes',
 			__('Houdbaarsheidsmodule', 'yard-page-guard'),
 			[$this, 'displayMetaboxes'],
-			'page',
+			apply_filters('yard::page-guard/post-types-to-use', ['page']),
 			'side',
 			'high'
 		);
@@ -21,7 +21,7 @@ class Metabox
 	public function displayMetaboxes(WP_Post $post): void
 	{
 		// Retrieve current meta values.
-		$currentAuthor = get_post_meta($post->ID, 'ypg_page_author', true);
+		$currentAuthor = get_post_meta($post->ID, 'ypg_post_content_owner', true);
 		$isVerified = get_post_meta($post->ID, 'ypg_is_verified', true);
 		$reviewDate = get_post_meta($post->ID, 'ypg_review_date', true);
 
@@ -52,8 +52,8 @@ class Metabox
 			'capability' => 'edit_pages',
 		]);
 
-		$html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_page_author">%s:</label>', __('Inhoudseigenaar', 'yard-page-guard'));
-		$html .= '<select name="ypg_page_author" id="ypg_page_author">';
+		$html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_post_content_owner">%s:</label>', __('Inhoudseigenaar', 'yard-page-guard'));
+		$html .= '<select name="ypg_post_content_owner" id="ypg_post_content_owner">';
 		$html .= sprintf('<option value="">%s</option>', __('Maak een keuze', 'yard-page-guard'));
 
 		foreach ($users as $user) {
@@ -95,8 +95,8 @@ class Metabox
 		}
 
 		// Sanitize and save the author ID
-		$newAuthorId = (isset($_POST['ypg_page_author']) ? sanitize_text_field($_POST['ypg_page_author']) : '');
-		update_post_meta($postID, 'ypg_page_author', $newAuthorId);
+		$newAuthorId = (isset($_POST['ypg_post_content_owner']) ? sanitize_text_field($_POST['ypg_post_content_owner']) : '');
+		update_post_meta($postID, 'ypg_post_content_owner', $newAuthorId);
 
 		// Sanitize and save the verified status
 		$isVerified = (isset($_POST['ypg_is_verified']) ? 1 : 0);
@@ -135,7 +135,7 @@ class Metabox
 	private function currentUserHasAccess(int $postID): bool
 	{
 		$post = get_post($postID);
-		$selectedAuthor = get_post_meta($postID, 'ypg_page_author', true) ?: '0';
+		$selectedAuthor = get_post_meta($postID, 'ypg_post_content_owner', true) ?: '0';
 		$currentUser = wp_get_current_user();
 		$currentUserId = $currentUser->ID;
 		$currentUserRoles = (array) $currentUser->roles;

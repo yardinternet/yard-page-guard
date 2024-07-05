@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-07-05T04:46:13+00:00\n"
+"POT-Creation-Date: 2024-07-08T15:18:32+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.9.0\n"
 "X-Domain: yard-page-guard\n"
@@ -34,6 +34,19 @@ msgstr ""
 msgid "http://www.yard.nl"
 msgstr ""
 
+#: src/PageGuard/Admin/AdminServiceProvider.php:38
+#: src/PageGuard/Metabox/Metabox.php:77
+msgid "Gecontroleerd?"
+msgstr ""
+
+#: src/PageGuard/Admin/AdminServiceProvider.php:50
+msgid "Ja"
+msgstr ""
+
+#: src/PageGuard/Admin/AdminServiceProvider.php:50
+msgid "Nee"
+msgstr ""
+
 #: src/PageGuard/Metabox/Metabox.php:13
 msgid "Houdbaarsheidsmodule"
 msgstr ""
@@ -54,14 +67,37 @@ msgstr ""
 msgid "Maak een keuze"
 msgstr ""
 
-#: src/PageGuard/Metabox/Metabox.php:77
-msgid "Gecontroleerd?"
-msgstr ""
-
 #: src/PageGuard/Metabox/Metabox.php:84
 msgid "Herinnering"
 msgstr ""
 
 #: src/PageGuard/Metabox/Metabox.php:86
 msgid "De herinnering wordt via de e-mail verstuurd op de ingestelde datum."
+msgstr ""
+
+#: src/PageGuard/WPCron/Events/ReviewNotifications.php:103
+msgid "Houdbaarheidsmodule"
+msgstr ""
+
+#: src/PageGuard/WPCron/Events/ReviewNotifications.php:111
+msgid ""
+"<html>\n"
+"\t\t\t\t\t<head>\n"
+"\t\t\t\t\t\t<style>\n"
+"\t\t\t\t\t\t\tbody { font-family: Arial, sans-serif; }\n"
+"\t\t\t\t\t\t\t.content { margin: 20px; }\n"
+"\t\t\t\t\t\t\t.footer { margin: 20px; font-size: 0.9em; color: #666; }\n"
+"\t\t\t\t\t\t</style>\n"
+"\t\t\t\t\t</head>\n"
+"\t\t\t\t\t<body>\n"
+"\t\t\t\t\t\t<div class=\"content\">\n"
+"\t\t\t\t\t\t\t<p>Beste %s,</p>\n"
+"\t\t\t\t\t\t\t<p>U bent de contenteigenaar van de pagina <a href=\"%s\">%s</a>, die ingesteld staat/stond om gecontroleerd te worden op %s.</p>\n"
+"\t\t\t\t\t\t\t<p>De instellingen van de Houdbaarheidsmodule van deze pagina zijn gereset bij het versturen van deze notificatie. De volgende notificatie wordt pas verstuurd nadat u de instellingen opnieuw hebt ingesteld.</p>\n"
+"\t\t\t\t\t\t</div>\n"
+"\t\t\t\t\t\t<div class=\"footer\">\n"
+"\t\t\t\t\t\t\t<small>Dit bericht is automatisch gegenereerd vanuit <a href=\"%s\">%s</a></small>\n"
+"\t\t\t\t\t\t</div>\n"
+"\t\t\t\t\t</body>\n"
+"\t\t\t\t</html>"
 msgstr ""

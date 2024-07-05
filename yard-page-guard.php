@@ -40,6 +40,9 @@ define('YPG_PLUGIN_NAME', basename(__DIR__));
  * plugin overrides. The plugins_loaded action hook fires early, and precedes the setup_theme, after_setup_theme, init
  * and wp_loaded action hooks.
  */
-\add_action('plugins_loaded', function () {
+add_action('plugins_loaded', function () {
 	(new Yard\PageGuard\Foundation\Plugin(__DIR__))->boot();
 });
+
+include_once plugin_dir_path(__FILE__) . 'deactivate.php';
+register_deactivation_hook(__FILE__, 'deactivate');

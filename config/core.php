@@ -8,7 +8,7 @@ return [
 	 * Service Providers.
 	 */
 	'providers' => [
-		// Yard\BrokenLinkSafetyGuard\RestAPI\RestAPIServiceProvider::class,
+		Yard\PageGuard\WPCron\WPCronServiceProvider::class,
 
 		/** Providers specific to the admin */
 		'admin' => [
