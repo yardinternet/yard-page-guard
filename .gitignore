@@ -32,6 +32,7 @@
 
 # ignore all files starting with .
 .*
+!.php-cs-fixer.php
 
 # track this file .gitignore (i.e. do NOT ignore it)
 !.gitignore
