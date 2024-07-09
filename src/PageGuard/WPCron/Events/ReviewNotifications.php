@@ -8,108 +8,108 @@ use Yard\PageGuard\Models\ReviewItemModel;
 
 class ReviewNotifications
 {
-	public static function init(): void
-	{
-		(new self())->execute();
-	}
+    public static function init(): void
+    {
+        (new self())->execute();
+    }
 
-	private function execute(): void
-	{
-		$items = $this->itemsToReview();
+    private function execute(): void
+    {
+        $items = $this->itemsToReview();
 
-		if (empty($items)) {
-			return;
-		}
+        if (empty($items)) {
+            return;
+        }
 
-		$this->handleNotifications($this->prepareItems($items));
-	}
+        $this->handleNotifications($this->prepareItems($items));
+    }
 
-	/**
-	 * Fetch items that are scheduled for review or are already due.
-	 *
-	 * This function retrieves all posts of specified post types that have a content owner
-	 * and a review date that is today or in the past. The post types and statuses to be
-	 * considered can be modified using the 'yard::page-guard/post-types-to-use' and
-	 * 'yard::page-guard/post-statusses-to-use' filters respectively.
-	 */
-	private function itemsToReview(): array
-	{
-		$args = [
-			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
-			'posts_per_page' => -1,
-			'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
-			'meta_query' => [
-				'relation' => 'AND',
-				[
-					'key' => 'ypg_post_content_owner',
-					'compare' => 'EXISTS',
-				],
-				[
-					'key' => 'ypg_review_date',
-					'value' => date('Y-m-d'),
-					'compare' => '<=',
-					'type' => 'DATE',
-				],
-			],
-		];
+    /**
+     * Fetch items that are scheduled for review or are already due.
+     *
+     * This function retrieves all posts of specified post types that have a content owner
+     * and a review date that is today or in the past. The post types and statuses to be
+     * considered can be modified using the 'yard::page-guard/post-types-to-use' and
+     * 'yard::page-guard/post-statusses-to-use' filters respectively.
+     */
+    private function itemsToReview(): array
+    {
+        $args = [
+            'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+            'posts_per_page' => -1,
+            'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
+            'meta_query' => [
+                'relation' => 'AND',
+                [
+                    'key' => 'ypg_post_content_owner',
+                    'compare' => 'EXISTS',
+                ],
+                [
+                    'key' => 'ypg_review_date',
+                    'value' => date('Y-m-d'),
+                    'compare' => '<=',
+                    'type' => 'DATE',
+                ],
+            ],
+        ];
 
-		$query = new WP_Query($args);
+        $query = new WP_Query($args);
 
-		return $query->posts;
-	}
+        return $query->posts;
+    }
 
-	private function prepareItems(array $items): array
-	{
-		$preparedItems = [];
+    private function prepareItems(array $items): array
+    {
+        $preparedItems = [];
 
-		foreach ($items as $item) {
-			$preparedItems[] = new ReviewItemModel($item);
-		}
+        foreach ($items as $item) {
+            $preparedItems[] = new ReviewItemModel($item);
+        }
 
-		return $preparedItems;
-	}
+        return $preparedItems;
+    }
 
-	private function handleNotifications(array $items): void
-	{
-		foreach ($items as $item) {
-			$contentOwner = $item->contentOwner();
+    private function handleNotifications(array $items): void
+    {
+        foreach ($items as $item) {
+            $contentOwner = $item->contentOwner();
 
-			if (! $contentOwner) {
-				continue;
-			}
+            if (! $contentOwner) {
+                continue;
+            }
 
-			if (! $this->sendNotification($item, $contentOwner)) {
-				continue;
-			}
+            if (! $this->sendNotification($item, $contentOwner)) {
+                continue;
+            }
 
-			$this->resetModuleSettings($item);
-		}
-	}
+            $this->resetModuleSettings($item);
+        }
+    }
 
-	private function sendNotification(ReviewItemModel $item, ContentOwnerModel $contentOwner): bool
-	{
-		return wp_mail(
-			$contentOwner->email(),
-			$this->formatSubject(),
-			$this->notificationMessage($item, $contentOwner),
-			['Content-Type: text/html; charset=UTF-8']
-		);
-	}
+    private function sendNotification(ReviewItemModel $item, ContentOwnerModel $contentOwner): bool
+    {
+        return wp_mail(
+            $contentOwner->email(),
+            $this->formatSubject(),
+            $this->notificationMessage($item, $contentOwner),
+            ['Content-Type: text/html; charset=UTF-8']
+        );
+    }
 
-	private function formatSubject(): string
-	{
-		return sprintf(
-			'%s - %s',
-			__('Houdbaarheidsmodule', 'yard-page-guard'),
-			get_bloginfo('name')
-		);
-	}
+    private function formatSubject(): string
+    {
+        return sprintf(
+            '%s - %s',
+            __('Houdbaarheidsmodule', 'yard-page-guard'),
+            get_bloginfo('name')
+        );
+    }
 
-	private function notificationMessage(ReviewItemModel $item, ContentOwnerModel $contentOwner): string
-	{
-		return sprintf(
-			__(
-				'<html>
+    private function notificationMessage(ReviewItemModel $item, ContentOwnerModel $contentOwner): string
+    {
+        return sprintf(
+            __(
+                '<html>
 					<head>
 						<style>
 							body { font-family: Arial, sans-serif; }
@@ -128,24 +128,24 @@ class ReviewNotifications
 						</div>
 					</body>
 				</html>',
-				'yard-page-guard'
-			),
-			$contentOwner->salutation(),
-			$item->editLink(),
-			$item->title(),
-			$item->reviewDate(),
-			get_site_url(),
-			get_bloginfo('name')
-		);
-	}
+                'yard-page-guard'
+            ),
+            $contentOwner->salutation(),
+            $item->editLink(),
+            $item->title(),
+            $item->reviewDate(),
+            get_site_url(),
+            get_bloginfo('name')
+        );
+    }
 
-	/**
-	 * Reset module settings for current page.
-	 * This ensures the notificatoin is send only once
-	 */
-	private function resetModuleSettings(ReviewItemModel $item): void
-	{
-		delete_post_meta($item->ID(), 'ypg_is_verified');
-		delete_post_meta($item->ID(), 'ypg_review_date');
-	}
+    /**
+     * Reset module settings for current page.
+     * This ensures the notificatoin is send only once
+     */
+    private function resetModuleSettings(ReviewItemModel $item): void
+    {
+        delete_post_meta($item->ID(), 'ypg_is_verified');
+        delete_post_meta($item->ID(), 'ypg_review_date');
+    }
 }
