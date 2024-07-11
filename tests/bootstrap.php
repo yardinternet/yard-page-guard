@@ -16,7 +16,7 @@ define('WP_DEBUG', false);
 \WP_Mock::setUsePatchwork(true);
 \WP_Mock::bootstrap();
 
-$GLOBALS['yard-blocks'] = [
+$GLOBALS['yard-page-guard'] = [
 	'active_plugins' => ['yard-page-guard/yard-page-guard.php'],
 ];
 

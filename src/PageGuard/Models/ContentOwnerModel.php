@@ -24,11 +24,16 @@ class ContentOwnerModel
     }
 
     /**
-     * Tries the firstname first, otherwise the username.
+     * Returns the user's salutation with capitalized name parts.
+     * Tries the first name first; if not available, uses the username.
      */
     public function salutation(): string
     {
-        return $this->firstName() ? $this->firstName() : $this->user->user_login;
+        $name = $this->firstName() ?: $this->user->user_login;
+        $nameParts = explode(' ', $name);
+        $capitalizedParts = array_map('ucfirst', $nameParts);
+
+        return implode(' ', $capitalizedParts);
     }
 
     public function firstName(): string

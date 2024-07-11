@@ -36,7 +36,7 @@ class Metabox
         $html = sprintf('<p>%s</p>', __('Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.', 'yard-page-guard'));
 
         if ($this->currentUserHasAccess($postID)) {
-            $html = $this->pageAuthorMetabox($html, $currentAuthor);
+            $html = $this->contentOwnerMetabox($html, $currentAuthor);
             $html = $this->isVerifiedMetabox($html, $isVerified);
             $html = $this->reviewDatedMetabox($html, $reviewDate);
         } else {
@@ -46,7 +46,7 @@ class Metabox
         return $html;
     }
 
-    private function pageAuthorMetabox(string $html, string $currentAuthor): string
+    private function contentOwnerMetabox(string $html, string $currentAuthor): string
     {
         $users = get_users([
             'capability' => 'edit_pages',
