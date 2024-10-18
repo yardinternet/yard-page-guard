@@ -45,4 +45,4 @@ add_action('plugins_loaded', function () {
 });
 
 include_once plugin_dir_path(__FILE__) . 'deactivate.php';
-register_deactivation_hook(__FILE__, 'deactivate');
+register_deactivation_hook(__FILE__, 'ypg_deactivate');

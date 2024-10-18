@@ -1,7 +1,16 @@
 <?php
 
-function deactivate(): void
+/**
+ * Unschedule WP Cron Event(s)
+ */
+if (! function_exists('ypg_deactivate'))
 {
-	$timestamp = wp_next_scheduled('ypg_site_cron');
-	wp_unschedule_event($timestamp, 'ypg_site_cron');
+    function ypg_deactivate(): void
+    {
+        $timestamp = wp_next_scheduled('ypg_site_cron');
+
+        if (is_numeric($timestamp)) {
+            wp_unschedule_event($timestamp, 'ypg_site_cron');
+        }
+    }
 }
