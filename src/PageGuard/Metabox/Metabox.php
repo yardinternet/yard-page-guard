@@ -88,10 +88,10 @@ class Metabox
         return $html;
     }
 
-    public function saveMetaboxValues(int $postID): int
+    public function saveMetaboxValues(int $postID): void
     {
         if (! $this->shouldSave($postID)) {
-            return $postID;
+            return;
         }
 
         // Sanitize and save the author ID
