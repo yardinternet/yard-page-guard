@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Version [1.0.3] (2024-11-07)
+
+### Chnage
+
+- Register custom columns hooks in init hook
+
 ## Version [1.0.2] (2024-11-07)
 
 ### Fixed
