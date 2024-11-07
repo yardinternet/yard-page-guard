@@ -17,11 +17,13 @@ class AdminServiceProvider extends ServiceProvider
     {
         add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorScripts']);
 
-        foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
-            add_filter("manage_{$postType}_posts_columns", [$this, 'manageCustomColumns']);
-            add_action("manage_{$postType}_posts_custom_column", [$this, 'fillCustomColumns'], 10, 2);
-            add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
-        }
+        add_action('init', function () {
+            foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
+                add_filter("manage_{$postType}_posts_columns", [$this, 'manageCustomColumns']);
+                add_action("manage_{$postType}_posts_custom_column", [$this, 'fillCustomColumns'], 10, 2);
+                add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
+            }
+        });
 
         add_action('pre_get_posts', [$this, 'sortCustomColumns']);
     }
