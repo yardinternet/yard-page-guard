@@ -15,19 +15,19 @@
 /**
  * If this file is called directly, abort.
  */
-if (! defined('ABSPATH')) {
-	exit;
+if (!defined('ABSPATH')) {
+    exit;
 }
 
 /**
  * Require autoloader.
  */
-if (file_exists(__DIR__ . '/vendor/autoload.php')) {
-	require __DIR__ . '/vendor/autoload.php';
+if (file_exists(__DIR__.'/vendor/autoload.php')) {
+    require __DIR__.'/vendor/autoload.php';
 } else {
-	// Manual loaded file: the autoloader.
-	require_once __DIR__ . '/autoloader.php';
-	$autoloader = new Yard\PageGuard\Autoloader();
+    // Manual loaded file: the autoloader.
+    require_once __DIR__.'/autoloader.php';
+    $autoloader = new Yard\PageGuard\Autoloader();
 }
 
 define('YPG_VERSION', '1.0.3');
@@ -41,8 +41,10 @@ define('YPG_PLUGIN_NAME', basename(__DIR__));
  * and wp_loaded action hooks.
  */
 add_action('plugins_loaded', function () {
-	(new Yard\PageGuard\Foundation\Plugin(__DIR__))->boot();
+    add_action('after_setup_theme', function () {
+        (new Yard\PageGuard\Foundation\Plugin(__DIR__))->boot();
+    });
 });
 
-include_once plugin_dir_path(__FILE__) . 'deactivate.php';
+include_once plugin_dir_path(__FILE__).'deactivate.php';
 register_deactivation_hook(__FILE__, 'ypg_deactivate');
