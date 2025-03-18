@@ -15,18 +15,18 @@
 /**
  * If this file is called directly, abort.
  */
-if (!defined('ABSPATH')) {
-    exit;
+if (! defined('ABSPATH')) {
+        exit;
 }
 
 /**
  * Require autoloader.
  */
-if (file_exists(__DIR__.'/vendor/autoload.php')) {
-    require __DIR__.'/vendor/autoload.php';
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require __DIR__ . '/vendor/autoload.php';
 } else {
     // Manual loaded file: the autoloader.
-    require_once __DIR__.'/autoloader.php';
+    require_once __DIR__ . '/autoloader.php';
     $autoloader = new Yard\PageGuard\Autoloader();
 }
 
@@ -46,5 +46,5 @@ add_action('plugins_loaded', function () {
     });
 });
 
-include_once plugin_dir_path(__FILE__).'deactivate.php';
+include_once plugin_dir_path(__FILE__) . 'deactivate.php';
 register_deactivation_hook(__FILE__, 'ypg_deactivate');

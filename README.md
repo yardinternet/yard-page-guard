@@ -17,6 +17,24 @@ Assign content owners to WordPress pages (or other post types), allowing them to
 1. Upload plugin directory to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
+## Installation Brave
+
+1. Add the following to the repositories section of your composer.json:
+```json
+{
+  "type": "vcs",
+  "url": "git@github.com:yardinternet/yard-page-guard.git"
+}
+```
+
+2. Install this package with Composer:
+
+```
+composer require plugin/yard-page-guard
+```
+
+3. Activate the plugin through the 'Plugins' menu in WordPress
+
 ## Security
 
 Access to the metaboxes is granted to all users with the `edit_pages` capability initially. Once an author and content owner are connected to a post object, only these two entities will have access.
