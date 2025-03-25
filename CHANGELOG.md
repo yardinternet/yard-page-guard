@@ -1,8 +1,14 @@
 # CHANGELOG
 
+## Version [1.0.4] (2025-03-25)
+
+## Fixed
+
+- Change loading order for WordPress 6.7
+
 ## Version [1.0.3] (2024-11-07)
 
-### Chnage
+### Change
 
 - Register custom columns hooks in init hook
 
