@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Version [1.0.5] (2025-08-15)
+
+### Fixed
+
+- Check if no content owner is selected yet
+
 ## Version [1.0.4] (2025-03-25)
 
 ## Fixed
