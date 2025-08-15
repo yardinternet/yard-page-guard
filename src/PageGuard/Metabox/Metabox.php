@@ -135,13 +135,13 @@ class Metabox
     private function currentUserHasAccess(int $postID): bool
     {
         $post = get_post($postID);
-        $contentOwner = get_post_meta($postID, 'ypg_post_content_owner', true) ?: '0';
+        $contentOwner = (int) get_post_meta($postID, 'ypg_post_content_owner', true) ?: 0;
         $currentUser = wp_get_current_user();
         $currentUserId = $currentUser->ID;
         $currentUserRoles = (array) $currentUser->roles;
 
         // A newly created page which has never been published yet has no post_name yet.
-        if (0 === strlen($post->post_name) || in_array('administrator', $currentUserRoles)) {
+        if (0 === strlen($post->post_name) || in_array('administrator', $currentUserRoles) || 0 === $contentOwner) {
             return true;
         }
 
