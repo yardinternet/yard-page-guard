@@ -85,11 +85,11 @@ msgstr ""
 msgid "De herinnering wordt via de e-mail verstuurd op de ingestelde datum."
 msgstr ""
 
-#: src/PageGuard/WPCron/Events/ReviewNotifications.php:103
+#: src/PageGuard/WPCron/Events/ReviewNotification.php:103
 msgid "Houdbaarheidsmodule"
 msgstr ""
 
-#: src/PageGuard/WPCron/Events/ReviewNotifications.php:111
+#: src/PageGuard/WPCron/Events/ReviewNotification.php:111
 msgid ""
 "<html>\n"
 "\t\t\t\t\t<head>\n"

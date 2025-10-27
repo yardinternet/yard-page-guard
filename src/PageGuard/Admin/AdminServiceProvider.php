@@ -13,7 +13,16 @@ class AdminServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $adminPage = new AdminPage();
+        $adminPage->init();
+
         add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorScripts']);
+        
+        add_action('admin_enqueue_scripts', function (string $hook): void {
+            if ('settings_page_page-guard-settings' === $hook) {
+                $this->enqueueEditorScripts();
+            }
+        });
 
         add_action('init', function () {
             foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
