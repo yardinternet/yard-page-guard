@@ -12,7 +12,7 @@ trait Date
     {
         try {
             $date = new DateTime($date, new DateTimeZone(get_option('timezone_string')));
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return '';
         }
 
