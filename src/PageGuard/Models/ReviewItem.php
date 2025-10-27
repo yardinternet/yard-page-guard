@@ -5,10 +5,9 @@ namespace Yard\PageGuard\Models;
 use DateTime;
 use DateTimeZone;
 use WP_Post;
-use WP_User;
 use Yard\PageGuard\Support\Traits\EditPostLink;
 
-class ReviewItemModel
+class ReviewItem
 {
     use EditPostLink;
 
@@ -52,20 +51,17 @@ class ReviewItemModel
         return $date->format($format);
     }
 
-    public function contentOwner(): ?ContentOwnerModel
+    public function contentOwner(): ?ContentOwner
     {
-        $userID = get_post_meta($this->ID(), 'ypg_post_content_owner', true);
+        $id = get_post_meta($this->ID(), 'ypg_post_content_owner_id', true);
+        $name = get_post_meta($this->ID(), 'ypg_post_content_owner_name', true);
+        $email = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true);
+        $type = get_post_meta($this->ID(), 'ypg_post_content_owner_type', true);
 
-        if (empty($userID)) {
+        if (false === $id || '' === $id) {
             return null;
         }
 
-        $user = get_user_by('id', $userID);
-
-        if (! $user instanceof WP_User) {
-            return null;
-        }
-
-        return new ContentOwnerModel($user);
+        return new ContentOwner($id, $name, $email, $type);
     }
 }
