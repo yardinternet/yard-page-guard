@@ -3,8 +3,8 @@
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
-use Yard\PageGuard\Models\ContentOwnerModel;
-use Yard\PageGuard\Models\ReviewItemModel;
+use Yard\PageGuard\Models\ContentOwner;
+use Yard\PageGuard\Models\ReviewItem;
 
 class ReviewNotifications
 {
@@ -63,7 +63,7 @@ class ReviewNotifications
         $preparedItems = [];
 
         foreach ($items as $item) {
-            $preparedItems[] = new ReviewItemModel($item);
+            $preparedItems[] = new ReviewItem($item);
         }
 
         return $preparedItems;
@@ -86,7 +86,7 @@ class ReviewNotifications
         }
     }
 
-    private function sendNotification(ReviewItemModel $item, ContentOwnerModel $contentOwner): bool
+    private function sendNotification(ReviewItem $item, ContentOwner $contentOwner): bool
     {
         return wp_mail(
             $contentOwner->email(),
@@ -105,7 +105,7 @@ class ReviewNotifications
         );
     }
 
-    private function notificationMessage(ReviewItemModel $item, ContentOwnerModel $contentOwner): string
+    private function notificationMessage(ReviewItem $item, ContentOwner $contentOwner): string
     {
         return sprintf(
             __(
@@ -143,7 +143,7 @@ class ReviewNotifications
      * Reset module settings for current page.
      * This ensures the notificatoin is send only once
      */
-    private function resetModuleSettings(ReviewItemModel $item): void
+    private function resetModuleSettings(ReviewItem $item): void
     {
         delete_post_meta($item->ID(), 'ypg_is_verified');
         delete_post_meta($item->ID(), 'ypg_review_date');

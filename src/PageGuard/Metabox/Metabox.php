@@ -3,6 +3,7 @@
 namespace Yard\PageGuard\Metabox;
 
 use WP_Post;
+use Yard\PageGuard\Enums\ContentOwnerType;
 
 class Metabox
 {
@@ -21,22 +22,23 @@ class Metabox
     public function displayMetaboxes(WP_Post $post): void
     {
         // Retrieve current meta values.
-        $currentAuthor = get_post_meta($post->ID, 'ypg_post_content_owner', true);
+        $contentOwnerId = get_post_meta($post->ID, 'ypg_post_content_owner_id', true);
+        $currentOwnerType = get_post_meta($post->ID, 'ypg_post_content_owner_type', true);
         $isVerified = get_post_meta($post->ID, 'ypg_is_verified', true);
         $reviewDate = get_post_meta($post->ID, 'ypg_review_date', true);
 
         // Security nonce field.
         wp_nonce_field(basename(__FILE__), 'yard_page_guard_metaboxes_nonce');
 
-        echo $this->displayMetaboxesHTML($currentAuthor, $isVerified, $reviewDate, $post->ID);
+        echo $this->displayMetaboxesHTML($contentOwnerId, $currentOwnerType, $isVerified, $reviewDate, $post->ID);
     }
 
-    private function displayMetaboxesHTML(string $currentAuthor, string $isVerified, string $reviewDate, int $postID): string
+    private function displayMetaboxesHTML(string $contentOwnerId, string $contentOwnerType, string $isVerified, string $reviewDate, int $postID): string
     {
         $html = sprintf('<p>%s</p>', __('Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.', 'yard-page-guard'));
 
         if ($this->currentUserHasAccess($postID)) {
-            $html = $this->contentOwnerMetabox($html, $currentAuthor);
+            $html = $this->contentOwnerMetabox($html, $contentOwnerId, $contentOwnerType);
             $html = $this->isVerifiedMetabox($html, $isVerified);
             $html = $this->reviewDatedMetabox($html, $reviewDate);
         } else {
@@ -46,23 +48,49 @@ class Metabox
         return $html;
     }
 
-    private function contentOwnerMetabox(string $html, string $currentAuthor): string
+    private function contentOwnerMetabox(string $html, string $contentOwnerId, string $contentOwnerType): string
     {
-        $users = get_users([
+        $wpUsers = get_users([
             'capability' => 'edit_pages',
+        ]);
+
+        $externalUsers = get_terms([
+            'taxonomy' => 'ypg_external_content_owner',
+            'hide_empty' => false,
         ]);
 
         $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_post_content_owner">%s:</label>', __('Inhoudseigenaar', 'yard-page-guard'));
         $html .= '<select name="ypg_post_content_owner" id="ypg_post_content_owner">';
         $html .= sprintf('<option value="">%s</option>', __('Maak een keuze', 'yard-page-guard'));
 
-        foreach ($users as $user) {
+        foreach ($wpUsers as $user) {
+            $name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
+            $selected = ($contentOwnerId == $user->ID && ContentOwnerType::USER === $contentOwnerType) ? ' selected="selected"' : '';
+
             $html .= sprintf(
-                '<option value="%s"%s>%s</option>',
+                '<option value="%s|%s|%s|user"%s>%s</option>',
                 esc_attr($user->ID),
-                selected($currentAuthor, $user->ID, false),
+                esc_attr($name),
+                esc_attr($user->user_email),
+                $selected,
                 esc_html($user->display_name)
             );
+        }
+
+        if (! is_wp_error($externalUsers)) {
+            foreach ($externalUsers as $user) {
+                $email = get_term_meta($user->term_id, 'ypg_external_content_owner_email', true);
+                $selected = ($contentOwnerId == $user->term_id && ContentOwnerType::EXTERNAL === $contentOwnerType) ? ' selected="selected"' : '';
+
+                $html .= sprintf(
+                    '<option value="%s|%s|%s|external"%s>%s</option>',
+                    esc_attr($user->term_id),
+                    esc_attr($user->name),
+                    esc_attr($email),
+                    $selected,
+                    esc_html($user->name)
+                );
+            }
         }
 
         $html .= '</select></div>';
@@ -90,13 +118,28 @@ class Metabox
 
     public function saveMetaboxValues(int $postID): void
     {
-        if (! $this->shouldSave($postID)) {
+        if (! $this->shouldSave($postID) || ! isset($_POST['ypg_post_content_owner'])) {
             return;
         }
 
-        // Sanitize and save the author ID
-        $newAuthorId = (isset($_POST['ypg_post_content_owner']) ? sanitize_text_field($_POST['ypg_post_content_owner']) : '');
-        update_post_meta($postID, 'ypg_post_content_owner', $newAuthorId);
+        $contentOwner = sanitize_text_field($_POST['ypg_post_content_owner']);
+
+        // Expected format: id|name|email|type
+        $ownerData = explode('|', $contentOwner);
+
+        if (count($ownerData) !== 4) {
+            throw new \InvalidArgumentException('Invalid content owner data format.');
+        }
+
+        $ownerId = $ownerData[0] ?? '';
+        $ownerName = $ownerData[1] ?? '';
+        $ownerEmail = $ownerData[2] ?? '';
+        $ownerType = $ownerData[3] ?? '';
+
+        update_post_meta($postID, 'ypg_post_content_owner_id', $ownerId);
+        update_post_meta($postID, 'ypg_post_content_owner_name', $ownerName);
+        update_post_meta($postID, 'ypg_post_content_owner_email', $ownerEmail);
+        update_post_meta($postID, 'ypg_post_content_owner_type', $ownerType);
 
         // Sanitize and save the verified status
         $isVerified = (isset($_POST['ypg_is_verified']) ? 1 : 0);
@@ -135,17 +178,15 @@ class Metabox
     private function currentUserHasAccess(int $postID): bool
     {
         $post = get_post($postID);
-        $contentOwner = (int) get_post_meta($postID, 'ypg_post_content_owner', true) ?: 0;
+        $contentOwnerId = get_post_meta($postID, 'ypg_post_content_owner_id', true) ?: '';
+        $contentOwnerType = get_post_meta($postID, 'ypg_post_content_owner_type', true);
         $currentUser = wp_get_current_user();
-        $currentUserId = $currentUser->ID;
-        $currentUserRoles = (array) $currentUser->roles;
 
-        // A newly created page which has never been published yet has no post_name yet.
-        if (0 === strlen($post->post_name) || in_array('administrator', $currentUserRoles) || 0 === $contentOwner) {
+        // Regardless of content owner type: newly created posts, administrators, current user is author or no content owner set
+        if (0 === strlen($post->post_name) || in_array('administrator', $currentUser->roles) || '' === $contentOwnerId || $currentUser->ID === $post->post_author) {
             return true;
         }
 
-        // Allow access if the current user is the author or the selected content owner
-        return ($currentUserId == $post->post_author || $currentUserId == $contentOwner);
+        return (int) $contentOwnerId === $currentUser->ID && ContentOwnerType::USER === $contentOwnerType;
     }
 }
