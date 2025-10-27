@@ -5,13 +5,15 @@ namespace Yard\PageGuard\WPCron;
 use DateTime;
 use DateTimeZone;
 use Yard\PageGuard\Foundation\ServiceProvider;
-use Yard\PageGuard\WPCron\Events\ReviewNotifications;
+use Yard\PageGuard\WPCron\Events\ReminderNotification;
+use Yard\PageGuard\WPCron\Events\ReviewNotification;
 
 class WPCronServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        add_action('ypg_site_cron', [ReviewNotifications::class, 'init']);
+        add_action('ypg_site_cron', [ReviewNotification::class, 'init']);
+        add_action('ypg_site_cron', [ReminderNotification::class, 'init']);
 
         if (! wp_next_scheduled('ypg_site_cron')) {
             wp_schedule_event($this->timeToExecute(), 'daily', 'ypg_site_cron');

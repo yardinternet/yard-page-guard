@@ -6,11 +6,11 @@ use WP_Query;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 
-class ReviewNotifications
+class ReminderNotification
 {
     public static function init(): void
     {
-        (new self())->execute();
+        // (new self())->execute();
     }
 
     private function execute(): void
@@ -141,7 +141,7 @@ class ReviewNotifications
 
     /**
      * Reset module settings for current page.
-     * This ensures the notificatoin is send only once
+     * This ensures the notification is send only once
      */
     private function resetModuleSettings(ReviewItem $item): void
     {

@@ -1,19 +1,23 @@
-@import '../mixins';
+@import "../mixins";
 
 .ypg-metabox-wrapper {
-	display: flex;
-	gap: 5px;
-	margin-bottom: 1rem;
+  display: flex;
+  gap: 5px;
+  margin-bottom: 1rem;
 
-	label {
-		font-weight: 500;
-	}
+  label {
+    font-weight: 500;
+  }
+}
+
+.d-flex {
+  display: flex;
 }
 
 .flex-column {
-	@include flex-direction( column );
+  @include flex-direction(column);
 }
 
 .flex-row {
-	@include flex-direction( row );
+  @include flex-direction(row);
 }

@@ -144,9 +144,38 @@ class Metabox
         // Sanitize and save the verified status
         $isVerified = (isset($_POST['ypg_is_verified']) ? 1 : 0);
         update_post_meta($postID, 'ypg_is_verified', $isVerified);
+        
+        if (1 === $isVerified) {
+            delete_post_meta($postID, 'ypg_review_mail_sent');
+        }
+
+        $currentReviewDate = get_post_meta($postID, 'ypg_review_date', true);
 
         // Sanitize and save the review date
-        $reviewDate = (isset($_POST['ypg_review_date']) ? sanitize_text_field($_POST['ypg_review_date']) : '');
+        if (isset($_POST['ypg_review_date']) && '' !== $_POST['ypg_review_date'] && (1 !== $isVerified && sanitize_text_field($_POST['ypg_review_date']) === $currentReviewDate)) {
+            $reviewDate = sanitize_text_field($_POST['ypg_review_date']);
+        } else {
+            $baseDate = $currentReviewDate ?: date('Y-m-d');
+
+            $period = intval(get_option('ypg_time_period', 2));
+            $unit = get_option('ypg_time_unit', 'weeks');
+
+            // Add period to base date
+            $date = new \DateTime($baseDate);
+            switch ($unit) {
+                case 'weeks':
+                    $date->modify("+{$period} weeks");
+
+                    break;
+                case 'months':
+                    $date->modify("+{$period} months");
+
+                    break;
+                default:
+                    $date->modify("+{$period} days");
+            }
+            $reviewDate = $date->format('Y-m-d');
+        }
         update_post_meta($postID, 'ypg_review_date', $reviewDate);
     }
 
