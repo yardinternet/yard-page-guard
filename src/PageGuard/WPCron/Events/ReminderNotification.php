@@ -46,7 +46,7 @@ class ReminderNotification
             'meta_query' => [
                 'relation' => 'AND',
                 [
-                    'key' => 'ypg_post_content_owner',
+                    'key' => 'ypg_post_content_owner_id',
                     'compare' => 'EXISTS',
                 ],
                 [
@@ -119,7 +119,7 @@ class ReminderNotification
             sprintf('<a href="%s">%s</a>', $item->editLink(), $item->title()),
             $item->reviewDate(),
             $this->getPeriodOptionString('ypg_reminder_time_period', 'ypg_reminder_time_unit'),
-            sprintf('<a href="%s">%s</a>', $item->editLink(), __("Gecontroleerd en akkoord", 'yard-page-guard')),
+            sprintf('<a href="%s">%s</a>', $item->editLink(), __('Gecontroleerd en akkoord', 'yard-page-guard')),
         ];
 
         $contentHtml = $this->replacePlaceholders($content, $values);

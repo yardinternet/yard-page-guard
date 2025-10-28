@@ -66,7 +66,7 @@ class Metabox
 
         $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_post_content_owner">%s:</label>', __('Inhoudseigenaar', 'yard-page-guard'));
         $html .= '<select name="ypg_post_content_owner" id="ypg_post_content_owner">';
-        $html .= sprintf('<option value="">%s</option>', __('Maak een keuze', 'yard-page-guard'));
+        $html .= sprintf('<option value="none">%s</option>', __('Maak een keuze', 'yard-page-guard'));
 
         foreach ($wpUsers as $user) {
             $name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
@@ -138,22 +138,29 @@ class Metabox
 
         $contentOwner = sanitize_text_field($_POST['ypg_post_content_owner']);
 
-        // Expected format: id|name|email|type
-        $ownerData = explode('|', $contentOwner);
+        if ('none' === $contentOwner) {
+            delete_post_meta($postID, 'ypg_post_content_owner_id');
+            delete_post_meta($postID, 'ypg_post_content_owner_name');
+            delete_post_meta($postID, 'ypg_post_content_owner_email');
+            delete_post_meta($postID, 'ypg_post_content_owner_type');
+        } else {
+            // Expected format: id|name|email|type
+            $ownerData = explode('|', $contentOwner);
 
-        if (count($ownerData) !== 4) {
-            throw new \InvalidArgumentException('Invalid content owner data format.');
+            if (count($ownerData) !== 4) {
+                throw new \InvalidArgumentException('Invalid content owner data format.');
+            }
+
+            $ownerId = $ownerData[0] ?? '';
+            $ownerName = $ownerData[1] ?? '';
+            $ownerEmail = $ownerData[2] ?? '';
+            $ownerType = $ownerData[3] ?? '';
+
+            update_post_meta($postID, 'ypg_post_content_owner_id', $ownerId);
+            update_post_meta($postID, 'ypg_post_content_owner_name', $ownerName);
+            update_post_meta($postID, 'ypg_post_content_owner_email', $ownerEmail);
+            update_post_meta($postID, 'ypg_post_content_owner_type', $ownerType);
         }
-
-        $ownerId = $ownerData[0] ?? '';
-        $ownerName = $ownerData[1] ?? '';
-        $ownerEmail = $ownerData[2] ?? '';
-        $ownerType = $ownerData[3] ?? '';
-
-        update_post_meta($postID, 'ypg_post_content_owner_id', $ownerId);
-        update_post_meta($postID, 'ypg_post_content_owner_name', $ownerName);
-        update_post_meta($postID, 'ypg_post_content_owner_email', $ownerEmail);
-        update_post_meta($postID, 'ypg_post_content_owner_type', $ownerType);
 
         $wasPreviouslyVerified = (bool) get_post_meta($postID, 'ypg_is_verified', true);
         $toBeVerified = isset($_POST['ypg_is_verified']);
@@ -250,5 +257,5 @@ class Metabox
         }
 
         return (int) $contentOwnerId === $currentUser->ID && ContentOwnerType::USER === $contentOwnerType;
-    } 
+    }
 }
