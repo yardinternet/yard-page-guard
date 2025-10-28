@@ -209,6 +209,7 @@ class Metabox
         update_post_meta($postID, 'ypg_is_verified', $toBeVerified);
         update_post_meta($postID, 'ypg_review_date', $reviewDate);
         update_post_meta($postID, 'ypg_reminder_date', $reminderDate);
+        do_action('ypg_site_cron');
     }
 
     private function shouldSave(int $postID): bool
