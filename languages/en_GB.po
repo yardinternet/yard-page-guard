@@ -2,187 +2,188 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Last-Translator: \n"
+"Language-Team: English (United Kingdom) <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-10-28T15:35:24+00:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.12.0\n"
+"POT-Creation-Date: 2025-10-28T14:56:14+00:00\n"
+"PO-Revision-Date: 2025-10-28 15:59+0100\n"
+"Language: en_GB\n"
+"X-Generator: Poedit 3.8\n"
 "X-Domain: yard-page-guard\n"
-
-#: PageGuard/Admin/AdminServiceProvider.php:59
-#: PageGuard/Metabox/Metabox.php:67
-msgid "Inhoudseigenaar"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:60
-#: PageGuard/Metabox/Metabox.php:110
-msgid "Gecontroleerd?"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:61
-#: PageGuard/Metabox/Metabox.php:117
-msgid "Controle datum"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:72
-msgid "Onbekend"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:80
-msgid "Ja"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:80
-msgid "Nee"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:85
-msgid "Niet ingesteld"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:148
-msgid "Externe inhoudseigenaren"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:171
-#: PageGuard/Admin/AdminServiceProvider.php:184
-msgid "E-mailadres"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:173
-#: PageGuard/Admin/AdminServiceProvider.php:191
-msgid "Voer het e-mailadres van de externe inhoudseigenaar in."
-msgstr ""
 
 #: PageGuard/Admin/AdminSettingsPage.php:24
 #: PageGuard/Admin/AdminSettingsPage.php:48
 msgid "Houdbaarheidsmodule Instellingen"
-msgstr ""
+msgstr "Content Review Module Settings"
 
 #: PageGuard/Admin/AdminSettingsPage.php:25
 #: PageGuard/WPCron/Events/ReminderNotification.php:108
 #: PageGuard/WPCron/Events/ReviewNotification.php:112
 msgid "Houdbaarheidsmodule"
-msgstr ""
+msgstr "Content Review Module"
 
 #: PageGuard/Admin/AdminSettingsPage.php:54
 msgid "Afzend emailadres"
-msgstr ""
+msgstr "Sender email address"
 
 #: PageGuard/Admin/AdminSettingsPage.php:60
 msgid "Herinneringmail BCC emailadres"
-msgstr ""
+msgstr "Reminder email BCC address"
 
 #: PageGuard/Admin/AdminSettingsPage.php:66
 #: PageGuard/Admin/AdminSettingsPage.php:113
 msgid "Herzieningsperiode"
-msgstr ""
+msgstr "Review period"
 
 #: PageGuard/Admin/AdminSettingsPage.php:71
 #: PageGuard/Admin/AdminSettingsPage.php:86
 msgid "Dagen"
-msgstr ""
+msgstr "Days"
 
 #: PageGuard/Admin/AdminSettingsPage.php:71
 #: PageGuard/Admin/AdminSettingsPage.php:86
 msgid "Weken"
-msgstr ""
+msgstr "Weeks"
 
 #: PageGuard/Admin/AdminSettingsPage.php:71
 #: PageGuard/Admin/AdminSettingsPage.php:86
 msgid "Maanden"
-msgstr ""
+msgstr "Months"
 
 #: PageGuard/Admin/AdminSettingsPage.php:81
 #: PageGuard/Admin/AdminSettingsPage.php:137
 msgid "Herinneringsperiode"
-msgstr ""
+msgstr "Reminder period"
 
 #: PageGuard/Admin/AdminSettingsPage.php:96
 msgid "Herzieningsmail inhoud"
-msgstr ""
+msgstr "Review email content"
 
 #: PageGuard/Admin/AdminSettingsPage.php:108
 #: PageGuard/Admin/AdminSettingsPage.php:132
 msgid "De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):"
-msgstr ""
+msgstr "The following variables can be inserted by adding {#} to the text (e.g. {1}):"
 
 #: PageGuard/Admin/AdminSettingsPage.php:110
 #: PageGuard/Admin/AdminSettingsPage.php:134
 msgid "Naam van inhoudseigenaar"
-msgstr ""
+msgstr "Name of content owner"
 
 #: PageGuard/Admin/AdminSettingsPage.php:111
 #: PageGuard/Admin/AdminSettingsPage.php:135
 msgid "Link (met titel als tekst) van pagina"
-msgstr ""
+msgstr "Link (with title as text) to the page"
 
 #: PageGuard/Admin/AdminSettingsPage.php:112
 msgid "Herzieningsdatum"
-msgstr ""
+msgstr "Review date"
 
 #: PageGuard/Admin/AdminSettingsPage.php:114
 #: PageGuard/Admin/AdminSettingsPage.php:138
 msgid "\"Ik heb gecontroleerd\" knop"
-msgstr ""
+msgstr "\"I have checked\" button"
 
 #: PageGuard/Admin/AdminSettingsPage.php:120
 msgid "Herinneringsmail inhoud"
-msgstr ""
+msgstr "Reminder email content"
 
 #: PageGuard/Admin/AdminSettingsPage.php:136
 msgid "Achterlopende herzieningsdatum"
-msgstr ""
+msgstr "Overdue review date"
+
+#: PageGuard/Admin/AdminServiceProvider.php:59
+#: PageGuard/Metabox/Metabox.php:67
+msgid "Inhoudseigenaar"
+msgstr "Content owner"
+
+#: PageGuard/Admin/AdminServiceProvider.php:60
+#: PageGuard/Metabox/Metabox.php:110
+msgid "Gecontroleerd?"
+msgstr "Checked?"
+
+#: PageGuard/Admin/AdminServiceProvider.php:61
+#: PageGuard/Metabox/Metabox.php:117
+msgid "Controle datum"
+msgstr "Check date"
+
+#: PageGuard/Admin/AdminServiceProvider.php:72
+msgid "Onbekend"
+msgstr "Unknown"
+
+#: PageGuard/Admin/AdminServiceProvider.php:80
+msgid "Ja"
+msgstr "Yes"
+
+#: PageGuard/Admin/AdminServiceProvider.php:80
+msgid "Nee"
+msgstr "No"
+
+#: PageGuard/Admin/AdminServiceProvider.php:85
+msgid "Niet ingesteld"
+msgstr "Not set"
+
+#: PageGuard/Admin/AdminServiceProvider.php:148
+msgid "Externe inhoudseigenaren"
+msgstr "External content owners"
+
+#: PageGuard/Admin/AdminServiceProvider.php:171
+#: PageGuard/Admin/AdminServiceProvider.php:184
+msgid "E-mailadres"
+msgstr "Email address"
+
+#: PageGuard/Admin/AdminServiceProvider.php:173
+#: PageGuard/Admin/AdminServiceProvider.php:191
+msgid "Voer het e-mailadres van de externe inhoudseigenaar in."
+msgstr "Enter the email address of the external content owner."
 
 #: PageGuard/Metabox/Metabox.php:17
 msgid "Houdbaarsheidsmodule"
-msgstr ""
-
-#: PageGuard/Metabox/Metabox.php:42
-msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
-msgstr ""
+msgstr "Content Review Module"
 
 #: PageGuard/Metabox/Metabox.php:50
 msgid "U heeft geen toestemming om de houdbaarsheids module te bewerken."
-msgstr ""
+msgstr "You do not have permission to edit the content review module."
 
 #: PageGuard/Metabox/Metabox.php:69
 msgid "Maak een keuze"
-msgstr ""
+msgstr "Select an option"
 
 #: PageGuard/Metabox/Metabox.php:119
 msgid "De controle notificatie wordt via de e-mail verstuurd op de ingestelde datum."
-msgstr ""
+msgstr "The check notification will be sent by email on the set date."
 
 #: PageGuard/Metabox/Metabox.php:126
 msgid "Herinnering datum"
-msgstr ""
+msgstr "Reminder date"
 
 #: PageGuard/Metabox/Metabox.php:128
 msgid "De herinnering wordt via de e-mail verstuurd op de ingestelde datum."
-msgstr ""
+msgstr "The reminder will be sent by email on the set date."
 
 #: PageGuard/Support/Traits/Date.php:27
 msgid "dagen"
-msgstr ""
+msgstr "days"
 
 #: PageGuard/Support/Traits/Date.php:28
 msgid "weken"
-msgstr ""
+msgstr "weeks"
 
 #: PageGuard/Support/Traits/Date.php:29
 msgid "maanden"
-msgstr ""
+msgstr "months"
 
 #: PageGuard/WPCron/Events/ReminderNotification.php:122
 #: PageGuard/WPCron/Events/ReviewNotification.php:126
 msgid "Gecontroleerd en akkoord"
-msgstr ""
+msgstr "Checked and approved"
 
 #: PageGuard/WPCron/Events/ReminderNotification.php:144
 #: PageGuard/WPCron/Events/ReviewNotification.php:148
 msgid "Dit bericht is automatisch gegenereerd vanuit"
+msgstr "This message has been automatically generated from"
+
+#: PageGuard/Metabox/Metabox.php:42
+msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
 msgstr ""

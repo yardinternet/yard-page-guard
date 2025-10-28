@@ -13,7 +13,7 @@ class AdminServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $adminPage = new AdminPage();
+        $adminPage = new AdminSettingsPage();
         $adminPage->init();
 
         add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorScripts']);
