@@ -20,14 +20,11 @@ class ReviewNotification
 
     private function execute(): void
     {
-        error_log('ReviewNotification execute started.');
         $items = $this->itemsToReview();
 
         if (empty($items)) {
             return;
         }
-
-        error_log('ReviewNotification found ' . count($items) . ' items to process.');
 
         $this->handleNotifications($this->prepareItems($items));
     }
@@ -66,9 +63,6 @@ class ReviewNotification
         ];
 
         $query = new WP_Query($args);
-
-        error_log(json_encode($args));
-        error_log('ReviewNotification itemsToReview found ' . count($query->posts) . ' items.');
 
         return $query->posts;
     }
@@ -152,7 +146,7 @@ class ReviewNotification
             </html>',
             $contentHtml,
             __('Dit bericht is automatisch gegenereerd vanuit', 'yard-page-guard'),
-            get_site_url(),
+            home_url(),
             get_bloginfo('name')
         );
     }

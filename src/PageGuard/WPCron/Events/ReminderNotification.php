@@ -93,11 +93,19 @@ class ReminderNotification
 
     private function sendNotification(ReviewItem $item, ContentOwner $contentOwner): bool
     {
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+
+        $bcc = get_option('ypg_reminder_email_bcc', '');
+
+        if (sanitize_email($bcc) !== '') {
+            $headers[] = 'Bcc: ' . $bcc;
+        }
+
         return wp_mail(
             $contentOwner->email(),
             $this->formatSubject(),
             $this->notificationMessage($item, $contentOwner),
-            ['Content-Type: text/html; charset=UTF-8']
+            $headers
         );
     }
 
@@ -142,7 +150,7 @@ class ReminderNotification
             </html>',
             $contentHtml,
             __('Dit bericht is automatisch gegenereerd vanuit', 'yard-page-guard'),
-            get_site_url(),
+            home_url(),
             get_bloginfo('name')
         );
     }
