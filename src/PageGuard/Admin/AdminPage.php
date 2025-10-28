@@ -8,6 +8,14 @@ class AdminPage
     {
         add_action('admin_menu', [$this, 'add_settings_subpage']);
         add_action('admin_init', [$this, 'register_settings']);
+
+        add_action('init', function(): void {
+            load_plugin_textdomain(
+                'yard-page-guard',
+                false,
+                dirname(plugin_basename(__FILE__)) . '/languages'
+            );
+        });
     }
 
     public function add_settings_subpage(): void
@@ -23,8 +31,10 @@ class AdminPage
 
     public function register_settings(): void
     {
-        register_setting('ypg_settings', 'ypg_time_period');
-        register_setting('ypg_settings', 'ypg_time_unit');
+        register_setting('ypg_settings', 'ypg_review_time_period');
+        register_setting('ypg_settings', 'ypg_review_time_unit');
+        register_setting('ypg_settings', 'ypg_reminder_time_period');
+        register_setting('ypg_settings', 'ypg_reminder_time_unit');
         register_setting('ypg_settings', 'ypg_email_from');
         register_setting('ypg_settings', 'ypg_reminder_email_bcc');
         register_setting('ypg_settings', 'ypg_review_email_content');
@@ -53,7 +63,7 @@ class AdminPage
                         </td>
                     </tr>
                     <tr valign="top">
-                        <th scope="row"><?php echo __('Herzienings periode', 'yard-page-guard') ?></th>
+                        <th scope="row"><?php echo __('Herzieningsperiode', 'yard-page-guard') ?></th>
                         <td class="d-flex">
                             <input type="number" name="ypg_review_time_period" value="<?php echo esc_attr(get_option('ypg_review_time_period', 2)); ?>" min="1" />
                             <select name="ypg_review_time_unit">
@@ -68,7 +78,7 @@ class AdminPage
                         </td>
                     </tr>
                     <tr valign="top">
-                        <th scope="row"><?php echo __('Herinnerings periode', 'yard-page-guard') ?></th>
+                        <th scope="row"><?php echo __('Herinneringsperiode', 'yard-page-guard') ?></th>
                         <td class="d-flex">
                             <input type="number" name="ypg_reminder_time_period" value="<?php echo esc_attr(get_option('ypg_reminder_time_period', 1)); ?>" min="1" />
                             <select name="ypg_reminder_time_unit">

@@ -122,8 +122,8 @@ class ReviewNotification
             $contentOwner->salutation(),
             sprintf('<a href="%s">%s</a>', $item->editLink(), $item->title()),
             $item->reviewDate(),
-            $this->getReviewPeriodString(),
-            sprintf('<a href="%s">%s</a>', $item->editLink(), $item->title()),
+            $this->getPeriodOptionString('ypg_review_time_period', 'ypg_review_time_unit'),
+            sprintf('<a href="%s">%s</a>', $item->editLink(), __("Gecontroleerd en akkoord", 'yard-page-guard')),
         ];
 
         $contentHtml = $this->replacePlaceholders($content, $values);

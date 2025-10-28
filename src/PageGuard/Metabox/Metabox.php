@@ -4,9 +4,12 @@ namespace Yard\PageGuard\Metabox;
 
 use WP_Post;
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Support\Traits\Date;
 
 class Metabox
 {
+    use Date;
+
     public function addMetaboxes(): void
     {
         add_meta_box(
@@ -24,23 +27,25 @@ class Metabox
         // Retrieve current meta values.
         $contentOwnerId = get_post_meta($post->ID, 'ypg_post_content_owner_id', true);
         $currentOwnerType = get_post_meta($post->ID, 'ypg_post_content_owner_type', true);
-        $isVerified = get_post_meta($post->ID, 'ypg_is_verified', true);
+        $toBeVerified = get_post_meta($post->ID, 'ypg_is_verified', true);
         $reviewDate = get_post_meta($post->ID, 'ypg_review_date', true);
+        $reminderDate = get_post_meta($post->ID, 'ypg_reminder_date', true);
 
         // Security nonce field.
         wp_nonce_field(basename(__FILE__), 'yard_page_guard_metaboxes_nonce');
 
-        echo $this->displayMetaboxesHTML($contentOwnerId, $currentOwnerType, $isVerified, $reviewDate, $post->ID);
+        echo $this->displayMetaboxesHTML($contentOwnerId, $currentOwnerType, $toBeVerified, $reviewDate, $reminderDate, $post->ID);
     }
 
-    private function displayMetaboxesHTML(string $contentOwnerId, string $contentOwnerType, string $isVerified, string $reviewDate, int $postID): string
+    private function displayMetaboxesHTML(string $contentOwnerId, string $contentOwnerType, string $toBeVerified, string $reviewDate, string $reminderDate, int $postID): string
     {
         $html = sprintf('<p>%s</p>', __('Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.', 'yard-page-guard'));
 
         if ($this->currentUserHasAccess($postID)) {
             $html = $this->contentOwnerMetabox($html, $contentOwnerId, $contentOwnerType);
-            $html = $this->isVerifiedMetabox($html, $isVerified);
-            $html = $this->reviewDatedMetabox($html, $reviewDate);
+            $html = $this->toBeVerifiedMetabox($html, $toBeVerified);
+            $html = $this->reviewDateMetabox($html, $reviewDate);
+            $html = $this->reminderDateMetabox($html, $reminderDate);
         } else {
             $html .= sprintf('<p><b>%s</b></p>', __('U heeft geen toestemming om de houdbaarsheids module te bewerken.', 'yard-page-guard'));
         }
@@ -98,19 +103,28 @@ class Metabox
         return $html;
     }
 
-    private function isVerifiedMetabox(string $html, string $isVerified): string
+    private function toBeVerifiedMetabox(string $html, string $toBeVerified): string
     {
         $html .= '<div class="ypg-metabox-wrapper"><label for="ypg_is_verified">';
-        $html .= sprintf('<input type="checkbox" name="ypg_is_verified" id="ypg_is_verified" value="1"%s />', checked($isVerified, 1, false));
+        $html .= sprintf('<input type="checkbox" name="ypg_is_verified" id="ypg_is_verified" value="1"%s />', checked($toBeVerified, 1, false));
         $html .= sprintf(' %s</label></div>', __('Gecontroleerd?', 'yard-page-guard'));
 
         return $html;
     }
 
-    private function reviewDatedMetabox(string $html, string $reviewDate): string
+    private function reviewDateMetabox(string $html, string $reviewDate): string
     {
-        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_review_date">%s:</label>', __('Herinnering', 'yard-page-guard'));
+        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_review_date">%s:</label>', __('Controle datum', 'yard-page-guard'));
         $html .= sprintf('<input type="date" name="ypg_review_date" id="ypg_review_date" value="%s" />', esc_attr($reviewDate));
+        $html .= sprintf('<p>%s</p></div>', __('De controle notificatie wordt via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard'));
+
+        return $html;
+    }
+
+    private function reminderDateMetabox(string $html, string $reminderDate): string
+    {
+        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_reminder_date">%s:</label>', __('Herinnering datum', 'yard-page-guard'));
+        $html .= sprintf('<input type="date" name="ypg_reminder_date" id="ypg_reminder_date" value="%s" />', esc_attr($reminderDate));
         $html .= sprintf('<p>%s</p></div>', __('De herinnering wordt via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard'));
 
         return $html;
@@ -141,42 +155,60 @@ class Metabox
         update_post_meta($postID, 'ypg_post_content_owner_email', $ownerEmail);
         update_post_meta($postID, 'ypg_post_content_owner_type', $ownerType);
 
-        // Sanitize and save the verified status
-        $isVerified = (isset($_POST['ypg_is_verified']) ? 1 : 0);
-        update_post_meta($postID, 'ypg_is_verified', $isVerified);
+        $wasPreviouslyVerified = (bool) get_post_meta($postID, 'ypg_is_verified', true);
+        $toBeVerified = isset($_POST['ypg_is_verified']);
         
-        if (1 === $isVerified) {
+        if ($toBeVerified) {
             delete_post_meta($postID, 'ypg_review_mail_sent');
         }
 
         $currentReviewDate = get_post_meta($postID, 'ypg_review_date', true);
+        $reviewDate = $this->computeDateMeta(
+            'ypg_review_date',
+            $currentReviewDate,
+            $toBeVerified,
+            $wasPreviouslyVerified,
+            date('Y-m-d'),
+            'ypg_review_time_period',
+            'ypg_review_time_unit',
+            2,
+            'weeks'
+        );
 
-        // Sanitize and save the review date
-        if (isset($_POST['ypg_review_date']) && '' !== $_POST['ypg_review_date'] && (1 !== $isVerified && sanitize_text_field($_POST['ypg_review_date']) === $currentReviewDate)) {
-            $reviewDate = sanitize_text_field($_POST['ypg_review_date']);
-        } else {
-            $baseDate = $currentReviewDate ?: date('Y-m-d');
+        $currentReminderDate = get_post_meta($postID, 'ypg_reminder_date', true);
+        $reminderDate = $this->computeDateMeta(
+            'ypg_reminder_date',
+            $currentReminderDate,
+            $toBeVerified,
+            $wasPreviouslyVerified,
+            $reviewDate,
+            'ypg_reminder_time_period',
+            'ypg_reminder_time_unit',
+            1,
+            'weeks'
+        );
 
-            $period = intval(get_option('ypg_time_period', 2));
-            $unit = get_option('ypg_time_unit', 'weeks');
+        // Ensure reminder is after the review date.
+        // Base on review date + default period if not
+        if (strtotime($reminderDate) <= strtotime($reviewDate)) {
+            $period = (int) get_option('ypg_reminder_time_period', 1);
+            $unit = get_option('ypg_reminder_time_unit', 'weeks');
 
-            // Add period to base date
-            $date = new \DateTime($baseDate);
-            switch ($unit) {
-                case 'weeks':
-                    $date->modify("+{$period} weeks");
+            $computed = $this->addPeriodToBase($reviewDate, $period, $unit);
 
-                    break;
-                case 'months':
-                    $date->modify("+{$period} months");
-
-                    break;
-                default:
-                    $date->modify("+{$period} days");
+            // Guarantee at least one day after review date as fallback.
+            if (strtotime($computed) <= strtotime($reviewDate)) {
+                $date = new \DateTime($reviewDate);
+                $date->modify('+1 day');
+                $computed = $date->format('Y-m-d');
             }
-            $reviewDate = $date->format('Y-m-d');
+
+            $reminderDate = $computed;
         }
+
+        update_post_meta($postID, 'ypg_is_verified', $toBeVerified);
         update_post_meta($postID, 'ypg_review_date', $reviewDate);
+        update_post_meta($postID, 'ypg_reminder_date', $reminderDate);
     }
 
     private function shouldSave(int $postID): bool
@@ -217,5 +249,5 @@ class Metabox
         }
 
         return (int) $contentOwnerId === $currentUser->ID && ContentOwnerType::USER === $contentOwnerType;
-    }
+    } 
 }
