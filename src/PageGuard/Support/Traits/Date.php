@@ -33,7 +33,7 @@ trait Date
         return $period . ' ' . $unitLabel;
     }
 
-    public function addPeriodToBase(string $base, int $period, string $unit): string 
+    public function addPeriodToBase(string $base, int $period, string $unit): string
     {
         $date = new \DateTime($base);
 
@@ -84,12 +84,14 @@ trait Date
             sanitize_text_field($_POST[$inputFieldName]) === $currentMeta
         ) {
             $baseDate = $currentMeta ?: $fallbackBaseDate;
+
             return $this->addPeriodToBase($baseDate, $period, $unit);
         }
 
         // #4 Auto increase when no current value is set
         if (! $currentMeta) {
             $baseDate = $currentMeta ?: $fallbackBaseDate;
+
             return $this->addPeriodToBase($baseDate, $period, $unit);
         }
 

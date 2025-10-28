@@ -49,7 +49,7 @@ class ReviewNotification
             'meta_query' => [
                 'relation' => 'AND',
                 [
-                    'key' => 'ypg_post_content_owner',
+                    'key' => 'ypg_post_content_owner_id',
                     'compare' => 'EXISTS',
                 ],
                 [
@@ -60,13 +60,14 @@ class ReviewNotification
                 ],
                 [
                     'key' => 'ypg_review_mail_sent',
-                    'compare' => 'NOT_EXISTS',
+                    'compare' => 'NOT EXISTS',
                 ],
             ],
         ];
 
         $query = new WP_Query($args);
 
+        error_log(json_encode($args));
         error_log('ReviewNotification itemsToReview found ' . count($query->posts) . ' items.');
 
         return $query->posts;
