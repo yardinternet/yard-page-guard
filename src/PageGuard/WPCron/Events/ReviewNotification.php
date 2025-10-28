@@ -20,11 +20,14 @@ class ReviewNotification
 
     private function execute(): void
     {
+        error_log('ReviewNotification execute started.');
         $items = $this->itemsToReview();
 
         if (empty($items)) {
             return;
         }
+
+        error_log('ReviewNotification found ' . count($items) . ' items to process.');
 
         $this->handleNotifications($this->prepareItems($items));
     }
@@ -63,6 +66,8 @@ class ReviewNotification
         ];
 
         $query = new WP_Query($args);
+
+        error_log('ReviewNotification itemsToReview found ' . count($query->posts) . ' items.');
 
         return $query->posts;
     }

@@ -15,7 +15,7 @@ class ReminderNotification
 
     public static function init(): void
     {
-        // (new self())->execute();
+        (new self())->execute();
     }
 
     private function execute(): void
