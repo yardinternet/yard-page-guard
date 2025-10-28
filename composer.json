@@ -1,40 +1,61 @@
 {
-	"name": "plugin/yard-page-guard",
-	"description": "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.",
-	"homepage": "https://www.yard.nl",
-	"type": "wordpress-plugin",
-	"repositories": [
-		{
-			"type": "composer",
-			"url": "https://wpackagist.org"
-		}
-	],
-	"require": {
-		"php": "^7.4|^8.0"
-	},
-	"require-dev": {
-		"friendsofphp/php-cs-fixer": "^3.0",
-		"symfony/var-dumper": "^5.1",
-		"10up/wp_mock": "^0.5.0"
-	},
-	"autoload": {
-		"psr-4": {
-			"Yard\\PageGuard\\": "./src/PageGuard"
-		}
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"Yard\\PageGuard\\Tests\\": "./tests"
-		}
-	},
-	"scripts": {
-		"phpunit": "./vendor/bin/phpunit",
-		"test": "phpunit --testdox --colors=always --bootstrap='./tests/bootstrap.php' tests ",
-		"format": "vendor/bin/php-cs-fixer fix"
-	},
-	"config": {
-		"allow-plugins": {
-			"composer/installers": true
-		}
-	}
+  "name": "plugin/yard-page-guard",
+  "description": "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.",
+  "homepage": "https://www.yard.nl",
+  "type": "wordpress-plugin",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://wpackagist.org"
+    }
+  ],
+  "require": {
+    "php": "^7.4|^8.0"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.0",
+    "symfony/var-dumper": "^5.1",
+    "10up/wp_mock": "^0.5.0",
+    "wp-cli/i18n-command": "^2.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Yard\\PageGuard\\": "./src/PageGuard"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Yard\\PageGuard\\Tests\\": "./tests"
+    }
+  },
+  "scripts": {
+    "phpunit": "./vendor/bin/phpunit",
+    "test": "phpunit --testdox --colors=always --bootstrap='./tests/bootstrap.php' tests ",
+    "format": "vendor/bin/php-cs-fixer fix",
+    "translate": [
+      "@translate:pot",
+      "@translate:update"
+    ],
+    "translate:pot": [
+      "./vendor/bin/wp i18n make-pot ./src ./languages/yard-page-guard.pot --domain='yard-page-guard'"
+    ],
+    "translate:update": [
+      "bash -c 'for file in ./languages/*.po; do ./vendor/bin/wp i18n update-po ./languages/yard-page-guard.pot \"$file\"; done'"
+    ],
+    "translate:compile": [
+      "@translate:mo",
+      "@translate:js"
+    ],
+    "translate:js": [
+      "./vendor/bin/wp i18n make-json ./languages/ --pretty-print"
+    ],
+    "translate:mo": [
+      "./vendor/bin/wp i18n make-mo ./languages/ ./languages/"
+    ]
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true
+    }
+  }
 }

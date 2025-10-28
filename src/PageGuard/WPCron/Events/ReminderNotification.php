@@ -5,9 +5,14 @@ namespace Yard\PageGuard\WPCron\Events;
 use WP_Query;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Support\Traits\Date;
+use Yard\PageGuard\Support\Traits\Placeholder;
 
 class ReminderNotification
 {
+    use Date;
+    use Placeholder;
+
     public static function init(): void
     {
         // (new self())->execute();
@@ -45,7 +50,7 @@ class ReminderNotification
                     'compare' => 'EXISTS',
                 ],
                 [
-                    'key' => 'ypg_review_date',
+                    'key' => 'ypg_reminder_date',
                     'value' => date('Y-m-d'),
                     'compare' => '<=',
                     'type' => 'DATE',
@@ -107,33 +112,36 @@ class ReminderNotification
 
     private function notificationMessage(ReviewItem $item, ContentOwner $contentOwner): string
     {
-        return sprintf(
-            __(
-                '<html>
-					<head>
-						<style>
-							body { font-family: Arial, sans-serif; }
-							.content { margin: 20px; }
-							.footer { margin: 20px; font-size: 0.9em; color: #666; }
-						</style>
-					</head>
-					<body>
-						<div class="content">
-							<p>Beste %s,</p>
-							<p>U bent de contenteigenaar van de pagina <a href="%s">%s</a>, die ingesteld staat/stond om gecontroleerd te worden op %s.</p>
-							<p>De instellingen van de Houdbaarheidsmodule van deze pagina zijn gereset bij het versturen van deze notificatie. De volgende notificatie wordt pas verstuurd nadat u de instellingen opnieuw hebt ingesteld.</p>
-						</div>
-						<div class="footer">
-							<small>Dit bericht is automatisch gegenereerd vanuit <a href="%s">%s</a></small>
-						</div>
-					</body>
-				</html>',
-                'yard-page-guard'
-            ),
+        $content = wpautop(get_option('ypg_reminder_email_content', ''));
+
+        $values = [
             $contentOwner->salutation(),
-            $item->editLink(),
-            $item->title(),
+            sprintf('<a href="%s">%s</a>', $item->editLink(), $item->title()),
             $item->reviewDate(),
+            $this->getPeriodOptionString('ypg_reminder_time_period', 'ypg_reminder_time_unit'),
+            sprintf('<a href="%s">%s</a>', $item->editLink(), __("Gecontroleerd en akkoord", 'yard-page-guard')),
+        ];
+
+        $contentHtml = $this->replacePlaceholders($content, $values);
+
+        return sprintf(
+            '<html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        .content { margin: 20px; }
+                        .footer { margin: 20px; font-size: 0.9em; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="content">%s</div>
+                    <div class="footer">
+                        <small>%s <a href="%s">%s</a></small>
+                    </div>
+                </body>
+            </html>',
+            $contentHtml,
+            __('Dit bericht is automatisch gegenereerd vanuit', 'yard-page-guard'),
             get_site_url(),
             get_bloginfo('name')
         );
@@ -145,7 +153,10 @@ class ReminderNotification
      */
     private function resetModuleSettings(ReviewItem $item): void
     {
-        delete_post_meta($item->ID(), 'ypg_is_verified');
-        delete_post_meta($item->ID(), 'ypg_review_date');
+        $currentReminderDate = $item->reminderDate() ?: date('Y-m-d');
+        $reminderPeriod = intval(get_option('ypg_reminder_time_period', 1));
+        $reminderUnit = get_option('ypg_reminder_time_unit', 'weeks');
+
+        update_post_meta($item->ID(), 'ypg_reminder_date', $this->addPeriodToBase($currentReminderDate, $reminderPeriod, $reminderUnit));
     }
 }

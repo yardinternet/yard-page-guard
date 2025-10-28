@@ -51,6 +51,14 @@ class ReviewItem
         return $date->format($format);
     }
 
+    public function reminderDate(string $format = 'd-m-Y'): string
+    {
+        $date = get_post_meta($this->ID(), 'ypg_reminder_date', true);
+        $date = new DateTime($date, new DateTimeZone(get_option('timezone_string')));
+
+        return $date->format($format);
+    }
+
     public function contentOwner(): ?ContentOwner
     {
         $id = get_post_meta($this->ID(), 'ypg_post_content_owner_id', true);

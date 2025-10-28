@@ -58,7 +58,7 @@ class AdminServiceProvider extends ServiceProvider
     {
         $columns['ypg_post_content_owner'] = __('Inhoudseigenaar', 'yard-page-guard');
         $columns['ypg_is_verified'] = __('Gecontroleerd?', 'yard-page-guard');
-        $columns['ypg_review_date'] = __('Herinnering', 'yard-page-guard');
+        $columns['ypg_review_date'] = __('Controle datum', 'yard-page-guard');
 
         return $columns;
     }
