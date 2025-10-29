@@ -95,6 +95,13 @@ class ReminderNotification
     {
         $headers = ['Content-Type: text/html; charset=UTF-8'];
 
+        $from_name = get_option('ypg_email_from_name', get_bloginfo('name'));
+        $from_email = get_option('ypg_email_from_address', $_SERVER['HTTP_HOST']);
+
+        if (!empty($from_name) && !empty($from_email) && is_email($from_email)) {
+            $headers[] = 'From: ' . sprintf('"%s" <%s>', $from_name, $from_email);
+        }
+
         $bcc = get_option('ypg_reminder_email_bcc', '');
 
         if (sanitize_email($bcc) !== '') {
@@ -113,7 +120,7 @@ class ReminderNotification
     {
         return sprintf(
             '%s - %s',
-            __('Houdbaarheidsmodule', 'yard-page-guard'),
+            __('Controle herinnering', 'yard-page-guard'),
             get_bloginfo('name')
         );
     }
