@@ -3,9 +3,8 @@
 namespace Yard\PageGuard\Admin;
 
 use WP_Query;
-use WP_Term;
 use Yard\PageGuard\Foundation\ServiceProvider;
-use Yard\PageGuard\Support\Traits\Date;
+use Yard\PageGuard\Traits\Date;
 
 class AdminServiceProvider extends ServiceProvider
 {
@@ -16,11 +15,11 @@ class AdminServiceProvider extends ServiceProvider
         $adminPage = new AdminSettingsPage();
         $adminPage->init();
 
-        add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorScripts']);
-        
+        add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorAssets']);
+
         add_action('admin_enqueue_scripts', function (string $hook): void {
             if ('settings_page_page-guard-settings' === $hook) {
-                $this->enqueueEditorScripts();
+                $this->enqueueEditorAssets();
             }
         });
 
@@ -30,24 +29,18 @@ class AdminServiceProvider extends ServiceProvider
                 add_action("manage_{$postType}_posts_custom_column", [$this, 'fillCustomColumns'], 10, 2);
                 add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
             }
-
-            $this->registerExternalContentOwnerTaxonomy();
-            add_action('ypg_external_content_owner_add_form_fields', [$this, 'addExternalContentOwnerEmailFormField']);
-            add_action('ypg_external_content_owner_edit_form_fields', [$this, 'editExternalContentOwnerEmailFormField']);
-            add_action('created_ypg_external_content_owner', [$this, 'saveExternalContentOwnerMeta'], 10, 1);
-            add_action('edited_ypg_external_content_owner', [$this, 'saveExternalContentOwnerMeta'], 10, 1);
         });
 
         add_action('pre_get_posts', [$this, 'sortCustomColumns']);
     }
 
-    public function enqueueEditorScripts(): void
+    public function enqueueEditorAssets(): void
     {
         $path = $this->plugin->resourcePath('editor.asset.php');
         $scriptAsset = file_exists($path) ? require $path : ['dependencies' => [], 'version' => round(microtime(true))];
 
         wp_enqueue_style(
-            'ypg-editor-styles',
+            'ypg-editor-style',
             $this->plugin->resourceUrl('style-editor.css'),
             [],
             $scriptAsset['version']
@@ -139,71 +132,6 @@ class AdminServiceProvider extends ServiceProvider
                 'meta_value' => $order,
                 'date' => 'DESC',
             ]);
-        }
-    }
-
-    public function registerExternalContentOwnerTaxonomy(): void
-    {
-        register_taxonomy('ypg_external_content_owner', apply_filters('yard::page-guard/post-types-to-use', ['page']), [
-            'label' => __('Externe inhoudseigenaren', 'yard-page-guard'),
-            'public' => false,
-            'show_ui' => true,
-            'show_in_quick_edit' => false,
-            'show_admin_column' => false,
-            'hierarchical' => false,
-            'rewrite' => [
-                'slug' => 'ypg-external-content-owner',
-                'with_front' => false,
-            ],
-            'capabilities' => [
-                'manage_terms' => 'manage_categories',
-                'edit_terms' => 'manage_categories',
-                'delete_terms' => 'manage_categories',
-                'assign_terms' => 'edit_pages',
-            ],
-        ]);
-    }
-
-    public function addExternalContentOwnerEmailFormField(): void
-    {
-        ?>
-        <div class="ypg-form-field">
-            <label for="ypg_external_content_owner_email"><?php _e('E-mailadres', 'yard-page-guard'); ?></label>
-            <input type="email" name="ypg_external_content_owner_email" id="ypg_external_content_owner_email" />
-            <p><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
-        </div>
-        <?php
-    }
-
-    public function editExternalContentOwnerEmailFormField(WP_Term $term): void
-    {
-        $email = get_term_meta($term->term_id, 'ypg_external_content_owner_email', true);
-        ?>
-        <tr class="form-field">
-            <th scope="row">
-                <label for="ypg_external_content_owner_email"><?php _e('E-mailadres', 'yard-page-guard'); ?></label>
-            </th>
-            <td>
-                <input type="email" 
-                       name="ypg_external_content_owner_email" 
-                       id="ypg_external_content_owner_email" 
-                       value="<?php echo esc_attr($email); ?>" />
-                <p class="description"><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
-            </td>
-        </tr>
-        <?php
-    }
-
-    public function saveExternalContentOwnerMeta(int $termId): void
-    {
-        if (isset($_POST['ypg_external_content_owner_email'])) {
-            $email = sanitize_email($_POST['ypg_external_content_owner_email']);
-            
-            if ('' !== $email) {
-                update_term_meta($termId, 'ypg_external_content_owner_email', $email);
-            } else {
-                delete_term_meta($termId, 'ypg_external_content_owner_email');
-            }
         }
     }
 }

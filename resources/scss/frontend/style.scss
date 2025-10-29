@@ -1,0 +1,24 @@
+.ypg-review-modal {
+	position: fixed;
+	top: 40vh;
+	right: 20px;
+	background: #fff;
+	padding: 20px;
+	border-radius: 20px;
+	border: 2px solid #000;
+
+	.ypg-review-form {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		align-items: flex-start;
+
+		label {
+			font-weight: bold;
+		}
+
+		input[type='submit'] {
+			margin-top: 10px;
+		}
+	}
+}

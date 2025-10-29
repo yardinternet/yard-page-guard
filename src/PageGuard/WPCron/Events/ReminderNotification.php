@@ -5,22 +5,17 @@ namespace Yard\PageGuard\WPCron\Events;
 use WP_Query;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
-use Yard\PageGuard\Support\Traits\Date;
-use Yard\PageGuard\Support\Traits\Email;
-use Yard\PageGuard\Support\Traits\Placeholder;
+use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Traits\Email;
+use Yard\PageGuard\Traits\Placeholder;
 
-class ReminderNotification
+class ReminderNotification extends Event
 {
     use Date;
     use Placeholder;
     use Email;
 
-    public static function init(): void
-    {
-        (new self())->execute();
-    }
-
-    private function execute(): void
+    protected function execute(): void
     {
         $items = $this->getItems();
 
