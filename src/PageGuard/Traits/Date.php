@@ -50,7 +50,7 @@ trait Date
 
     public function computeDateMeta(
         string $inputFieldName,
-        mixed $currentMeta = '',
+        mixed $currentMeta,
         int $toBeVerified,
         bool $wasPreviouslyVerified,
         string $fallbackBaseDate,
