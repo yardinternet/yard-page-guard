@@ -1,6 +1,6 @@
 <?php
 
-namespace Yard\PageGuard\Support\Traits;
+namespace Yard\PageGuard\Traits;
 
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
@@ -73,7 +73,7 @@ trait Email
 
         foreach ($items as $item) {
             $title = esc_html($item->title());
-            $link = esc_url($item->editLink());
+            $link = esc_url($item->reviewLink());
             $date = esc_html($item->reviewDate());
 
             $content = $appendDate

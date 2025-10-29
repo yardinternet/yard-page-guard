@@ -5,12 +5,9 @@ namespace Yard\PageGuard\Models;
 use DateTime;
 use DateTimeZone;
 use WP_Post;
-use Yard\PageGuard\Support\Traits\EditPostLink;
 
 class ReviewItem
 {
-    use EditPostLink;
-
     protected WP_Post $item;
 
     public function __construct(WP_Post $post)
@@ -38,11 +35,21 @@ class ReviewItem
         return $this->item->post_type;
     }
 
-    public function editLink(): string
+    public function reviewLink(): string
     {
-        $contentOwnerType = get_post_meta($this->ID(), 'ypg_post_content_owner_type', true);
+        $permalink = get_permalink($this->ID());
 
-        return 'user' === $contentOwnerType ? $this->editPostLink($this->ID(), $this->postType()) : $this->item->permalink;
+        $ownerEmail = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true);
+        $reviewDate = get_post_meta($this->ID(), 'ypg_review_date', true) ?? '';
+
+        if ('' !== $ownerEmail && '' !== $reviewDate && defined('AUTH_SALT')) {
+            $rawHash = hash_hmac('sha256', strtolower(trim("{$this->ID()}|$ownerEmail|$reviewDate")), AUTH_SALT, true);
+            $token = rtrim(strtr(base64_encode($rawHash), '+/', '-_'), '='); // URL safe
+
+            $permalink = add_query_arg('ypg_review_token', $token, $permalink);
+        }
+
+        return $permalink;
     }
 
     public function reviewDate(string $format = 'd-m-Y'): string

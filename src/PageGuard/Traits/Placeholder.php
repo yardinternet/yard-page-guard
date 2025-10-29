@@ -1,6 +1,6 @@
 <?php
 
-namespace Yard\PageGuard\Support\Traits;
+namespace Yard\PageGuard\Traits;
 
 trait Placeholder
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Yard\PageGuard\Support\Traits;
+namespace Yard\PageGuard\Traits;
 
 use DateTime;
 use DateTimeZone;
@@ -19,7 +19,7 @@ trait Date
         return date_i18n($format, $date->getTimestamp());
     }
 
-    public function getPeriodOptionString(string $periodKey, string $unitKey): string
+    public function getPeriodOptionString(string $periodKey, string $unitKey, bool $hideOnSingle = true): string
     {
         $period = intval(get_option($periodKey, 2));
         $unit = get_option($unitKey, 'weeks');
@@ -30,7 +30,7 @@ trait Date
         ];
         $unitLabel = $units[$unit] ?? $unit;
 
-        return (1 === $period ? '' : $period . ' ') . $unitLabel;
+        return (1 === $period && $hideOnSingle ? '' : $period . ' ') . $unitLabel;
     }
 
     public function addPeriodToBase(string $base, int $period, string $unit): string
