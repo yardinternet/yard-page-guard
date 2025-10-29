@@ -6,12 +6,14 @@ use WP_Query;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Support\Traits\Date;
+use Yard\PageGuard\Support\Traits\Email;
 use Yard\PageGuard\Support\Traits\Placeholder;
 
 class ReminderNotification
 {
     use Date;
     use Placeholder;
+    use Email;
 
     public static function init(): void
     {
@@ -20,24 +22,19 @@ class ReminderNotification
 
     private function execute(): void
     {
-        $items = $this->itemsToReview();
+        $items = $this->getItems();
 
-        if (empty($items)) {
+        if ([] === $items) {
             return;
         }
 
-        $this->handleNotifications($this->prepareItems($items));
+        $this->handleNotifications(array_map(fn ($item) => new ReviewItem($item), $items));
     }
 
     /**
-     * Fetch items that are scheduled for review or are already due.
-     *
-     * This function retrieves all posts of specified post types that have a content owner
-     * and a review date that is today or in the past. The post types and statuses to be
-     * considered can be modified using the 'yard::page-guard/post-types-to-use' and
-     * 'yard::page-guard/post-statusses-to-use' filters respectively.
+     * @return \WP_Post[]
      */
-    private function itemsToReview(): array
+    private function getItems(): array
     {
         $args = [
             'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
@@ -46,7 +43,7 @@ class ReminderNotification
             'meta_query' => [
                 'relation' => 'AND',
                 [
-                    'key' => 'ypg_post_content_owner_id',
+                    'key' => 'ypg_post_content_owner_email',
                     'compare' => 'EXISTS',
                 ],
                 [
@@ -56,6 +53,10 @@ class ReminderNotification
                     'type' => 'DATE',
                 ],
             ],
+            // Performance
+            'no_found_rows' => true,
+            'update_post_term_cache' => false,
+            'update_post_meta_cache' => false,
         ];
 
         $query = new WP_Query($args);
@@ -63,110 +64,56 @@ class ReminderNotification
         return $query->posts;
     }
 
-    private function prepareItems(array $items): array
-    {
-        $preparedItems = [];
-
-        foreach ($items as $item) {
-            $preparedItems[] = new ReviewItem($item);
-        }
-
-        return $preparedItems;
-    }
-
+    /**
+     * @param ReviewItem[] $items
+     */
     private function handleNotifications(array $items): void
     {
-        foreach ($items as $item) {
-            $contentOwner = $item->contentOwner();
+        $groupedItems = $this->groupItemsByOwner($items);
 
-            if (! $contentOwner) {
+        foreach ($groupedItems as $group) {
+            $owner = $group['owner'];
+            $ownerItems = $group['items'];
+
+            $headers = $this->buildMailHeaders('ypg_reminder_email_bcc');
+
+            if (! $this->sendEmail(
+                $owner->email(),
+                $this->formatSubject(__('Controle herinnering', 'yard-page-guard')),
+                $this->getContent($ownerItems, $owner),
+                $headers
+            )) {
+                error_log('Failed to send reminder notification email to ' . $owner->email());
+
                 continue;
             }
 
-            if (! $this->sendNotification($item, $contentOwner)) {
-                continue;
+            foreach ($ownerItems as $item) {
+                $this->updateModuleMeta($item);
             }
-
-            $this->resetModuleSettings($item);
         }
     }
 
-    private function sendNotification(ReviewItem $item, ContentOwner $contentOwner): bool
-    {
-        $headers = ['Content-Type: text/html; charset=UTF-8'];
-
-        $from_name = get_option('ypg_email_from_name', get_bloginfo('name'));
-        $from_email = get_option('ypg_email_from_address', $_SERVER['HTTP_HOST']);
-
-        if (!empty($from_name) && !empty($from_email) && is_email($from_email)) {
-            $headers[] = 'From: ' . sprintf('"%s" <%s>', $from_name, $from_email);
-        }
-
-        $bcc = get_option('ypg_reminder_email_bcc', '');
-
-        if (sanitize_email($bcc) !== '') {
-            $headers[] = 'Bcc: ' . $bcc;
-        }
-
-        return wp_mail(
-            $contentOwner->email(),
-            $this->formatSubject(),
-            $this->notificationMessage($item, $contentOwner),
-            $headers
-        );
-    }
-
-    private function formatSubject(): string
-    {
-        return sprintf(
-            '%s - %s',
-            __('Controle herinnering', 'yard-page-guard'),
-            get_bloginfo('name')
-        );
-    }
-
-    private function notificationMessage(ReviewItem $item, ContentOwner $contentOwner): string
+    /**
+     * @param ReviewItem[] $items
+     */
+    private function getContent(array $items, ContentOwner $owner): string
     {
         $content = wpautop(get_option('ypg_reminder_email_content', ''));
+        $itemList = $this->buildItemListHtml($items, true);
 
         $values = [
-            $contentOwner->salutation(),
-            sprintf('<a href="%s">%s</a>', $item->editLink(), $item->title()),
-            $item->reviewDate(),
+            $owner->salutation(),
+            $itemList,
             $this->getPeriodOptionString('ypg_reminder_time_period', 'ypg_reminder_time_unit'),
-            sprintf('<a href="%s">%s</a>', $item->editLink(), __('Gecontroleerd en akkoord', 'yard-page-guard')),
         ];
 
         $contentHtml = $this->replacePlaceholders($content, $values);
 
-        return sprintf(
-            '<html>
-                <head>
-                    <style>
-                        body { font-family: Arial, sans-serif; }
-                        .content { margin: 20px; }
-                        .footer { margin: 20px; font-size: 0.9em; color: #666; }
-                    </style>
-                </head>
-                <body>
-                    <div class="content">%s</div>
-                    <div class="footer">
-                        <small>%s <a href="%s">%s</a></small>
-                    </div>
-                </body>
-            </html>',
-            $contentHtml,
-            __('Dit bericht is automatisch gegenereerd vanuit', 'yard-page-guard'),
-            home_url(),
-            get_bloginfo('name')
-        );
+        return $this->wrapHtmlEmail($contentHtml);
     }
 
-    /**
-     * Reset module settings for current page.
-     * This ensures the notification is send only once
-     */
-    private function resetModuleSettings(ReviewItem $item): void
+    private function updateModuleMeta(ReviewItem $item): void
     {
         $currentReminderDate = $item->reminderDate() ?: date('Y-m-d');
         $reminderPeriod = intval(get_option('ypg_reminder_time_period', 1));

@@ -24,13 +24,13 @@ trait Date
         $period = intval(get_option($periodKey, 2));
         $unit = get_option($unitKey, 'weeks');
         $units = [
-            'days' => $period === 1 ? __('dag', 'yard-page-guard') : __('dagen', 'yard-page-guard'),
-            'weeks' => $period === 1 ? __('week', 'yard-page-guard') : __('weken', 'yard-page-guard'),
-            'months' => $period === 1 ? __('maand', 'yard-page-guard') : __('maanden', 'yard-page-guard'),
+            'days' => 1 === $period ? __('dag', 'yard-page-guard') : __('dagen', 'yard-page-guard'),
+            'weeks' => 1 === $period ? __('week', 'yard-page-guard') : __('weken', 'yard-page-guard'),
+            'months' => 1 === $period ? __('maand', 'yard-page-guard') : __('maanden', 'yard-page-guard'),
         ];
         $unitLabel = $units[$unit] ?? $unit;
 
-        return ($period === 1 ? '' : $period . ' ') . $unitLabel;
+        return (1 === $period ? '' : $period . ' ') . $unitLabel;
     }
 
     public function addPeriodToBase(string $base, int $period, string $unit): string

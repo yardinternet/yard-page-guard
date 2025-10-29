@@ -115,10 +115,8 @@ class AdminSettingsPage
                                 <p><?= __('De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):', 'yard-page-guard') ?></p>
                                 <ol>
                                     <li><?php echo __('Naam van inhoudseigenaar', 'yard-page-guard') ?></li>
-                                    <li><?php echo __('Link (met titel als tekst) van pagina', 'yard-page-guard') ?></li>
-                                    <li><?php echo __('Herzieningsdatum', 'yard-page-guard') ?></li>
+                                    <li><?php echo __('Lijst van herzien items', 'yard-page-guard') ?></li>
                                     <li><?php echo __('Herzieningsperiode', 'yard-page-guard') ?></li>
-                                    <li><?php echo __('"Ik heb gecontroleerd" knop', 'yard-page-guard') ?></li>
                                 </ol>
                             </div>
                         </td>
@@ -139,10 +137,8 @@ class AdminSettingsPage
                                 <p><?= __('De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):', 'yard-page-guard') ?></p>
                                 <ol>
                                     <li><?php echo __('Naam van inhoudseigenaar', 'yard-page-guard') ?></li>
-                                    <li><?php echo __('Link (met titel als tekst) van pagina', 'yard-page-guard') ?></li>
-                                    <li><?php echo __('Achterlopende herzieningsdatum', 'yard-page-guard') ?></li>
+                                    <li><?php echo __('Lijst van achterlopende items', 'yard-page-guard') ?></li>
                                     <li><?php echo __('Herinneringsperiode', 'yard-page-guard') ?></li>
-                                    <li><?php echo __('"Ik heb gecontroleerd" knop', 'yard-page-guard') ?></li>
                                 </ol>
                             </div>
                         </td>

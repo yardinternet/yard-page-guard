@@ -7,7 +7,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-10-28T15:35:24+00:00\n"
+"POT-Creation-Date: 2025-10-29T09:31:15+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: yard-page-guard\n"
@@ -58,83 +58,75 @@ msgid "Voer het e-mailadres van de externe inhoudseigenaar in."
 msgstr ""
 
 #: PageGuard/Admin/AdminSettingsPage.php:24
-#: PageGuard/Admin/AdminSettingsPage.php:48
+#: PageGuard/Admin/AdminSettingsPage.php:49
 msgid "Houdbaarheidsmodule Instellingen"
 msgstr ""
 
 #: PageGuard/Admin/AdminSettingsPage.php:25
-#: PageGuard/WPCron/Events/ReminderNotification.php:108
-#: PageGuard/WPCron/Events/ReviewNotification.php:112
 msgid "Houdbaarheidsmodule"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:54
+#: PageGuard/Admin/AdminSettingsPage.php:55
+msgid "Afzend naam"
+msgstr ""
+
+#: PageGuard/Admin/AdminSettingsPage.php:61
 msgid "Afzend emailadres"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:60
+#: PageGuard/Admin/AdminSettingsPage.php:67
 msgid "Herinneringmail BCC emailadres"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:66
-#: PageGuard/Admin/AdminSettingsPage.php:113
+#: PageGuard/Admin/AdminSettingsPage.php:73
+#: PageGuard/Admin/AdminSettingsPage.php:119
 msgid "Herzieningsperiode"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:71
-#: PageGuard/Admin/AdminSettingsPage.php:86
+#: PageGuard/Admin/AdminSettingsPage.php:78
+#: PageGuard/Admin/AdminSettingsPage.php:93
 msgid "Dagen"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:71
-#: PageGuard/Admin/AdminSettingsPage.php:86
+#: PageGuard/Admin/AdminSettingsPage.php:78
+#: PageGuard/Admin/AdminSettingsPage.php:93
 msgid "Weken"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:71
-#: PageGuard/Admin/AdminSettingsPage.php:86
+#: PageGuard/Admin/AdminSettingsPage.php:78
+#: PageGuard/Admin/AdminSettingsPage.php:93
 msgid "Maanden"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:81
-#: PageGuard/Admin/AdminSettingsPage.php:137
+#: PageGuard/Admin/AdminSettingsPage.php:88
+#: PageGuard/Admin/AdminSettingsPage.php:141
 msgid "Herinneringsperiode"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:96
+#: PageGuard/Admin/AdminSettingsPage.php:103
 msgid "Herzieningsmail inhoud"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:108
-#: PageGuard/Admin/AdminSettingsPage.php:132
+#: PageGuard/Admin/AdminSettingsPage.php:115
+#: PageGuard/Admin/AdminSettingsPage.php:137
 msgid "De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:110
-#: PageGuard/Admin/AdminSettingsPage.php:134
+#: PageGuard/Admin/AdminSettingsPage.php:117
+#: PageGuard/Admin/AdminSettingsPage.php:139
 msgid "Naam van inhoudseigenaar"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:111
-#: PageGuard/Admin/AdminSettingsPage.php:135
-msgid "Link (met titel als tekst) van pagina"
+#: PageGuard/Admin/AdminSettingsPage.php:118
+msgid "Lijst van herzien items"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:112
-msgid "Herzieningsdatum"
-msgstr ""
-
-#: PageGuard/Admin/AdminSettingsPage.php:114
-#: PageGuard/Admin/AdminSettingsPage.php:138
-msgid "\"Ik heb gecontroleerd\" knop"
-msgstr ""
-
-#: PageGuard/Admin/AdminSettingsPage.php:120
+#: PageGuard/Admin/AdminSettingsPage.php:125
 msgid "Herinneringsmail inhoud"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:136
-msgid "Achterlopende herzieningsdatum"
+#: PageGuard/Admin/AdminSettingsPage.php:140
+msgid "Lijst van achterlopende items"
 msgstr ""
 
 #: PageGuard/Metabox/Metabox.php:17
@@ -166,7 +158,15 @@ msgid "De herinnering wordt via de e-mail verstuurd op de ingestelde datum."
 msgstr ""
 
 #: PageGuard/Support/Traits/Date.php:27
+msgid "dag"
+msgstr ""
+
+#: PageGuard/Support/Traits/Date.php:27
 msgid "dagen"
+msgstr ""
+
+#: PageGuard/Support/Traits/Date.php:28
+msgid "week"
 msgstr ""
 
 #: PageGuard/Support/Traits/Date.php:28
@@ -174,15 +174,25 @@ msgid "weken"
 msgstr ""
 
 #: PageGuard/Support/Traits/Date.php:29
+msgid "maand"
+msgstr ""
+
+#: PageGuard/Support/Traits/Date.php:29
 msgid "maanden"
 msgstr ""
 
-#: PageGuard/WPCron/Events/ReminderNotification.php:122
-#: PageGuard/WPCron/Events/ReviewNotification.php:126
-msgid "Gecontroleerd en akkoord"
+#: PageGuard/Support/Traits/Email.php:113
+msgid "Dit bericht is automatisch gegenereerd vanuit"
 msgstr ""
 
-#: PageGuard/WPCron/Events/ReminderNotification.php:144
-#: PageGuard/WPCron/Events/ReviewNotification.php:148
-msgid "Dit bericht is automatisch gegenereerd vanuit"
+#: PageGuard/WPCron/Events/ReminderNotification.php:82
+msgid "Controle herinnering"
+msgstr ""
+
+#: PageGuard/WPCron/Events/ReviewNotification.php:86
+msgid "Houdbaarheidscontrole"
+msgstr ""
+
+#: PageGuard/WPCron/Events/ReviewNotification.php:112
+msgid "Ga naar de website"
 msgstr ""
