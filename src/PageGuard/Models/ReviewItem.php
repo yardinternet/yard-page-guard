@@ -42,7 +42,7 @@ class ReviewItem
     {
         $contentOwnerType = get_post_meta($this->ID(), 'ypg_post_content_owner_type', true);
 
-        return $contentOwnerType === 'user' ? $this->editPostLink($this->ID(), $this->postType()) : $this->item->permalink;
+        return 'user' === $contentOwnerType ? $this->editPostLink($this->ID(), $this->postType()) : $this->item->permalink;
     }
 
     public function reviewDate(string $format = 'd-m-Y'): string
