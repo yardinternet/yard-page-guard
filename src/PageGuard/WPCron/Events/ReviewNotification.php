@@ -97,11 +97,21 @@ class ReviewNotification
 
     private function sendNotification(ReviewItem $item, ContentOwner $contentOwner): bool
     {
+
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+
+        $from_name = get_option('ypg_email_from_name', get_bloginfo('name'));
+        $from_email = get_option('ypg_email_from_address', $_SERVER['HTTP_HOST']);
+
+        if (!empty($from_name) && !empty($from_email) && is_email($from_email)) {
+            $headers[] = 'From: ' . sprintf('"%s" <%s>', $from_name, $from_email);
+        }
+
         return wp_mail(
             $contentOwner->email(),
             $this->formatSubject(),
             $this->notificationMessage($item, $contentOwner),
-            ['Content-Type: text/html; charset=UTF-8']
+            $headers
         );
     }
 
@@ -109,7 +119,7 @@ class ReviewNotification
     {
         return sprintf(
             '%s - %s',
-            __('Houdbaarheidsmodule', 'yard-page-guard'),
+            __('Houdbaarheidscontrole', 'yard-page-guard'),
             get_bloginfo('name')
         );
     }

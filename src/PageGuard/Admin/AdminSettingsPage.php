@@ -35,7 +35,8 @@ class AdminSettingsPage
         register_setting('ypg_settings', 'ypg_review_time_unit');
         register_setting('ypg_settings', 'ypg_reminder_time_period');
         register_setting('ypg_settings', 'ypg_reminder_time_unit');
-        register_setting('ypg_settings', 'ypg_email_from');
+        register_setting('ypg_settings', 'ypg_email_from_name');
+        register_setting('ypg_settings', 'ypg_email_from_address');
         register_setting('ypg_settings', 'ypg_reminder_email_bcc');
         register_setting('ypg_settings', 'ypg_review_email_content');
         register_setting('ypg_settings', 'ypg_reminder_email_content');
@@ -51,9 +52,15 @@ class AdminSettingsPage
                 <?php do_settings_sections('ypg_settings'); ?>
                 <table class="form-table">
                     <tr valign="top">
+                        <th scope="row"><?php echo __('Afzend naam', 'yard-page-guard') ?></th>
+                        <td>
+                            <input type="text" name="ypg_email_from_name" value="<?php echo esc_attr(get_option('ypg_email_from_name', get_bloginfo('name'))); ?>" />
+                        </td>
+                    </tr>
+                    <tr valign="top">
                         <th scope="row"><?php echo __('Afzend emailadres', 'yard-page-guard') ?></th>
                         <td>
-                            <input type="email" name="ypg_email_from" value="<?php echo esc_attr(get_option('ypg_email_from', '')); ?>" />
+                            <input type="email" name="ypg_email_from_address" value="<?php echo esc_attr(get_option('ypg_email_from', 'houdbaarheid' . $_SERVER['HTTP_HOST'])); ?>" />
                         </td>
                     </tr>
                     <tr valign="top">
