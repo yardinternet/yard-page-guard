@@ -23,6 +23,10 @@ class ReviewModal
 
         global $post;
 
+        if (! isset($post) || ! is_a($post, 'WP_Post')) {
+            return;
+        }
+
         $contentOwnerEmail = get_post_meta($post->ID, 'ypg_post_content_owner_email', true) ?? '';
         $reviewDate = get_post_meta($post->ID, 'ypg_review_date', true) ?? '';
 
@@ -38,23 +42,9 @@ class ReviewModal
         }
         ?>
         <div id="ypg-review-modal" class="ypg-review-modal">
-            <h2>Houdbaarheidscontrole</h2>
-			<form id="ypg-review-form" class="ypg-review-form">
-				<label for="ypg-review">Nieuwe controledatum</label>
-				<select name="ypg_review_period_type" id="ypg-review-period-type">
-					<option value="auto">Automatisch (over <?php echo $this->getPeriodOptionString('ypg_review_time_period', 'ypg_review_time_unit', false)  ?>)</option>
-					<option value="manual">Specifieke datum</option>
-				</select>
-
-				<label for="ypg-review">Nieuwe herinneringsdatum</label>
-				<select name="ypg_reminder_period_type" id="ypg-reminder-period-type">
-					<option value="auto">Automatisch (over <?php echo $this->getPeriodOptionString('ypg_reminder_time_period', 'ypg_reminder_time_unit', false)  ?>)</option>
-					<option value="manual">Specifieke datum</option>
-				</select>
-
-				<input type="hidden" name="ypg_review_token" value="<?php echo esc_attr($reviewToken); ?>">
-				<input type="submit" value="Gecontroleerd en akkoord">
-			</form>
+            <h2><?php echo __('Houdbaarheidsmodule', 'yard-page-guard') ?></h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga odit molestias quos fugiat quisquam, hic quis, provident sapiente commodi, quam velit rem quibusdam cupiditate eaque distinctio autem amet ipsa maiores.</p>
+            <button><?php echo __('Gecontroleerd en akkoord', 'yard-page-guard')?></button>
         </div>
         <?php
     }

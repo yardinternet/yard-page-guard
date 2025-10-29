@@ -8,7 +8,8 @@ return [
      */
     'providers' => [
         Yard\PageGuard\WPCron\WPCronServiceProvider::class,
-		Yard\PageGuard\Frontend\FrontendServiceProvider::class,
+        Yard\PageGuard\WPJson\WPJsonServiceProvider::class,
+        Yard\PageGuard\Frontend\FrontendServiceProvider::class,
 
         /** Providers specific to the admin */
         'admin' => [
