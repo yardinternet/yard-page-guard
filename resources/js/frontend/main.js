@@ -1,3 +1,1 @@
-document.addEventListener( 'DOMContentLoaded', function () {
-	console.log( 'DOM ready!' );
-} );
+import htmx from "htmx.org";
