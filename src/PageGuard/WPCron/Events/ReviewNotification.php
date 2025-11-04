@@ -7,12 +7,12 @@ use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Email;
-use Yard\PageGuard\Traits\Placeholder;
+use Yard\PageGuard\Traits\Text;
 
 class ReviewNotification extends Event
 {
     use Date;
-    use Placeholder;
+    use Text;
     use Email;
 
     protected function execute(): void
@@ -82,7 +82,7 @@ class ReviewNotification extends Event
                 $this->getContent($ownerItems, $owner),
                 $headers
             )) {
-                error_log('Failed to send review notification email to ' . $owner->email());
+                error_log('[yard-page-guard] Failed to send review notification email to ' . $owner->email());
 
                 continue;
             }
