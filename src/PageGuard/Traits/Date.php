@@ -50,52 +50,55 @@ trait Date
 
     public function computeDateMeta(
         string $inputFieldName,
-        mixed $currentMeta,
-        int $toBeVerified,
+        mixed $currentValue,
+        bool $toBeVerified,
         bool $wasPreviouslyVerified,
-        string $fallbackBaseDate,
         string $periodOptionName,
         string $unitOptionName,
-        int $defaultPeriod = 2,
-        string $defaultUnit = 'weeks'
+        ?string $fallbackBaseDate = null
     ): string {
-        // #1 Manual change via input (different from before)
+        // #1 Manual change via metabox input (different from before)
         if (
             isset($_POST[$inputFieldName]) &&
             '' !== $_POST[$inputFieldName] &&
-            sanitize_text_field($_POST[$inputFieldName]) !== $currentMeta
+            sanitize_text_field($_POST[$inputFieldName]) !== $currentValue
         ) {
             return sanitize_text_field($_POST[$inputFieldName]);
         }
 
         // #2 Keep current if not verified and current exists
-        if (0 === $toBeVerified && $currentMeta) {
-            return $currentMeta;
+        if (! $toBeVerified && $currentValue) {
+            return $currentValue;
         }
 
-        $period = (int) get_option($periodOptionName, $defaultPeriod);
-        $unit = get_option($unitOptionName, $defaultUnit);
+        $period = (int) get_option($periodOptionName, 1);
+        $unit = get_option($unitOptionName, 'weeks');
+        $fallbackBaseDate = $fallbackBaseDate ?? date('Y-m-d');
 
-        // #3 Auto increase when post has just been verified (and input value same as before)
-        if (
-            1 === $toBeVerified &&
-            ! $wasPreviouslyVerified &&
-            isset($_POST[$inputFieldName]) &&
-            sanitize_text_field($_POST[$inputFieldName]) === $currentMeta
-        ) {
-            $baseDate = $currentMeta ?: $fallbackBaseDate;
-
-            return $this->addPeriodToBase($baseDate, $period, $unit);
-        }
-
-        // #4 Auto increase when no current value is set
-        if (! $currentMeta) {
-            $baseDate = $currentMeta ?: $fallbackBaseDate;
+        // #3 Auto increase when post has just been verified or no current value is set
+        if ($toBeVerified && ! $wasPreviouslyVerified || ! $currentValue) {
+            $baseDate = $currentValue ?: $fallbackBaseDate;
 
             return $this->addPeriodToBase($baseDate, $period, $unit);
         }
 
         // Fallback: return current meta
-        return $currentMeta;
+        return $currentValue;
+    }
+
+    public function setReminderAfterReview(string $reviewDate): string
+    {
+        $period = (int) get_option('ypg_reminder_time_period', 1);
+        $unit = get_option('ypg_reminder_time_unit', 'weeks');
+
+        $computed = $this->addPeriodToBase($reviewDate, $period, $unit);
+
+        if (strtotime($computed) <= strtotime($reviewDate)) {
+            $date = new \DateTime($reviewDate);
+            $date->modify('+1 day');
+            $computed = $date->format('Y-m-d');
+        }
+
+        return $computed;
     }
 }

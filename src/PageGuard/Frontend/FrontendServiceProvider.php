@@ -29,6 +29,13 @@ class FrontendServiceProvider extends ServiceProvider
             $scriptAsset['version']
         );
 
+        wp_enqueue_style(
+            'ypg-frontend-fonts',
+            'https://use.typekit.net/ozu4txi.css',
+            [],
+            null
+        );
+
         wp_enqueue_script(
             'ypg-frontend-scripts',
             $this->plugin->resourceUrl('frontend.js'),

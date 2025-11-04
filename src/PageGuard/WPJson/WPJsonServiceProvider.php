@@ -15,7 +15,7 @@ class WPJsonServiceProvider extends ServiceProvider
             register_rest_route('yard-page-guard/v1', '/verify-post', [
                 'methods' => 'POST',
                 'callback' => [$verifyPostController, 'handleRequest'],
-                'args' => $verifyPostController->getEndpointArgs(),
+                'args' => VerifyPostController::getEndpointArgs(),
                 'permission_callback' => '__return_true',
             ]);
         });

@@ -24,14 +24,12 @@ class Metabox
 
     public function displayMetaboxes(WP_Post $post): void
     {
-        // Retrieve current meta values.
         $contentOwnerId = get_post_meta($post->ID, 'ypg_post_content_owner_id', true);
         $currentOwnerType = get_post_meta($post->ID, 'ypg_post_content_owner_type', true);
         $toBeVerified = get_post_meta($post->ID, 'ypg_is_verified', true);
         $reviewDate = get_post_meta($post->ID, 'ypg_review_date', true);
         $reminderDate = get_post_meta($post->ID, 'ypg_reminder_date', true);
 
-        // Security nonce field.
         wp_nonce_field(basename(__FILE__), 'yard_page_guard_metaboxes_nonce');
 
         echo $this->displayMetaboxesHTML($contentOwnerId, $currentOwnerType, $toBeVerified, $reviewDate, $reminderDate, $post->ID);
@@ -150,7 +148,8 @@ class Metabox
         $wasPreviouslyVerified = (bool) get_post_meta($postID, 'ypg_is_verified', true);
         $toBeVerified = isset($_POST['ypg_is_verified']);
 
-        if ($toBeVerified) {
+        // Remove mail sent status if verified (date will update) OR post is manually being unverified
+        if ($toBeVerified || ! $toBeVerified && $wasPreviouslyVerified) {
             delete_post_meta($postID, 'ypg_review_mail_sent');
         }
 
@@ -215,11 +214,8 @@ class Metabox
             $currentReviewDate,
             $toBeVerified,
             $wasPreviouslyVerified,
-            date('Y-m-d'),
             'ypg_review_time_period',
             'ypg_review_time_unit',
-            2,
-            'weeks'
         );
     }
 
@@ -232,11 +228,9 @@ class Metabox
             $currentReminderDate,
             $toBeVerified,
             $wasPreviouslyVerified,
-            $reviewDate,
             'ypg_reminder_time_period',
             'ypg_reminder_time_unit',
-            1,
-            'weeks'
+            $reviewDate
         );
 
         if (strtotime($reminderDate) <= strtotime($reviewDate)) {
@@ -244,22 +238,6 @@ class Metabox
         }
 
         return $reminderDate;
-    }
-
-    private function setReminderAfterReview(string $reviewDate): string
-    {
-        $period = (int) get_option('ypg_reminder_time_period', 1);
-        $unit = get_option('ypg_reminder_time_unit', 'weeks');
-
-        $computed = $this->addPeriodToBase($reviewDate, $period, $unit);
-
-        if (strtotime($computed) <= strtotime($reviewDate)) {
-            $date = new \DateTime($reviewDate);
-            $date->modify('+1 day');
-            $computed = $date->format('Y-m-d');
-        }
-
-        return $computed;
     }
 
     private function updateVerificationMeta(int $postID, bool $isVerified, string $reviewDate, string $reminderDate): void
