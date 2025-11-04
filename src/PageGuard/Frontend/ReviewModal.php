@@ -42,10 +42,9 @@ class ReviewModal
         }
         ?>
         <div id="ypg-review-modal" class="ypg-review-modal">
-            <h2 class="title"><?php echo __('Houdbaarheidscontrole', 'yard-page-guard') ?></h2>
-            <p class="description"><?php echo sprintf(__('U bent momenteel de pagina "%s" aan het controleren op houdbaarheid.', 'yard-page-guard'), get_the_title()) ?></p>
-			
             <form class="ypg-review-form" hx-post="/wp-json/yard-page-guard/v1/verify-post"> 
+                <h2 class="title"><?php echo __('Houdbaarheidscontrole', 'yard-page-guard') ?></h2>
+                <p class="description"><?php echo sprintf(__('U bent momenteel de pagina "%s" aan het controleren op houdbaarheid.', 'yard-page-guard'), get_the_title()) ?></p>
 				<input type="hidden" name="post_id" value="<?php echo get_the_ID(); ?>">
 				<input type="hidden" name="ypg_review_token" value="<?php echo esc_attr(sanitize_text_field($_GET['ypg_review_token'])); ?>">
                 <button type="submit"><i class="fa-solid fa-check"></i> <?php echo __('Gecontroleerd en akkoord', 'yard-page-guard') ?></button>

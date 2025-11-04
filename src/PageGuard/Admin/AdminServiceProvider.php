@@ -36,14 +36,13 @@ class AdminServiceProvider extends ServiceProvider
 
     public function enqueueEditorAssets(): void
     {
-        $path = $this->plugin->resourcePath('editor.asset.php');
-        $scriptAsset = file_exists($path) ? require $path : ['dependencies' => [], 'version' => round(microtime(true))];
+        $editorStyle = basename(glob($this->plugin->resourcePath('editor.*.css'))[0]);
 
         wp_enqueue_style(
-            'ypg-editor-style',
-            $this->plugin->resourceUrl('style-editor.css'),
+            'ypg-editor-styles',
+            $this->plugin->resourceUrl($editorStyle),
             [],
-            $scriptAsset['version']
+            null,
         );
     }
 

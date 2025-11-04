@@ -16,7 +16,7 @@ trait Text
         return $content;
     }
 
-    private function minifyHtml(string $html): string
+    private static function minifyHtml(string $html): string
     {
         $html = preg_replace('/\s+/', ' ', $html);
         $html = preg_replace('/>\s+</', '><', $html);

@@ -113,6 +113,11 @@ class VerifyPostController
 
         $html = <<<HTML
             <div class="alert alert-success">
+                <svg class="checkmark" width="91" height="91" viewBox="0 0 91 91" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="45.5" cy="45.5" r="45.5" fill="currentColor"/>
+                    <path d="M68.0508 32.2617C69.4473 33.5508 69.4473 35.8066 68.0508 37.0957L40.5508 64.5957C39.2617 65.9922 37.0059 65.9922 35.7168 64.5957L21.9668 50.8457C20.5703 49.5566 20.5703 47.3008 21.9668 46.0117C23.2559 44.6152 25.5117 44.6152 26.8008 46.0117L38.1875 57.291L63.2168 32.2617C64.5059 30.8652 66.7617 30.8652 68.0508 32.2617Z" fill="white"/>
+                </svg>
+
                 <p>$message</p>
             </div>
         HTML;
