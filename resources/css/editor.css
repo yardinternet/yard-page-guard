@@ -1,0 +1,22 @@
+.ypg-metabox-wrapper {
+	display: flex;
+	margin-bottom: 1rem;
+	gap: 5px;
+
+	label {
+		font-weight: 600;
+	}
+}
+
+.d-flex {
+	display: flex;
+	color: black;
+}
+
+.flex-column {
+	flex-direction: column;
+}
+
+.flex-row {
+	flex-direction: row;
+}

@@ -20,10 +20,11 @@ Assign content owners to WordPress pages (or other post types), allowing them to
 ## Installation Brave
 
 1. Add the following to the repositories section of your composer.json:
+
 ```json
 {
-  "type": "vcs",
-  "url": "git@github.com:yardinternet/yard-page-guard.git"
+	"type": "vcs",
+	"url": "git@github.com:yardinternet/yard-page-guard.git"
 }
 ```
 

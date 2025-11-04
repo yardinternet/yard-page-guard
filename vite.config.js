@@ -1,0 +1,21 @@
+import { defineConfig } from 'vite';
+import { resolve } from 'path';
+
+export default defineConfig({
+	root: 'resources',
+	build: {
+		outDir: '../build',
+		emptyOutDir: true,
+		rollupOptions: {
+			input: {
+				frontend: resolve(__dirname, 'resources/js/frontend.js'),
+				editor: resolve(__dirname, 'resources/js/editor.js'),
+			},
+			output: {
+				entryFileNames: '[name].[hash].js',
+				chunkFileNames: '[name].[hash].js',
+				assetFileNames: '[name].[hash].[ext]',
+			},
+		},
+	},
+});

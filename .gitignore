@@ -43,6 +43,8 @@
 !.eslintrc
 !.eslintignore
 
+!.prettierrc.js
+
 # track .editorconfig file (i.e. do NOT ignore it)
 !.editorconfig
 
