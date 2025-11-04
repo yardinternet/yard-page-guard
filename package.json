@@ -17,5 +17,8 @@
 	"devDependencies": {
 		"@wordpress/prettier-config": "^4.33.0",
 		"@wordpress/scripts": "^30.26.0"
+	},
+	"dependencies": {
+		"htmx.org": "^2.0.8"
 	}
 }
