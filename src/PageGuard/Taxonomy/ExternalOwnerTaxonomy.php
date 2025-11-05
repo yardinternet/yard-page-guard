@@ -31,7 +31,7 @@ class ExternalOwnerTaxonomy
     public function addInsertEmailFormField(): void
     {
         ?>
-        <div class="ypg-form-field">
+        <div class="form-field">
             <label for="ypg_external_content_owner_email"><?php _e('E-mailadres', 'yard-page-guard'); ?></label>
             <input type="email" name="ypg_external_content_owner_email" id="ypg_external_content_owner_email" />
             <p><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
@@ -48,10 +48,11 @@ class ExternalOwnerTaxonomy
                 <label for="ypg_external_content_owner_email"><?php _e('E-mailadres', 'yard-page-guard'); ?></label>
             </th>
             <td>
-                <input type="email" 
-                       name="ypg_external_content_owner_email" 
-                       id="ypg_external_content_owner_email" 
-                       value="<?php echo esc_attr($email); ?>" />
+                <input type="email"
+                       name="ypg_external_content_owner_email"
+                       id="ypg_external_content_owner_email"
+					   size="40"
+                       value="<?= esc_attr($email); ?>" />
                 <p class="description"><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
             </td>
         </tr>
@@ -62,7 +63,7 @@ class ExternalOwnerTaxonomy
     {
         if (isset($_POST['ypg_external_content_owner_email'])) {
             $email = sanitize_email($_POST['ypg_external_content_owner_email']);
-            
+
             if ('' !== $email) {
                 update_term_meta($termId, 'ypg_external_content_owner_email', $email);
             } else {
