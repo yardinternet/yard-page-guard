@@ -11,7 +11,7 @@ trait Date
     public function formatDate(string $date, string $format = 'd F Y'): string
     {
         try {
-            $date = new DateTime($date, new DateTimeZone(get_option('timezone_string')));
+            $date = new DateTime($date . ' 12:00:00', new DateTimeZone(get_option('timezone_string', 'Europe/Amsterdam')));
         } catch (Exception $e) {
             return '';
         }

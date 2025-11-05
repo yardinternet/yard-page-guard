@@ -54,7 +54,7 @@ class AdminOverviewPage
             <div class="filter-buttons" style="margin-bottom: 20px;">
                 <button class="button"><?= __('Alle items', 'yard-page-guard'); ?></button>
                 <button class="button"><?= __('Achterstallig', 'yard-page-guard'); ?></button>
-                <button class="button"><?= __('Binnenkort te herzien', 'yard-page-guard'); ?></button>
+                <button class="button"><?= __('Op schema', 'yard-page-guard'); ?></button>
             </div>
 
             <table class="wp-list-table widefat fixed striped">
