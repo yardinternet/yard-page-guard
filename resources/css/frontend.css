@@ -14,8 +14,12 @@
 	transition-property: visibility, opacity;
 	transition-timing-function: ease;
 
+	@media screen and (max-width: 1024px) {
+		top: 20vh;
+	}
+
 	* {
-		max-width: min(90vw, 390px);
+		max-width: min(50vw, 390px);
 	}
 
 	.title {

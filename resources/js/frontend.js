@@ -11,67 +11,81 @@ document.addEventListener('DOMContentLoaded', () => {
 		.querySelector('.close-modal')
 		.addEventListener('click', () => modal.classList.add('closed'));
 
-	function dragElement(el) {
-		let pos1 = 0,
-			pos2 = 0,
-			pos3 = 0,
-			pos4 = 0;
+	function reposition(element, event = null) {
+		let newLeft = element.offsetLeft;
+		let newTop = element.offsetTop;
+
+		if (event) {
+			// Adjust based on dragging
+			const pos1 = element._prevX - event.clientX;
+			const pos2 = element._prevY - event.clientY;
+
+			newLeft = element.offsetLeft - pos1;
+			newTop = element.offsetTop - pos2;
+
+			// Update previous positions for next move
+			element._prevX = event.clientX;
+			element._prevY = event.clientY;
+		}
+
+		const rect = element.getBoundingClientRect();
+		const vw = window.innerWidth;
+		const vh = window.innerHeight;
+
+		if (rect.right > vw) newLeft = vw - rect.width;
+		if (rect.bottom > vh) newTop = vh - rect.height;
+		if (rect.left < 0) newLeft = 0;
+		if (rect.top < 0) newTop = 0;
+
+		element.style.left = newLeft + 'px';
+		element.style.top = newTop + 'px';
+		element.style.right = 'auto';
+	}
+
+	function dragElement(element) {
 		let isDragging = false;
 
-		el.style.cursor = 'grab';
-		el.addEventListener('mousedown', initDragging);
+		element.style.cursor = 'grab';
+		element.addEventListener('mousedown', initDragging);
 
-		function initDragging(e) {
+		function initDragging(event) {
 			if (
-				e.target.closest(
+				event.target.closest(
 					'.close-button, button, input, textarea, a, select'
 				)
 			) {
 				return;
 			}
 
-			e.preventDefault();
+			event.preventDefault();
 			isDragging = true;
-			pos3 = e.clientX;
-			pos4 = e.clientY;
+
+			// Store initial mouse positions on the element
+			element._prevX = event.clientX;
+			element._prevY = event.clientY;
 
 			document.addEventListener('mouseup', stopDragging);
 			document.addEventListener('mousemove', startDragging);
 
-			el.style.cursor = 'grabbing';
+			element.style.cursor = 'grabbing';
 		}
 
-		function startDragging(e) {
+		function startDragging(event) {
 			if (!isDragging) return;
-			e.preventDefault();
+			event.preventDefault();
 
-			pos1 = pos3 - e.clientX;
-			pos2 = pos4 - e.clientY;
-			pos3 = e.clientX;
-			pos4 = e.clientY;
-
-			let newTop = el.offsetTop - pos2;
-			let newLeft = el.offsetLeft - pos1;
-
-			// keep modal within view
-			const rect = el.getBoundingClientRect();
-			const vw = window.innerWidth;
-			const vh = window.innerHeight;
-			newLeft = Math.max(0, Math.min(newLeft, vw - rect.width));
-			newTop = Math.max(0, Math.min(newTop, vh - rect.height));
-
-			el.style.top = newTop + 'px';
-			el.style.left = newLeft + 'px';
-			el.style.right = 'auto';
+			reposition(element, event);
 		}
 
 		function stopDragging() {
 			if (!isDragging) return;
 			isDragging = false;
-			el.style.cursor = 'grab';
+			element.style.cursor = 'grab';
 
 			document.removeEventListener('mouseup', stopDragging);
 			document.removeEventListener('mousemove', startDragging);
 		}
 	}
+
+	window.addEventListener('resize', () => reposition(modal));
 });

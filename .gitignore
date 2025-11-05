@@ -39,11 +39,12 @@
 
 !.php_cs
 
-# Eslint
+# Linting / Formatting
 !.eslintrc
 !.eslintignore
-
-!.prettierrc.js
+!.prettierrc.cjs
+!.prettierignore
+!.stylelintrc.cjs
 
 # track .editorconfig file (i.e. do NOT ignore it)
 !.editorconfig
