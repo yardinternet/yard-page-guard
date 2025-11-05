@@ -255,10 +255,13 @@ class Metabox
 
     private function shouldSave(int $postID): bool
     {
-
         if (! isset($_POST['yard_page_guard_metaboxes_nonce']) || ! wp_verify_nonce($_POST['yard_page_guard_metaboxes_nonce'], basename(__FILE__))) {
             if (! wp_verify_nonce($_POST[ '_inline_edit' ], 'inlineeditnonce')) {
-                return false;
+                if (! wp_verify_nonce($_REQUEST[ '_wpnonce' ], 'bulk-posts')) {
+                    return false;
+                } else {
+                    error_log(print_r($_REQUEST, true));
+                }
             }
         }
 
