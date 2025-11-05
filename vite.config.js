@@ -12,9 +12,9 @@ export default defineConfig({
 				editor: resolve(__dirname, 'resources/js/editor.js'),
 			},
 			output: {
-				entryFileNames: '[name].[hash].js',
-				chunkFileNames: '[name].[hash].js',
-				assetFileNames: '[name].[hash].[ext]',
+				entryFileNames: '[name].js',
+				chunkFileNames: '[name].js',
+				assetFileNames: '[name].[ext]',
 			},
 		},
 	},

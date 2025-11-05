@@ -36,13 +36,11 @@ class AdminServiceProvider extends ServiceProvider
 
     public function enqueueEditorAssets(): void
     {
-        $editorStyle = basename(glob($this->plugin->resourcePath('editor.*.css'))[0]);
-
         wp_enqueue_style(
             'ypg-editor-styles',
-            $this->plugin->resourceUrl($editorStyle),
+            $this->plugin->resourceUrl('editor.css'),
             [],
-            null,
+            filemtime($this->plugin->resourcePath('editor.css')),
         );
     }
 

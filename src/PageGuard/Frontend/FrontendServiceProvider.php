@@ -19,14 +19,11 @@ class FrontendServiceProvider extends ServiceProvider
             return;
         }
 
-        $frontendScript = basename(glob($this->plugin->resourcePath('frontend.*.js'))[0]);
-        $frontendStyle = basename(glob($this->plugin->resourcePath('frontend.*.css'))[0]);
-
         wp_enqueue_style(
             'ypg-frontend-styles',
-            $this->plugin->resourceUrl($frontendStyle),
+            $this->plugin->resourceUrl('frontend.css'),
             [],
-            null,
+            filemtime($this->plugin->resourcePath('frontend.css')),
         );
 
         wp_enqueue_style(
@@ -38,9 +35,9 @@ class FrontendServiceProvider extends ServiceProvider
 
         wp_enqueue_script(
             'ypg-frontend-scripts',
-            $this->plugin->resourceUrl($frontendScript),
+            $this->plugin->resourceUrl('frontend.js'),
             [],
-            null,
+            filemtime($this->plugin->resourcePath('frontend.js')),
         );
     }
 }
