@@ -12,13 +12,19 @@ class AdminServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $adminPage = new AdminSettingsPage();
-        $adminPage->init();
+        $adminSettingsPage = new AdminSettingsPage();
+        $adminOverviewPage = new AdminOverviewPage();
+        $adminSettingsPage->init();
+        $adminOverviewPage->init();
 
         add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorAssets']);
 
         add_action('admin_enqueue_scripts', function (string $hook): void {
             if ('settings_page_page-guard-settings' === $hook) {
+                $this->enqueueEditorAssets();
+            }
+
+            if (('edit-tags.php' === $hook || 'term.php' === $hook) && isset($_GET['taxonomy']) && 'ypg_external_content_owner' === $_GET['taxonomy']) {
                 $this->enqueueEditorAssets();
             }
         });
@@ -30,6 +36,29 @@ class AdminServiceProvider extends ServiceProvider
                 add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
             }
         });
+
+        add_filter('manage_edit-ypg_external_content_owner_columns', function (array $columns) {
+            unset($columns['description']);
+
+            $orderedColumns = [];
+            foreach ($columns as $key => $value) {
+                $orderedColumns[$key] = $value;
+
+                if ('name' === $key) {
+                    $orderedColumns['email'] = __('Email', 'yard-page-guard');
+                }
+            }
+
+            return $orderedColumns;
+        });
+
+        add_filter('manage_ypg_external_content_owner_custom_column', function (string $content, string $columnName, int $termId) {
+            if ('email' === $columnName) {
+                $content = get_term_meta($termId, 'ypg_external_content_owner_email', true);
+            }
+
+            return $content;
+        }, 10, 3);
 
         add_action('pre_get_posts', [$this, 'sortCustomColumns']);
     }

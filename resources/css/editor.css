@@ -20,3 +20,9 @@
 .flex-row {
 	flex-direction: row;
 }
+
+body.taxonomy-ypg_external_content_owner {
+	.term-description-wrap {
+		display: none;
+	}
+}
