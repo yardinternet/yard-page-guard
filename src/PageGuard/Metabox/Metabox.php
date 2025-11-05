@@ -26,23 +26,23 @@ class Metabox
     {
         $contentOwnerId = get_post_meta($post->ID, 'ypg_post_content_owner_id', true);
         $currentOwnerType = get_post_meta($post->ID, 'ypg_post_content_owner_type', true);
-        $toBeVerified = get_post_meta($post->ID, 'ypg_is_verified', true);
+        $isVerified = (bool) get_post_meta($post->ID, 'ypg_is_verified', true);
         $reviewDate = get_post_meta($post->ID, 'ypg_review_date', true);
         $reminderDate = get_post_meta($post->ID, 'ypg_reminder_date', true);
 
         wp_nonce_field(basename(__FILE__), 'yard_page_guard_metaboxes_nonce');
 
-        echo $this->displayMetaboxesHTML($contentOwnerId, $currentOwnerType, $toBeVerified, $reviewDate, $reminderDate, $post->ID);
+        echo $this->displayMetaboxesHTML($contentOwnerId, $currentOwnerType, $isVerified, $reviewDate, $reminderDate, $post->ID);
     }
 
-    private function displayMetaboxesHTML(string $contentOwnerId, string $contentOwnerType, string $toBeVerified, string $reviewDate, string $reminderDate, int $postID): string
+    private function displayMetaboxesHTML(string $contentOwnerId, string $contentOwnerType, string $isVerified, string $reviewDate, string $reminderDate, int $postID): string
     {
         $html = sprintf('<p>%s</p>', __('Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.', 'yard-page-guard'));
 
         if ($this->currentUserHasAccess($postID)) {
             $html = $this->contentOwnerMetabox($html, $contentOwnerId, $contentOwnerType);
-            $html = $this->toBeVerifiedMetabox($html, $toBeVerified);
-            $html = $this->reviewDateMetabox($html, $reviewDate);
+            $html = $this->isVerifiedMetabox($html, $isVerified);
+            $html = $this->reviewDateMetabox($html, $reviewDate, $isVerified);
             $html = $this->reminderDateMetabox($html, $reminderDate);
         } else {
             $html .= sprintf('<p><b>%s</b></p>', __('U heeft geen toestemming om de houdbaarsheids module te bewerken.', 'yard-page-guard'));
@@ -86,12 +86,13 @@ class Metabox
                 $selected = ($contentOwnerId == $user->term_id && ContentOwnerType::EXTERNAL === $contentOwnerType) ? ' selected="selected"' : '';
 
                 $html .= sprintf(
-                    '<option value="%s|%s|%s|external"%s>%s</option>',
+                    '<option value="%s|%s|%s|external"%s>%s (%s)</option>',
                     esc_attr($user->term_id),
                     esc_attr($user->name),
                     esc_attr($email),
                     $selected,
-                    esc_html($user->name)
+                    esc_html($user->name),
+                    __('Extern', 'yard-page-guard')
                 );
             }
         }
@@ -101,28 +102,33 @@ class Metabox
         return $html;
     }
 
-    private function toBeVerifiedMetabox(string $html, string $toBeVerified): string
+    private function isVerifiedMetabox(string $html, string $isVerified): string
     {
         $html .= '<div class="ypg-metabox-wrapper"><label for="ypg_is_verified">';
-        $html .= sprintf('<input type="checkbox" name="ypg_is_verified" id="ypg_is_verified" value="1"%s />', checked($toBeVerified, 1, false));
+        $html .= sprintf('<input type="checkbox" name="ypg_is_verified" id="ypg_is_verified" value="1"%s />', checked($isVerified, 1, false));
         $html .= sprintf(' %s</label></div>', __('Gecontroleerd?', 'yard-page-guard'));
 
         return $html;
     }
 
-    private function reviewDateMetabox(string $html, string $reviewDate): string
+    private function reviewDateMetabox(string $html, string $reviewDate, bool $isVerified): string
     {
-        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_review_date">%s:</label>', __('Controle datum', 'yard-page-guard'));
-        $html .= sprintf('<input type="date" name="ypg_review_date" id="ypg_review_date" value="%s" />', esc_attr($reviewDate));
-        $html .= sprintf('<p>%s</p></div>', __('De controle notificatie wordt via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard'));
+        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_review_date">%s:</label>', $isVerified ? __('Volgende controle datum', 'yard-page-guard') : __('Controle datum', 'yard-page-guard'));
+        $html .= sprintf('<input type="date" name="ypg_review_date" id="ypg_review_date" value="%s" min="%s" />', esc_attr($reviewDate), esc_attr(date('Y-m-d')));
+
+        if ($isVerified) {
+            $html .= sprintf('<p>%s</p></div>', __('Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar.', 'yard-page-guard'));
+        } else {
+            $html .= sprintf('<p>%s</p></div>', __('De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard'));
+        }
 
         return $html;
     }
 
     private function reminderDateMetabox(string $html, string $reminderDate): string
     {
-        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_reminder_date">%s:</label>', __('Herinnering datum', 'yard-page-guard'));
-        $html .= sprintf('<input type="date" name="ypg_reminder_date" id="ypg_reminder_date" value="%s" />', esc_attr($reminderDate));
+        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_reminder_date">%s:</label>', __('Volgende herinnering datum', 'yard-page-guard'));
+        $html .= sprintf('<input type="date" name="ypg_reminder_date" id="ypg_reminder_date" value="%s" min="%s" />', esc_attr($reminderDate), esc_attr(date('Y-m-d')));
         $html .= sprintf('<p>%s</p></div>', __('De herinnering wordt via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard'));
 
         return $html;
@@ -157,7 +163,7 @@ class Metabox
         $reminderDate = $this->computeReminderDate($postID, $reviewDate, $toBeVerified, $wasPreviouslyVerified);
 
         $this->updateVerificationMeta($postID, $toBeVerified, $reviewDate, $reminderDate);
-        
+
         do_action('ypg_site_cron');
     }
 

@@ -5,9 +5,12 @@ namespace Yard\PageGuard\Models;
 use DateTime;
 use DateTimeZone;
 use WP_Post;
+use Yard\PageGuard\Traits\Token;
 
 class ReviewItem
 {
+    use Token;
+
     protected WP_Post $item;
 
     public function __construct(WP_Post $post)
@@ -39,15 +42,10 @@ class ReviewItem
     {
         $permalink = get_permalink($this->ID());
 
-        $ownerEmail = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true);
+        $ownerEmail = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true) ?? '';
         $reviewDate = get_post_meta($this->ID(), 'ypg_review_date', true) ?? '';
 
-        if ('' !== $ownerEmail && '' !== $reviewDate && defined('AUTH_SALT')) {
-            $rawHash = hash_hmac('sha256', strtolower(trim("{$this->ID()}|$ownerEmail|$reviewDate")), AUTH_SALT, true);
-            $token = rtrim(strtr(base64_encode($rawHash), '+/', '-_'), '='); // URL safe
-
-            $permalink = add_query_arg('ypg_review_token', $token, $permalink);
-        }
+        $permalink = add_query_arg('ypg_review_token', self::generateReviewToken($this->ID(), $ownerEmail, $reviewDate), $permalink);
 
         return $permalink;
     }
