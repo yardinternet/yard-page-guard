@@ -7,39 +7,88 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-05T12:47:59+00:00\n"
+"POT-Creation-Date: 2025-11-05T16:13:51+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: yard-page-guard\n"
 
-#: PageGuard/Admin/AdminServiceProvider.php:49
-#: PageGuard/Metabox/Metabox.php:65
+#: PageGuard/Admin/AdminOverviewPage.php:21
+#: PageGuard/Admin/AdminOverviewPage.php:22
+#: PageGuard/Admin/AdminOverviewPage.php:52
+msgid "Houdbaarheids Overzicht"
+msgstr ""
+
+#: PageGuard/Admin/AdminOverviewPage.php:55
+msgid "Alle items"
+msgstr ""
+
+#: PageGuard/Admin/AdminOverviewPage.php:56
+#: PageGuard/Admin/AdminOverviewPage.php:81
+msgid "Achterstallig"
+msgstr ""
+
+#: PageGuard/Admin/AdminOverviewPage.php:57
+#: PageGuard/Admin/AdminOverviewPage.php:76
+msgid "Op schema"
+msgstr ""
+
+#: PageGuard/Admin/AdminOverviewPage.php:63
+msgid "Pagina"
+msgstr ""
+
+#: PageGuard/Admin/AdminOverviewPage.php:64
+msgid "Eigenaar"
+msgstr ""
+
+#: PageGuard/Admin/AdminOverviewPage.php:65
+msgid "Herzieningsdatum"
+msgstr ""
+
+#: PageGuard/Admin/AdminOverviewPage.php:66
+msgid "Status"
+msgstr ""
+
+#: PageGuard/Admin/AdminServiceProvider.php:58
+msgid "Email"
+msgstr ""
+
+#: PageGuard/Admin/AdminServiceProvider.php:112
+#: PageGuard/Admin/AdminServiceProvider.php:174
+#: PageGuard/Metabox/Metabox.php:103
 msgid "Inhoudseigenaar"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:50
-#: PageGuard/Metabox/Metabox.php:109
+#: PageGuard/Admin/AdminServiceProvider.php:138
+#: PageGuard/Admin/AdminServiceProvider.php:189
+#: PageGuard/Metabox/Metabox.php:98
+msgid "Extern"
+msgstr ""
+
+#: PageGuard/Admin/AdminServiceProvider.php:152
+#: PageGuard/Admin/AdminServiceProvider.php:175
+#: PageGuard/Metabox/Metabox.php:120
 msgid "Gecontroleerd?"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:51
-#: PageGuard/Metabox/Metabox.php:116
+#: PageGuard/Admin/AdminServiceProvider.php:162
+#: PageGuard/Admin/AdminServiceProvider.php:176
+#: PageGuard/Metabox/Metabox.php:138
 msgid "Controle datum"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:62
+#: PageGuard/Admin/AdminServiceProvider.php:187
 msgid "Onbekend"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:70
+#: PageGuard/Admin/AdminServiceProvider.php:195
 msgid "Ja"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:70
+#: PageGuard/Admin/AdminServiceProvider.php:195
 msgid "Nee"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:75
+#: PageGuard/Admin/AdminServiceProvider.php:200
 msgid "Niet ingesteld"
 msgstr ""
 
@@ -146,31 +195,27 @@ msgstr ""
 msgid "U heeft geen toestemming om de houdbaarsheids module te bewerken."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:67
+#: PageGuard/Metabox/Metabox.php:69
 msgid "Maak een keuze"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:95
-msgid "Extern"
-msgstr ""
-
-#: PageGuard/Metabox/Metabox.php:116
+#: PageGuard/Metabox/Metabox.php:137
 msgid "Volgende controle datum"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:120
+#: PageGuard/Metabox/Metabox.php:141
 msgid "Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:122
+#: PageGuard/Metabox/Metabox.php:142
 msgid "De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:130
+#: PageGuard/Metabox/Metabox.php:160
 msgid "Volgende herinnering datum"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:132
+#: PageGuard/Metabox/Metabox.php:163
 msgid "De herinnering wordt via de e-mail verstuurd op de ingestelde datum."
 msgstr ""
 
@@ -184,7 +229,7 @@ msgid "E-mailadres"
 msgstr ""
 
 #: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:37
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:55
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:56
 msgid "Voer het e-mailadres van de externe inhoudseigenaar in."
 msgstr ""
 

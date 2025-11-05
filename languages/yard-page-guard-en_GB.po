@@ -73,34 +73,37 @@ msgstr "Name of content owner"
 msgid "Herinneringsmail inhoud"
 msgstr "Reminder email content"
 
-#: PageGuard/Admin/AdminServiceProvider.php:49
-#: PageGuard/Metabox/Metabox.php:65
+#: PageGuard/Admin/AdminServiceProvider.php:112
+#: PageGuard/Admin/AdminServiceProvider.php:174
+#: PageGuard/Metabox/Metabox.php:103
 msgid "Inhoudseigenaar"
 msgstr "Content owner"
 
-#: PageGuard/Admin/AdminServiceProvider.php:50
-#: PageGuard/Metabox/Metabox.php:109
+#: PageGuard/Admin/AdminServiceProvider.php:152
+#: PageGuard/Admin/AdminServiceProvider.php:175
+#: PageGuard/Metabox/Metabox.php:120
 msgid "Gecontroleerd?"
 msgstr "Checked?"
 
-#: PageGuard/Admin/AdminServiceProvider.php:51
-#: PageGuard/Metabox/Metabox.php:116
+#: PageGuard/Admin/AdminServiceProvider.php:162
+#: PageGuard/Admin/AdminServiceProvider.php:176
+#: PageGuard/Metabox/Metabox.php:138
 msgid "Controle datum"
 msgstr "Check date"
 
-#: PageGuard/Admin/AdminServiceProvider.php:62
+#: PageGuard/Admin/AdminServiceProvider.php:187
 msgid "Onbekend"
 msgstr "Unknown"
 
-#: PageGuard/Admin/AdminServiceProvider.php:70
+#: PageGuard/Admin/AdminServiceProvider.php:195
 msgid "Ja"
 msgstr "Yes"
 
-#: PageGuard/Admin/AdminServiceProvider.php:70
+#: PageGuard/Admin/AdminServiceProvider.php:195
 msgid "Nee"
 msgstr "No"
 
-#: PageGuard/Admin/AdminServiceProvider.php:75
+#: PageGuard/Admin/AdminServiceProvider.php:200
 msgid "Niet ingesteld"
 msgstr "Not set"
 
@@ -114,7 +117,7 @@ msgid "E-mailadres"
 msgstr "Email address"
 
 #: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:37
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:55
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:56
 msgid "Voer het e-mailadres van de externe inhoudseigenaar in."
 msgstr "Enter the email address of the external content owner."
 
@@ -126,11 +129,11 @@ msgstr "Content Review Module"
 msgid "U heeft geen toestemming om de houdbaarsheids module te bewerken."
 msgstr "You do not have permission to edit the content review module."
 
-#: PageGuard/Metabox/Metabox.php:67
+#: PageGuard/Metabox/Metabox.php:69
 msgid "Maak een keuze"
 msgstr "Select an option"
 
-#: PageGuard/Metabox/Metabox.php:132
+#: PageGuard/Metabox/Metabox.php:163
 msgid "De herinnering wordt via de e-mail verstuurd op de ingestelde datum."
 msgstr "The reminder will be sent by email on the set date."
 
@@ -192,23 +195,25 @@ msgstr "You are currently reviewing the page \"%s\" for content validity."
 msgid "Gecontroleerd en akkoord"
 msgstr "Checked and approved"
 
-#: PageGuard/Metabox/Metabox.php:95
+#: PageGuard/Admin/AdminServiceProvider.php:138
+#: PageGuard/Admin/AdminServiceProvider.php:189
+#: PageGuard/Metabox/Metabox.php:98
 msgid "Extern"
 msgstr "External"
 
-#: PageGuard/Metabox/Metabox.php:116
+#: PageGuard/Metabox/Metabox.php:137
 msgid "Volgende controle datum"
 msgstr "Next check date"
 
-#: PageGuard/Metabox/Metabox.php:120
+#: PageGuard/Metabox/Metabox.php:141
 msgid "Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar."
 msgstr "The checkbox will be reset on the date above for a new check. An email will also be sent to the owner."
 
-#: PageGuard/Metabox/Metabox.php:122
+#: PageGuard/Metabox/Metabox.php:142
 msgid "De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum."
 msgstr "The check notification will be (or has already been) sent by email on the set date."
 
-#: PageGuard/Metabox/Metabox.php:130
+#: PageGuard/Metabox/Metabox.php:160
 msgid "Volgende herinnering datum"
 msgstr "Next reminder date"
 
@@ -232,3 +237,43 @@ msgstr "Content Review"
 #: PageGuard/Metabox/Metabox.php:40
 msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
 msgstr "Content owners get a reminder on the set date to review this page."
+
+#: PageGuard/Admin/AdminOverviewPage.php:21
+#: PageGuard/Admin/AdminOverviewPage.php:22
+#: PageGuard/Admin/AdminOverviewPage.php:52
+msgid "Houdbaarheids Overzicht"
+msgstr "Review Overview"
+
+#: PageGuard/Admin/AdminOverviewPage.php:55
+msgid "Alle items"
+msgstr "All items"
+
+#: PageGuard/Admin/AdminOverviewPage.php:56
+#: PageGuard/Admin/AdminOverviewPage.php:81
+msgid "Achterstallig"
+msgstr "Behind deadline"
+
+#: PageGuard/Admin/AdminOverviewPage.php:57
+#: PageGuard/Admin/AdminOverviewPage.php:76
+msgid "Op schema"
+msgstr "On schedule"
+
+#: PageGuard/Admin/AdminOverviewPage.php:63
+msgid "Pagina"
+msgstr "Page"
+
+#: PageGuard/Admin/AdminOverviewPage.php:64
+msgid "Eigenaar"
+msgstr "Owner"
+
+#: PageGuard/Admin/AdminOverviewPage.php:65
+msgid "Herzieningsdatum"
+msgstr "Review date"
+
+#: PageGuard/Admin/AdminOverviewPage.php:66
+msgid "Status"
+msgstr "Status"
+
+#: PageGuard/Admin/AdminServiceProvider.php:58
+msgid "Email"
+msgstr "Email"

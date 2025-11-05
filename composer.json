@@ -10,7 +10,8 @@
 		}
 	],
 	"require": {
-		"php": "^7.4|^8.0"
+		"php": "^7.4|^8.0",
+		"monolog/monolog": "^2.9"
 	},
 	"require-dev": {
 		"friendsofphp/php-cs-fixer": "^3.0",
@@ -32,7 +33,7 @@
 		"phpunit": "./vendor/bin/phpunit",
 		"test": "phpunit --testdox --colors=always --bootstrap='./tests/bootstrap.php' tests ",
 		"format": "vendor/bin/php-cs-fixer fix",
-		"translate": [
+		"translate:create": [
 			"@translate:pot",
 			"@translate:update"
 		],
@@ -51,6 +52,10 @@
 		],
 		"translate:mo": [
 			"./vendor/bin/wp i18n make-mo ./languages/ ./languages/"
+		],
+		"translate": [
+			"@translate:create",
+			"@translate:compile"
 		]
 	},
 	"config": {
