@@ -3,6 +3,7 @@
 namespace Yard\PageGuard\Admin;
 
 use WP_Query;
+use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Foundation\ServiceProvider;
 use Yard\PageGuard\Traits\Date;
 
@@ -27,9 +28,17 @@ class AdminServiceProvider extends ServiceProvider
             if (('edit-tags.php' === $hook || 'term.php' === $hook) && isset($_GET['taxonomy']) && 'ypg_external_content_owner' === $_GET['taxonomy']) {
                 $this->enqueueEditorAssets();
             }
+
+            if ('edit.php' === $hook && isset($_GET['post_type'])) {
+                if (in_array($_GET['post_type'], apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
+                    $this->enqueueEditorAssets();
+                }
+            }
         });
 
         add_action('init', function () {
+            add_action('quick_edit_custom_box', [$this, 'manageQuickEditFields'], 10, 2);
+
             foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
                 add_filter("manage_{$postType}_posts_columns", [$this, 'manageCustomColumns']);
                 add_action("manage_{$postType}_posts_custom_column", [$this, 'fillCustomColumns'], 10, 2);
@@ -71,6 +80,92 @@ class AdminServiceProvider extends ServiceProvider
             [],
             filemtime($this->plugin->resourcePath('editor.css')),
         );
+
+        wp_enqueue_script(
+            'ypg-editor-scripts',
+            $this->plugin->resourceUrl('editor.js'),
+            [],
+            filemtime($this->plugin->resourcePath('editor.js')),
+        );
+    }
+
+    public function manageQuickEditFields(string $columnName, string $postType)
+    {
+        if (! in_array($postType, apply_filters('yard::page-guard/post-types-to-use', ['page']))) {
+            return;
+        }
+
+        switch ($columnName) {
+            case 'ypg_post_content_owner': {
+                $wpUsers = get_users([
+                    'capability' => 'edit_pages',
+                ]);
+
+                $externalUsers = get_terms([
+                    'taxonomy' => 'ypg_external_content_owner',
+                    'hide_empty' => false,
+                ]);
+
+                ?>
+					<div style="display: flex; flex-direction: column; align-items: flex-start; row-gap: 8px; margin-bottom: 10px">
+						<label><?= __('Inhoudseigenaar', 'yard-page-guard') ?></label>
+						<select name="ypg_post_content_owner" id="ypg-post-conten-owner">
+							<?php
+                                foreach ($wpUsers as $user) {
+                                    $name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
+
+                                    printf(
+                                        '<option value="%s|%s|%s|user">%s</option>',
+                                        esc_attr($user->ID),
+                                        esc_attr($name),
+                                        esc_attr($user->user_email),
+                                        esc_html($user->display_name)
+                                    );
+                                }
+                ?>
+
+							<?php
+                    foreach ($externalUsers as $user) {
+                        $email = get_term_meta($user->term_id, 'ypg_external_content_owner_email', true);
+
+                        printf(
+                            '<option value="%s|%s|%s|external">%s (%s)</option>',
+                            esc_attr($user->term_id),
+                            esc_attr($user->name),
+                            esc_attr($email),
+                            esc_html($user->name),
+                            __('Extern', 'yard-page-guard')
+                        );
+                    }
+                ?>
+						</select>
+					</div>
+					<?php
+                break;
+            }
+
+            case 'ypg_is_verified': {
+                ?>
+					<div style="margin-bottom: 10px">
+						<label>
+							<input type="checkbox" id="ypg-is-verified" name="ypg_is_verified"> <?= __('Gecontroleerd?', 'yard-page-guard') ?>
+						</label>
+					</div>
+				<?php
+                break;
+            }
+
+            case 'ypg_review_date': {
+                ?>
+						<div style="display: flex; flex-direction: column; align-items: flex-start; row-gap: 8px">
+							<label><?= __('Controle datum', 'yard-page-guard') ?></label>
+							<input type="date" id="ypg-review-date" name="ypg_review_date" min="<?= date('Y-m-d') ?>">
+						</div>
+					</fieldset>
+				<?php
+                break;
+            }
+        }
     }
 
     public function manageCustomColumns(array $columns): array
@@ -90,18 +185,18 @@ class AdminServiceProvider extends ServiceProvider
             if (false === $contentOwner || '' === $contentOwner) {
                 echo __('Onbekend', 'yard-page-guard');
             } else {
-                echo $contentOwner;
+                echo $contentOwner . (get_post_meta($postID, 'ypg_post_content_owner_type', true) === ContentOwnerType::EXTERNAL ? ' (' . __('Extern', 'yard-page-guard') . ')' : '');
             }
         }
 
         if ('ypg_is_verified' === $column) {
             $isVerified = get_post_meta($postID, 'ypg_is_verified', true);
-            echo '1' === $isVerified ? __('Ja', 'yard-page-guard') : __('Nee', 'yard-page-guard');
+            echo $isVerified ? __('Ja', 'yard-page-guard') : __('Nee', 'yard-page-guard');
         }
 
         if ('ypg_review_date' === $column) {
             $reviewDate = get_post_meta($postID, 'ypg_review_date', true);
-            echo $reviewDate ? $this->formatDate($reviewDate) : __('Niet ingesteld', 'yard-page-guard');
+            echo $reviewDate ? "<span class='review-date-wrapper' data-date='$reviewDate'>{$this->formatDate($reviewDate)}</span>" : __('Niet ingesteld', 'yard-page-guard');
         }
     }
 
