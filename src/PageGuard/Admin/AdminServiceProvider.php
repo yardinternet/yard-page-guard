@@ -38,6 +38,7 @@ class AdminServiceProvider extends ServiceProvider
 
         add_action('init', function () {
             add_action('quick_edit_custom_box', [$this, 'manageQuickEditFields'], 10, 2);
+            add_action('bulk_edit_custom_box', [$this, 'manageQuickEditFields'], 10, 2);
 
             foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
                 add_filter("manage_{$postType}_posts_columns", [$this, 'manageCustomColumns']);

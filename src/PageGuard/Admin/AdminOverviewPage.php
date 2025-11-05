@@ -49,7 +49,7 @@ class AdminOverviewPage
         $reviewItems = $reviewItemsQuery->posts;
         ?>
         <div class="wrap">
-            <h1><?= __('Houdbaarheidsmodule Overzicht', 'yard-page-guard'); ?></h1>
+            <h1><?= __('Houdbaarheids Overzicht', 'yard-page-guard'); ?></h1>
 
             <div class="filter-buttons" style="margin-bottom: 20px;">
                 <button class="button"><?= __('Alle items', 'yard-page-guard'); ?></button>
