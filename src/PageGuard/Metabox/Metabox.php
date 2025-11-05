@@ -62,15 +62,18 @@ class Metabox
             'hide_empty' => false,
         ]);
 
-        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_post_content_owner">%s:</label>', __('Inhoudseigenaar', 'yard-page-guard'));
-        $html .= '<select name="ypg_post_content_owner" id="ypg_post_content_owner">';
-        $html .= sprintf('<option value="none">%s</option>', __('Maak een keuze', 'yard-page-guard'));
+        $optionsHtml = '';
+
+        $optionsHtml .= sprintf(
+            '<option value="none">%s</option>',
+            __('Maak een keuze', 'yard-page-guard')
+        );
 
         foreach ($wpUsers as $user) {
             $name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
             $selected = ($contentOwnerId == $user->ID && ContentOwnerType::USER === $contentOwnerType) ? ' selected="selected"' : '';
 
-            $html .= sprintf(
+            $optionsHtml .= sprintf(
                 '<option value="%s|%s|%s|user"%s>%s</option>',
                 esc_attr($user->ID),
                 esc_attr($name),
@@ -85,7 +88,7 @@ class Metabox
                 $email = get_term_meta($user->term_id, 'ypg_external_content_owner_email', true);
                 $selected = ($contentOwnerId == $user->term_id && ContentOwnerType::EXTERNAL === $contentOwnerType) ? ' selected="selected"' : '';
 
-                $html .= sprintf(
+                $optionsHtml .= sprintf(
                     '<option value="%s|%s|%s|external"%s>%s (%s)</option>',
                     esc_attr($user->term_id),
                     esc_attr($user->name),
@@ -97,46 +100,86 @@ class Metabox
             }
         }
 
-        $html .= '</select></div>';
+        $label = __('Inhoudseigenaar', 'yard-page-guard');
+
+        $html .= <<<HTML
+		<div class="ypg-metabox-wrapper flex-column">
+			<label for="ypg_post_content_owner">$label:</label>
+			<select name="ypg_post_content_owner" id="ypg_post_content_owner">
+				$optionsHtml
+			</select>
+		</div>
+		HTML;
 
         return $html;
     }
 
     private function isVerifiedMetabox(string $html, string $isVerified): string
     {
-        $html .= '<div class="ypg-metabox-wrapper"><label for="ypg_is_verified">';
-        $html .= sprintf('<input type="checkbox" name="ypg_is_verified" id="ypg_is_verified" value="1"%s />', checked($isVerified, 1, false));
-        $html .= sprintf(' %s</label></div>', __('Gecontroleerd?', 'yard-page-guard'));
+        $checked = checked($isVerified, 1, false);
+        $label = __('Gecontroleerd?', 'yard-page-guard');
+
+        $html .= <<<HTML
+		<div class="ypg-metabox-wrapper">
+			<label for="ypg_is_verified">
+				<input type="checkbox" name="ypg_is_verified" id="ypg_is_verified" value="1"$checked/>
+				$label
+			</label>
+		</div>
+		HTML;
 
         return $html;
     }
 
     private function reviewDateMetabox(string $html, string $reviewDate, bool $isVerified): string
     {
-        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_review_date">%s:</label>', $isVerified ? __('Volgende controle datum', 'yard-page-guard') : __('Controle datum', 'yard-page-guard'));
-        $html .= sprintf('<input type="date" name="ypg_review_date" id="ypg_review_date" value="%s" min="%s" />', esc_attr($reviewDate), esc_attr(date('Y-m-d')));
+        $label = $isVerified
+            ? __('Volgende controle datum', 'yard-page-guard')
+            : __('Controle datum', 'yard-page-guard');
 
-        if ($isVerified) {
-            $html .= sprintf('<p>%s</p></div>', __('Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar.', 'yard-page-guard'));
-        } else {
-            $html .= sprintf('<p>%s</p></div>', __('De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard'));
-        }
+        $message = $isVerified
+            ? __('Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar.', 'yard-page-guard')
+            : __('De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard');
+
+        $reviewDateEscaped = esc_attr($reviewDate);
+        $minDate = esc_attr(date('Y-m-d'));
+
+        $html .= <<<HTML
+		<div class="ypg-metabox-wrapper flex-column">
+			<label for="ypg_review_date">$label:</label>
+			<input type="date" name="ypg_review_date" id="ypg_review_date" value="$reviewDateEscaped" min="$minDate" />
+			<p>$message</p>
+		</div>
+		HTML;
 
         return $html;
     }
 
     private function reminderDateMetabox(string $html, string $reminderDate): string
     {
-        $html .= sprintf('<div class="ypg-metabox-wrapper flex-column"><label for="ypg_reminder_date">%s:</label>', __('Volgende herinnering datum', 'yard-page-guard'));
-        $html .= sprintf('<input type="date" name="ypg_reminder_date" id="ypg_reminder_date" value="%s" min="%s" />', esc_attr($reminderDate), esc_attr(date('Y-m-d')));
-        $html .= sprintf('<p>%s</p></div>', __('De herinnering wordt via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard'));
+        $label = __('Volgende herinnering datum', 'yard-page-guard');
+        $reminderDateEscaped = esc_attr($reminderDate);
+        $minDate = esc_attr(date('Y-m-d'));
+        $message = __('De herinnering wordt via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard');
+
+        $html .= <<<HTML
+		<div class="ypg-metabox-wrapper flex-column">
+			<label for="ypg_reminder_date">$label:</label>
+			<input type="date" name="ypg_reminder_date" id="ypg_reminder_date" value="$reminderDateEscaped" min="$minDate" />
+			<p>$message</p>
+		</div>
+		HTML;
 
         return $html;
     }
 
     public function saveMetaboxValues(int $postID): void
     {
-        if (! $this->shouldSave($postID) || ! isset($_POST['ypg_post_content_owner'])) {
+        if (! $this->shouldSave($postID)) {
+            return;
+        }
+
+        if (! isset($_POST['ypg_post_content_owner'])) {
             return;
         }
 
@@ -164,6 +207,7 @@ class Metabox
 
         $this->updateVerificationMeta($postID, $toBeVerified, $reviewDate, $reminderDate);
 
+        // TODO: Remove when done
         do_action('ypg_site_cron');
     }
 
@@ -255,21 +299,38 @@ class Metabox
 
     private function shouldSave(int $postID): bool
     {
-        if (! isset($_POST['yard_page_guard_metaboxes_nonce']) || ! wp_verify_nonce($_POST['yard_page_guard_metaboxes_nonce'], basename(__FILE__))) {
-            if (! wp_verify_nonce($_POST[ '_inline_edit' ], 'inlineeditnonce')) {
-                if (! wp_verify_nonce($_REQUEST[ '_wpnonce' ], 'bulk-posts')) {
-                    return false;
-                } else {
-                    error_log(print_r($_REQUEST, true));
+        // Check save location
+        if (isset($_POST['yard_page_guard_metaboxes_nonce'])) {
+            if (! wp_verify_nonce($_POST['yard_page_guard_metaboxes_nonce'], basename(__FILE__))) {
+                return false;
+            }
+        } elseif (isset($_POST['_inline_edit'])) {
+            if (! wp_verify_nonce($_POST['_inline_edit'], 'inlineeditnonce')) {
+                return false;
+            }
+        } elseif (isset($_REQUEST['_wpnonce'])) {
+            if (! wp_verify_nonce($_REQUEST['_wpnonce'], 'bulk-posts')) {
+                return false;
+            }
+
+            // Keys to copy from $_REQUEST (in case of bulk edit) to $_POST
+            $keys = ['ypg_post_content_owner', 'ypg_review_date', 'ypg_is_verified', 'post_type'];
+
+            foreach ($keys as $key) {
+                if (isset($_REQUEST[$key])) {
+                    $_POST[$key] = $_REQUEST[$key];
                 }
             }
+        } else {
+            return false;
         }
 
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return false;
         }
 
-        if (! in_array($_POST['post_type'], apply_filters('yard::page-guard/post-types-to-use', ['page']))) {
+        $postTypes = apply_filters('yard::page-guard/post-types-to-use', ['page']);
+        if (! isset($_POST['post_type']) || ! in_array($_POST['post_type'], $postTypes, true)) {
             return false;
         }
 
