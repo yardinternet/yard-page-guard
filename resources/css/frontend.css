@@ -1,14 +1,18 @@
 .ypg-review-modal {
 	position: fixed;
-	z-index: 1;
-	top: 40vh;
-	right: 70px;
+	z-index: 60;
+	top: 45vh;
+	right: 20px;
 	padding: 40px 50px;
 	border: 1px solid #b5b5b5;
 	border-radius: 10px;
 	background: #fff;
 	box-shadow: 0px 2px 50px 0px rgba(157, 157, 157, 0.25);
+	cursor: grab;
 	font-family: 'inter-variable', sans-serif;
+	transition-duration: 0.25s;
+	transition-property: visibility, opacity;
+	transition-timing-function: ease;
 
 	* {
 		max-width: min(90vw, 390px);
@@ -25,6 +29,14 @@
 		margin-bottom: 16px;
 	}
 
+	.close-modal {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		display: flex;
+		font-size: 18px;
+	}
+
 	.ypg-review-form {
 		.alert {
 			display: flex;
@@ -32,13 +44,26 @@
 			align-items: center;
 			row-gap: 20px;
 
-			.checkmark {
-				color: #298734;
+			svg {
+				animation: ypg-pop-in 0.4s forwards;
+				transform: scale(0);
 			}
 
 			p {
 				margin-bottom: 0;
 				text-align: center;
+			}
+		}
+
+		.alert-success {
+			svg {
+				color: #298734;
+			}
+		}
+
+		.alert-error {
+			svg {
+				color: #ce2121;
 			}
 		}
 
@@ -56,5 +81,27 @@
 		button[type='submit']:hover {
 			transform: scale(1.025);
 		}
+	}
+}
+
+.ypg-review-modal.closed {
+	opacity: 0;
+	visibility: hidden;
+}
+
+@keyframes ypg-pop-in {
+	0% {
+		opacity: 0;
+		transform: scale(0);
+	}
+
+	50% {
+		opacity: 1;
+		transform: scale(1.2);
+	}
+
+	100% {
+		opacity: 1;
+		transform: scale(1);
 	}
 }

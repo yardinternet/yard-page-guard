@@ -3,11 +3,12 @@
 namespace Yard\PageGuard\Frontend;
 
 use Yard\PageGuard\Traits\Date;
-use Yard\PageGuard\WPJson\Controllers\VerifyPostController;
+use Yard\PageGuard\Traits\Token;
 
 class ReviewModal
 {
     use Date;
+    use Token;
 
     private function shouldDisplay(): bool
     {
@@ -20,7 +21,7 @@ class ReviewModal
         if (! in_array(get_post_type(), apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
             return false;
         }
-        
+
         if (! is_single() && ! is_page()) {
             return false;
         }
@@ -32,7 +33,7 @@ class ReviewModal
             return false;
         }
 
-        return VerifyPostController::verifyReviewPermission(get_the_ID(), $contentOwnerEmail, $reviewDate, $_GET['ypg_review_token']);
+        return self::verifyReviewToken(get_the_ID(), $contentOwnerEmail, $reviewDate, $_GET['ypg_review_token']);
     }
 
     public function render(): void
@@ -42,12 +43,14 @@ class ReviewModal
         }
         ?>
         <div id="ypg-review-modal" class="ypg-review-modal">
-            <form class="ypg-review-form" hx-post="/wp-json/yard-page-guard/v1/verify-post"> 
+			<button class="close-modal" aria-label="<?php echo __('Sluit venster', 'yard-page-guard') ?>"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+
+            <form class="ypg-review-form" hx-post="/wp-json/yard-page-guard/v1/verify-post">
                 <h2 class="title"><?php echo __('Houdbaarheidscontrole', 'yard-page-guard') ?></h2>
                 <p class="description"><?php echo sprintf(__('U bent momenteel de pagina "%s" aan het controleren op houdbaarheid.', 'yard-page-guard'), get_the_title()) ?></p>
 				<input type="hidden" name="post_id" value="<?php echo get_the_ID(); ?>">
 				<input type="hidden" name="ypg_review_token" value="<?php echo esc_attr(sanitize_text_field($_GET['ypg_review_token'])); ?>">
-                <button type="submit"><i class="fa-solid fa-check"></i> <?php echo __('Gecontroleerd en akkoord', 'yard-page-guard') ?></button>
+                <button type="submit"><i class="fa-solid fa-check" aria-hidden="true"></i> <?php echo __('Gecontroleerd en akkoord', 'yard-page-guard') ?></button>
 			</form>
         </div>
         <?php
