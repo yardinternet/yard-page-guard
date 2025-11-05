@@ -8,14 +8,6 @@ class AdminSettingsPage
     {
         add_action('admin_menu', [$this, 'add_settings_subpage']);
         add_action('admin_init', [$this, 'register_settings']);
-
-        add_action('init', function (): void {
-            load_plugin_textdomain(
-                'yard-page-guard',
-                false,
-                dirname(plugin_basename(__FILE__)) . '/languages'
-            );
-        });
     }
 
     public function add_settings_subpage(): void
