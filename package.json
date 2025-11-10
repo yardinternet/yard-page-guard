@@ -15,10 +15,10 @@
 		"@yardinternet/prettier-config": "^1.1.3",
 		"@yardinternet/stylelint-config": "^1.1.2",
 		"eslint": "^8.57.1",
-		"lefthook": "^2.0.2",
+		"lefthook": "^2.0.3",
 		"prettier": "^3.6.2",
 		"stylelint": "^16.25.0",
-		"vite": "^7.1.12"
+		"vite": "^7.2.2"
 	},
 	"dependencies": {
 		"htmx.org": "^2.0.8"
