@@ -6,22 +6,22 @@ class AdminSettingsPage
 {
     public function init(): void
     {
-        add_action('admin_menu', [$this, 'add_settings_subpage']);
-        add_action('admin_init', [$this, 'register_settings']);
+        add_action('admin_menu', [$this, 'addPage']);
+        add_action('admin_init', [$this, 'registerSettings']);
     }
 
-    public function add_settings_subpage(): void
+    public function addPage(): void
     {
         add_options_page(
             __('Houdbaarheidsmodule Instellingen', 'yard-page-guard'),
             __('Houdbaarheidsmodule', 'yard-page-guard'),
             'manage_options',
             'page-guard-settings',
-            [$this, 'render_settings_page']
+            [$this, 'renderPage']
         );
     }
 
-    public function register_settings(): void
+    public function registerSettings(): void
     {
         register_setting('ypg_settings', 'ypg_review_time_period');
         register_setting('ypg_settings', 'ypg_review_time_unit');
@@ -34,7 +34,7 @@ class AdminSettingsPage
         register_setting('ypg_settings', 'ypg_reminder_email_content');
     }
 
-    public function render_settings_page(): void
+    public function renderPage(): void
     {
         ?>
         <div class="wrap">

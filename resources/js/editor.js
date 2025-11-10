@@ -1,6 +1,33 @@
 import '../css/editor.css';
 
 document.addEventListener('DOMContentLoaded', () => {
+	const selectAll = document.querySelector('#ypg-select-all');
+	const checkboxes = document.querySelectorAll('input[name="post_ids[]"]');
+	const bulkBar = document.querySelector('.ypg-bulk-action-bar-wrapper');
+
+	const updateBulkBarVisibility = () => {
+		const anyChecked = Array.from(checkboxes).some((cb) => cb.checked);
+		if (bulkBar) {
+			bulkBar.setAttribute('aria-hidden', !anyChecked);
+		}
+	};
+
+	// Toggle all checkboxes when "select all" is clicked
+	if (selectAll) {
+		selectAll.addEventListener('click', (e) => {
+			checkboxes.forEach((cb) => (cb.checked = e.target.checked));
+			updateBulkBarVisibility();
+		});
+	}
+
+	// Update bulk bar when individual checkboxes are clicked
+	checkboxes.forEach((cb) => {
+		cb.addEventListener('click', updateBulkBarVisibility);
+	});
+
+	// Initialize on page load
+	updateBulkBarVisibility();
+
 	const { __ } = wp.i18n;
 	const originalInlineEdit = window.inlineEditPost.edit;
 

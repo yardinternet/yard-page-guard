@@ -5,10 +5,12 @@ namespace Yard\PageGuard\Metabox;
 use WP_Post;
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Traits\Text;
 
 class Metabox
 {
     use Date;
+    use Text;
 
     public function addMetaboxes(): void
     {
@@ -191,7 +193,7 @@ class Metabox
             return;
         }
 
-        $ownerData = $this->parseOwnerData($contentOwner);
+        $ownerData = $this->parseContentOwnerData($contentOwner);
         $this->updateOwnerMeta($postID, $ownerData);
 
         $wasPreviouslyVerified = (bool) get_post_meta($postID, 'ypg_is_verified', true);
@@ -227,67 +229,12 @@ class Metabox
         }
     }
 
-    /**
-     * @throws \InvalidArgumentException
-     */
-    private function parseOwnerData(string $contentOwner): array
-    {
-        $ownerData = explode('|', $contentOwner);
-
-        if (count($ownerData) !== 4) {
-            throw new \InvalidArgumentException('Invalid content owner data format.');
-        }
-
-        return [
-            'id' => $ownerData[0] ?? '',
-            'name' => $ownerData[1] ?? '',
-            'email' => $ownerData[2] ?? '',
-            'type' => $ownerData[3] ?? '',
-        ];
-    }
-
-
     private function updateOwnerMeta(int $postID, array $ownerData): void
     {
         update_post_meta($postID, 'ypg_post_content_owner_id', $ownerData['id']);
         update_post_meta($postID, 'ypg_post_content_owner_name', $ownerData['name']);
         update_post_meta($postID, 'ypg_post_content_owner_email', $ownerData['email']);
         update_post_meta($postID, 'ypg_post_content_owner_type', $ownerData['type']);
-    }
-
-    private function computeReviewDate(int $postID, bool $toBeVerified, bool $wasPreviouslyVerified): string
-    {
-        $currentReviewDate = get_post_meta($postID, 'ypg_review_date', true);
-
-        return $this->computeDateMeta(
-            'ypg_review_date',
-            $currentReviewDate,
-            $toBeVerified,
-            $wasPreviouslyVerified,
-            'ypg_review_time_period',
-            'ypg_review_time_unit',
-        );
-    }
-
-    private function computeReminderDate(int $postID, string $reviewDate, bool $toBeVerified, bool $wasPreviouslyVerified): string
-    {
-        $currentReminderDate = get_post_meta($postID, 'ypg_reminder_date', true);
-
-        $reminderDate = $this->computeDateMeta(
-            'ypg_reminder_date',
-            $currentReminderDate,
-            $toBeVerified,
-            $wasPreviouslyVerified,
-            'ypg_reminder_time_period',
-            'ypg_reminder_time_unit',
-            $reviewDate
-        );
-
-        if (strtotime($reminderDate) <= strtotime($reviewDate)) {
-            $reminderDate = $this->setReminderAfterReview($reviewDate);
-        }
-
-        return $reminderDate;
     }
 
     private function updateVerificationMeta(int $postID, bool $isVerified, string $reviewDate, string $reminderDate): void

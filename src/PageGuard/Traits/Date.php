@@ -86,6 +86,41 @@ trait Date
         return $currentValue;
     }
 
+    private function computeReviewDate(int $postID, bool $toBeVerified, bool $wasPreviouslyVerified): string
+    {
+        $currentReviewDate = get_post_meta($postID, 'ypg_review_date', true);
+
+        return $this->computeDateMeta(
+            'ypg_review_date',
+            $currentReviewDate,
+            $toBeVerified,
+            $wasPreviouslyVerified,
+            'ypg_review_time_period',
+            'ypg_review_time_unit',
+        );
+    }
+
+    private function computeReminderDate(int $postID, string $reviewDate, bool $toBeVerified, bool $wasPreviouslyVerified): string
+    {
+        $currentReminderDate = get_post_meta($postID, 'ypg_reminder_date', true);
+
+        $reminderDate = $this->computeDateMeta(
+            'ypg_reminder_date',
+            $currentReminderDate,
+            $toBeVerified,
+            $wasPreviouslyVerified,
+            'ypg_reminder_time_period',
+            'ypg_reminder_time_unit',
+            $reviewDate
+        );
+
+        if (strtotime($reminderDate) <= strtotime($reviewDate)) {
+            $reminderDate = $this->setReminderAfterReview($reviewDate);
+        }
+
+        return $reminderDate;
+    }
+
     public function setReminderAfterReview(string $reviewDate): string
     {
         $period = (int) get_option('ypg_reminder_time_period', 1);
@@ -100,5 +135,12 @@ trait Date
         }
 
         return $computed;
+    }
+
+    public function isValidDate(string $date): bool
+    {
+        $d = DateTime::createFromFormat('Y-m-d', $date);
+
+        return $d && $d->format('Y-m-d') === $date;
     }
 }

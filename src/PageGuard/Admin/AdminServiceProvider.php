@@ -21,7 +21,7 @@ class AdminServiceProvider extends ServiceProvider
         add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorAssets']);
 
         add_action('admin_enqueue_scripts', function (string $hook): void {
-            if ('settings_page_page-guard-settings' === $hook) {
+            if ('settings_page_page-guard-settings' === $hook || 'toplevel_page_page-guard-overview' === $hook) {
                 $this->enqueueEditorAssets();
             }
 
@@ -108,7 +108,7 @@ class AdminServiceProvider extends ServiceProvider
                 ]);
 
                 ?>
-					<div style="display: flex; flex-direction: column; align-items: flex-start; row-gap: 8px; margin-bottom: 10px">
+					<div class="ypg-quick-edit-fields">
 						<label><?= __('Inhoudseigenaar', 'yard-page-guard') ?></label>
 						<select name="ypg_post_content_owner" id="ypg-post-conten-owner">
 							<?php
@@ -147,7 +147,7 @@ class AdminServiceProvider extends ServiceProvider
 
             case 'ypg_is_verified': {
                 ?>
-					<div style="margin-bottom: 10px">
+					<div class="ypg-quick-edit-fields">
 						<label>
 							<input type="checkbox" id="ypg-is-verified" name="ypg_is_verified"> <?= __('Gecontroleerd?', 'yard-page-guard') ?>
 						</label>
@@ -158,7 +158,7 @@ class AdminServiceProvider extends ServiceProvider
 
             case 'ypg_review_date': {
                 ?>
-						<div style="display: flex; flex-direction: column; align-items: flex-start; row-gap: 8px">
+						<div class="ypg-quick-edit-fields">
 							<label><?= __('Controle datum', 'yard-page-guard') ?></label>
 							<input type="date" id="ypg-review-date" name="ypg_review_date" min="<?= date('Y-m-d') ?>">
 						</div>

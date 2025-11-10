@@ -23,4 +23,24 @@ trait Text
 
         return trim($html);
     }
+
+
+    /**
+     * @throws \InvalidArgumentException
+     */
+    private function parseContentOwnerData(string $contentOwner): array
+    {
+        $ownerData = explode('|', $contentOwner);
+
+        if (count($ownerData) !== 4) {
+            throw new \InvalidArgumentException('Invalid content owner data format.');
+        }
+
+        return [
+            'id' => $ownerData[0] ?? '',
+            'name' => $ownerData[1] ?? '',
+            'email' => $ownerData[2] ?? '',
+            'type' => $ownerData[3] ?? '',
+        ];
+    }
 }
