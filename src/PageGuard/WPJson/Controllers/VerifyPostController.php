@@ -17,35 +17,21 @@ class VerifyPostController
     public function handleRequest(WP_REST_Request $request): void
     {
         $postId = (int) $request->get_param('post_id');
-        $currentReviewDate = get_post_meta($postId, 'ypg_review_date', true);
-        $currentReminderDate = get_post_meta($postId, 'ypg_reminder_date', true);
-
-        $newReviewDate = $this->computeDateMeta(
-            'ypg_review_date',
-            $currentReviewDate,
+        $newReviewDate = $this->computeReviewDate(
+            $postId,
             true,
             false,
-            'ypg_review_time_period',
-            'ypg_review_time_unit',
         );
-
-        $newReminderDate = $this->computeDateMeta(
-            'ypg_reminder_date',
-            $currentReminderDate,
+        $newReminderDate = $this->computeReminderDate(
+            $postId,
             true,
             false,
-            'ypg_reminder_time_period',
-            'ypg_reminder_time_unit',
-            $newReviewDate
         );
-
-        if (strtotime($newReminderDate) <= strtotime($newReviewDate)) {
-            $newReminderDate = $this->setReminderAfterReview($newReviewDate);
-        }
 
         $updatedReviewDate = update_post_meta($postId, 'ypg_review_date', $newReviewDate);
         $updatedReminderDate = update_post_meta($postId, 'ypg_reminder_date', $newReminderDate);
         $updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', true);
+        update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d')); # Not used for if statement below because it doesn't define failure
 
         header('Content-Type: text/html; charset=utf-8');
 

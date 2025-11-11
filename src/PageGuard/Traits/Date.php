@@ -19,10 +19,16 @@ trait Date
         return date_i18n($format, $date->getTimestamp());
     }
 
-    public function getPeriodOptionString(string $periodKey, string $unitKey, bool $hideOnSingle = true): string
+    public function getPeriodOptionString(string $periodKey, string $unitKey, bool $hideOnSingle = true, ?int $postId = 0): string
     {
+        $postUnit = get_post_meta($postId, $unitKey, true);
+        $postPeriod = get_post_meta($postId, $periodKey, true);
+        $period = ! empty($postUnit) ? $postUnit : get_option($unitKey, 'weeks');
+        $unit = ! empty($postPeriod) ? $postPeriod : intval(get_option($periodKey, 1));
+
         $period = intval(get_option($periodKey, 2));
         $unit = get_option($unitKey, 'weeks');
+
         $units = [
             'days' => 1 === $period ? __('dag', 'yard-page-guard') : __('dagen', 'yard-page-guard'),
             'weeks' => 1 === $period ? __('week', 'yard-page-guard') : __('weken', 'yard-page-guard'),
@@ -50,91 +56,73 @@ trait Date
 
     public function computeDateMeta(
         string $inputFieldName,
-        mixed $currentValue,
+        mixed $baseValue,
         bool $toBeVerified,
         bool $wasPreviouslyVerified,
-        string $periodOptionName,
-        string $unitOptionName,
-        ?string $fallbackBaseDate = null
+        int $period,
+        string $unit,
     ): string {
         // #1 Manual change via metabox input (different from before)
         if (
             isset($_POST[$inputFieldName]) &&
             '' !== $_POST[$inputFieldName] &&
-            sanitize_text_field($_POST[$inputFieldName]) !== $currentValue
+            sanitize_text_field($_POST[$inputFieldName]) !== $baseValue
         ) {
             return sanitize_text_field($_POST[$inputFieldName]);
         }
 
         // #2 Keep current if not verified and current exists
-        if (! $toBeVerified && $currentValue) {
-            return $currentValue;
+        if (! $toBeVerified && $baseValue) {
+            return $baseValue;
         }
 
-        $period = (int) get_option($periodOptionName, 1);
-        $unit = get_option($unitOptionName, 'weeks');
-        $fallbackBaseDate = $fallbackBaseDate ?? date('Y-m-d');
+        $fallbackBaseDate = date('Y-m-d');
 
         // #3 Auto increase when post has just been verified or no current value is set
-        if ($toBeVerified && ! $wasPreviouslyVerified || ! $currentValue) {
-            $baseDate = $currentValue ?: $fallbackBaseDate;
+        if ($toBeVerified && ! $wasPreviouslyVerified || ! $baseValue) {
+            $baseDate = $baseValue ?: $fallbackBaseDate;
 
             return $this->addPeriodToBase($baseDate, $period, $unit);
         }
 
         // Fallback: return current meta
-        return $currentValue;
+        return $baseValue;
     }
 
-    private function computeReviewDate(int $postID, bool $toBeVerified, bool $wasPreviouslyVerified): string
+    private function computeReviewDate(int $postId, bool $toBeVerified, bool $wasPreviouslyVerified): string
     {
-        $currentReviewDate = get_post_meta($postID, 'ypg_review_date', true);
+        $currentReviewDate = get_post_meta($postId, 'ypg_review_date', true);
+        $period = (int) get_option('ypg_review_time_period', 1);
+        $unit = get_option('ypg_review_time_unit', 'weeks');
 
         return $this->computeDateMeta(
             'ypg_review_date',
             $currentReviewDate,
             $toBeVerified,
             $wasPreviouslyVerified,
-            'ypg_review_time_period',
-            'ypg_review_time_unit',
+            $period,
+            $unit,
         );
     }
 
-    private function computeReminderDate(int $postID, string $reviewDate, bool $toBeVerified, bool $wasPreviouslyVerified): string
+    private function computeReminderDate(int $postId, bool $toBeVerified, bool $wasPreviouslyVerified): string
     {
-        $currentReminderDate = get_post_meta($postID, 'ypg_reminder_date', true);
+        $currentReviewDate = get_post_meta($postId, 'ypg_review_date', true);
+        $postUnit = get_post_meta($postId, 'ypg_reminder_time_unit', true);
+        $postPeriod = get_post_meta($postId, 'ypg_reminder_time_period', true);
+        $currentPeriod = ! empty($postPeriod) ? $postPeriod : intval(get_option('ypg_reminder_time_period', 1));
+        $currentUnit = ! empty($postUnit) ? $postUnit : get_option('ypg_reminder_time_unit', 'weeks');
 
         $reminderDate = $this->computeDateMeta(
             'ypg_reminder_date',
-            $currentReminderDate,
+            $currentReviewDate,
             $toBeVerified,
             $wasPreviouslyVerified,
-            'ypg_reminder_time_period',
-            'ypg_reminder_time_unit',
-            $reviewDate
+            $currentPeriod,
+            $currentUnit,
         );
 
-        if (strtotime($reminderDate) <= strtotime($reviewDate)) {
-            $reminderDate = $this->setReminderAfterReview($reviewDate);
-        }
-
         return $reminderDate;
-    }
-
-    public function setReminderAfterReview(string $reviewDate): string
-    {
-        $period = (int) get_option('ypg_reminder_time_period', 1);
-        $unit = get_option('ypg_reminder_time_unit', 'weeks');
-
-        $computed = $this->addPeriodToBase($reviewDate, $period, $unit);
-
-        if (strtotime($computed) <= strtotime($reviewDate)) {
-            $date = new \DateTime($reviewDate);
-            $date->modify('+1 day');
-            $computed = $date->format('Y-m-d');
-        }
-
-        return $computed;
     }
 
     public function isValidDate(string $date): bool

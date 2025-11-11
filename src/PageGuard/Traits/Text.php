@@ -24,6 +24,11 @@ trait Text
         return trim($html);
     }
 
+    private static function getUnitOptions(): array
+    {
+        return ['days' => __('Dagen', 'yard-page-guard'), 'weeks' => __('Weken', 'yard-page-guard'), 'months' => __('Maanden', 'yard-page-guard')];
+    }
+
 
     /**
      * @throws \InvalidArgumentException

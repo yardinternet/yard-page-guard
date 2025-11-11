@@ -6,6 +6,16 @@
 	label {
 		font-weight: 600;
 	}
+
+	fieldset {
+		label {
+			font-weight: 400;
+		}
+	}
+}
+
+.w-full {
+	width: 100%;
 }
 
 .d-flex {
@@ -66,6 +76,12 @@ body.taxonomy-ypg_external_content_owner {
 	grid-template-rows: 1fr;
 }
 
+.ypg-overview-table {
+	.overdue {
+		color: #f00;
+	}
+}
+
 .ypg-pagination {
 	display: flex;
 	flex-wrap: wrap;
@@ -110,4 +126,23 @@ body.taxonomy-ypg_external_content_owner {
 	align-items: flex-start;
 	margin-bottom: 10px;
 	row-gap: 8px;
+}
+
+.ypg-reminder-date-input-wrapper {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows 0.25s ease-in-out;
+
+	> div {
+		overflow: hidden;
+		margin-top: 10px;
+	}
+}
+
+.ypg-reminder-date-input-wrapper[aria-hidden='false'] {
+	grid-template-rows: 1fr;
+}
+
+.mb-0 {
+	margin-bottom: 0;
 }

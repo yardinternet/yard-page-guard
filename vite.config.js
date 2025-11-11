@@ -9,7 +9,7 @@ export default defineConfig({
 		rollupOptions: {
 			input: {
 				frontend: resolve(__dirname, 'resources/js/frontend.js'),
-				editor: resolve(__dirname, 'resources/js/editor.js'),
+				admin: resolve(__dirname, 'resources/js/admin.js'),
 			},
 			output: {
 				entryFileNames: '[name].js',

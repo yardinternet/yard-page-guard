@@ -3,7 +3,10 @@
 namespace Yard\PageGuard\Admin;
 
 use WP_Query;
+use Yard\PageGuard\Admin\Controllers\AdminOverviewController;
+use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
 use Yard\PageGuard\Traits\Date;
 
@@ -11,57 +14,52 @@ class AdminServiceProvider extends ServiceProvider
 {
     use Date;
 
+    private AdminSettingsController $adminSettingsController;
+    private AdminOverviewController $adminOverviewController;
+
+    public function __construct(Plugin $plugin)
+    {
+        parent::__construct($plugin);
+
+        $this->adminSettingsController = new AdminSettingsController();
+        $this->adminOverviewController = new AdminOverviewController();
+    }
+
     public function register(): void
     {
-        $adminSettingsPage = new AdminSettingsPage();
-        $adminOverviewPage = new AdminOverviewPage();
-        $adminSettingsPage->init();
-        $adminOverviewPage->init();
+        $this->adminSettingsController->init();
+        $this->adminOverviewController->init();
 
-        add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorAssets']);
+        add_action('enqueue_block_editor_assets', [$this, 'enqueueAdminAssets']);
 
-        add_action('admin_enqueue_scripts', function (string $hook): void {
-            if ('settings_page_page-guard-settings' === $hook || 'toplevel_page_page-guard-overview' === $hook) {
-                $this->enqueueEditorAssets();
-            }
+        /**
+         * Enqueue admin scripts where necessary
+         */
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssetsPerHook']);
 
-            if (('edit-tags.php' === $hook || 'term.php' === $hook) && isset($_GET['taxonomy']) && 'ypg_external_content_owner' === $_GET['taxonomy']) {
-                $this->enqueueEditorAssets();
-            }
+        /**
+         * Add post type overview columns
+         */
+        foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
+            add_filter("manage_{$postType}_posts_columns", [$this, 'manageCustomColumns']);
+            add_action("manage_{$postType}_posts_custom_column", [$this, 'fillCustomColumns'], 10, 2);
+            add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
+        }
 
-            if ('edit.php' === $hook && isset($_GET['post_type'])) {
-                if (in_array($_GET['post_type'], apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
-                    $this->enqueueEditorAssets();
-                }
-            }
-        });
+        /**
+         * Add post type quick/bulk edit functionality
+         */
+        add_action('quick_edit_custom_box', [$this, 'manageQuickEditFields'], 10, 2);
+        add_action('bulk_edit_custom_box', [$this, 'manageQuickEditFields'], 10, 2);
 
-        add_action('init', function () {
-            add_action('quick_edit_custom_box', [$this, 'manageQuickEditFields'], 10, 2);
-            add_action('bulk_edit_custom_box', [$this, 'manageQuickEditFields'], 10, 2);
+        /**
+         * Replace description column with email for external_content_owner taxonomy
+         */
+        add_filter('manage_edit-ypg_external_content_owner_columns', [$this, 'manageExternalContentOwnerColumns']);
 
-            foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
-                add_filter("manage_{$postType}_posts_columns", [$this, 'manageCustomColumns']);
-                add_action("manage_{$postType}_posts_custom_column", [$this, 'fillCustomColumns'], 10, 2);
-                add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
-            }
-        });
-
-        add_filter('manage_edit-ypg_external_content_owner_columns', function (array $columns) {
-            unset($columns['description']);
-
-            $orderedColumns = [];
-            foreach ($columns as $key => $value) {
-                $orderedColumns[$key] = $value;
-
-                if ('name' === $key) {
-                    $orderedColumns['email'] = __('Email', 'yard-page-guard');
-                }
-            }
-
-            return $orderedColumns;
-        });
-
+        /**
+         * Fill custom email column (see filter above) for external_content_owner taxonomy
+         */
         add_filter('manage_ypg_external_content_owner_custom_column', function (string $content, string $columnName, int $termId) {
             if ('email' === $columnName) {
                 $content = get_term_meta($termId, 'ypg_external_content_owner_email', true);
@@ -70,24 +68,63 @@ class AdminServiceProvider extends ServiceProvider
             return $content;
         }, 10, 3);
 
+        /**
+         * Handle custom column sorting
+         */
         add_action('pre_get_posts', [$this, 'sortCustomColumns']);
     }
 
-    public function enqueueEditorAssets(): void
+    public function enqueueAdminAssets(): void
     {
         wp_enqueue_style(
             'ypg-editor-styles',
-            $this->plugin->resourceUrl('editor.css'),
+            $this->plugin->resourceUrl('admin.css'),
             [],
-            filemtime($this->plugin->resourcePath('editor.css')),
+            filemtime($this->plugin->resourcePath('admin.css')),
         );
 
         wp_enqueue_script(
             'ypg-editor-scripts',
-            $this->plugin->resourceUrl('editor.js'),
-            [],
-            filemtime($this->plugin->resourcePath('editor.js')),
+            $this->plugin->resourceUrl('admin.js'),
+            ['wp-dom-ready'],
+            filemtime($this->plugin->resourcePath('admin.js')),
         );
+    }
+
+    public function enqueueAdminAssetsPerHook(string $hook): void
+    {
+        // Settings & overview page
+        if ('settings_page_page-guard-settings' === $hook || 'toplevel_page_ypg-overview' === $hook) {
+            $this->enqueueAdminAssets();
+        }
+
+        // External content owner term list & detail page
+        if (('edit-tags.php' === $hook || 'term.php' === $hook) && isset($_GET['taxonomy']) && 'ypg_external_content_owner' === $_GET['taxonomy']) {
+            $this->enqueueAdminAssets();
+        }
+
+        // Edit post page
+        if ('edit.php' === $hook && isset($_GET['post_type'])) {
+            if (in_array($_GET['post_type'], apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
+                $this->enqueueAdminAssets();
+            }
+        }
+    }
+
+    public function manageExternalContentOwnerColumns(array $columns): array
+    {
+        unset($columns['description']);
+
+        $orderedColumns = [];
+        foreach ($columns as $key => $value) {
+            $orderedColumns[$key] = $value;
+
+            if ('name' === $key) {
+                $orderedColumns['email'] = __('Email', 'yard-page-guard');
+            }
+        }
+
+        return $orderedColumns;
     }
 
     public function manageQuickEditFields(string $columnName, string $postType)
@@ -109,8 +146,8 @@ class AdminServiceProvider extends ServiceProvider
 
                 ?>
 					<div class="ypg-quick-edit-fields">
-						<label><?= __('Inhoudseigenaar', 'yard-page-guard') ?></label>
-						<select name="ypg_post_content_owner" id="ypg-post-conten-owner">
+						<label for="ypg-post-content-owner"><?= __('Inhoudseigenaar', 'yard-page-guard') ?></label>
+						<select name="ypg_post_content_owner" id="ypg-post-content-owner">
 							<?php
                                 foreach ($wpUsers as $user) {
                                     $name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
@@ -178,25 +215,25 @@ class AdminServiceProvider extends ServiceProvider
         return $columns;
     }
 
-    public function fillCustomColumns(string $column, int $postID): void
+    public function fillCustomColumns(string $column, int $postId): void
     {
         if ('ypg_post_content_owner' === $column) {
-            $contentOwner = get_post_meta($postID, 'ypg_post_content_owner_name', true);
+            $contentOwner = get_post_meta($postId, 'ypg_post_content_owner_name', true);
 
             if (false === $contentOwner || '' === $contentOwner) {
                 echo __('Onbekend', 'yard-page-guard');
             } else {
-                echo $contentOwner . (get_post_meta($postID, 'ypg_post_content_owner_type', true) === ContentOwnerType::EXTERNAL ? ' (' . __('Extern', 'yard-page-guard') . ')' : '');
+                echo $contentOwner . (get_post_meta($postId, 'ypg_post_content_owner_type', true) === ContentOwnerType::EXTERNAL ? ' (' . __('Extern', 'yard-page-guard') . ')' : '');
             }
         }
 
         if ('ypg_is_verified' === $column) {
-            $isVerified = get_post_meta($postID, 'ypg_is_verified', true);
+            $isVerified = get_post_meta($postId, 'ypg_is_verified', true);
             echo $isVerified ? __('Ja', 'yard-page-guard') : __('Nee', 'yard-page-guard');
         }
 
         if ('ypg_review_date' === $column) {
-            $reviewDate = get_post_meta($postID, 'ypg_review_date', true);
+            $reviewDate = get_post_meta($postId, 'ypg_review_date', true);
             echo $reviewDate ? "<span class='review-date-wrapper' data-date='$reviewDate'>{$this->formatDate($reviewDate)}</span>" : __('Niet ingesteld', 'yard-page-guard');
         }
     }

@@ -111,9 +111,11 @@ class ReminderNotification extends Event
     private function updateModuleMeta(ReviewItem $item): void
     {
         $currentReminderDate = $item->reminderDate() ?: date('Y-m-d');
-        $reminderPeriod = intval(get_option('ypg_reminder_time_period', 1));
-        $reminderUnit = get_option('ypg_reminder_time_unit', 'weeks');
+        $postUnit = get_post_meta($item->ID(), 'ypg_reminder_time_unit', true);
+        $postPeriod = get_post_meta($item->ID(), 'ypg_reminder_time_period', true);
+        $currentUnit = ! empty($postUnit) ? $postUnit : get_option('ypg_reminder_time_unit', 'weeks');
+        $currentPeriod = ! empty($postPeriod) ? $postPeriod : intval(get_option('ypg_reminder_time_period', 1));
 
-        update_post_meta($item->ID(), 'ypg_reminder_date', $this->addPeriodToBase($currentReminderDate, $reminderPeriod, $reminderUnit));
+        update_post_meta($item->ID(), 'ypg_reminder_date', $this->addPeriodToBase($currentReminderDate, $currentUnit, $currentPeriod));
     }
 }
