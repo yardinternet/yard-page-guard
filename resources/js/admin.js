@@ -1,4 +1,4 @@
-import '../css/editor.css';
+import '../css/admin.css';
 
 document.addEventListener('DOMContentLoaded', () => {
 	const selectAll = document.querySelector('#ypg-select-all');
@@ -83,4 +83,23 @@ document.addEventListener('DOMContentLoaded', () => {
 		);
 		if (reviewDateInput) reviewDateInput.value = reviewDate;
 	};
+});
+
+wp.domReady(() => {
+	const reminderRadio = document.querySelector('#ypg-reminder-type-radio');
+	const customReminderWrapper = document.querySelector(
+		'.ypg-reminder-date-input-wrapper'
+	);
+
+	if (reminderRadio && customReminderWrapper) {
+		reminderRadio.querySelectorAll('input').forEach((radio) => {
+			radio.addEventListener('change', (e) => {
+				if (e.target.value === 'custom' && e.target.checked) {
+					customReminderWrapper.ariaHidden = false;
+				} else {
+					customReminderWrapper.ariaHidden = true;
+				}
+			});
+		});
+	}
 });

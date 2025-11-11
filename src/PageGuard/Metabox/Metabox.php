@@ -26,26 +26,19 @@ class Metabox
 
     public function displayMetaboxes(WP_Post $post): void
     {
-        $contentOwnerId = get_post_meta($post->ID, 'ypg_post_content_owner_id', true);
-        $currentOwnerType = get_post_meta($post->ID, 'ypg_post_content_owner_type', true);
-        $isVerified = (bool) get_post_meta($post->ID, 'ypg_is_verified', true);
-        $reviewDate = get_post_meta($post->ID, 'ypg_review_date', true);
-        $reminderDate = get_post_meta($post->ID, 'ypg_reminder_date', true);
-
-        wp_nonce_field(basename(__FILE__), 'yard_page_guard_metaboxes_nonce');
-
-        echo $this->displayMetaboxesHTML($contentOwnerId, $currentOwnerType, $isVerified, $reviewDate, $reminderDate, $post->ID);
+        wp_nonce_field(basename(__FILE__), 'ypg_metaboxes_nonce');
+        echo $this->displayMetaboxesHTML($post->ID);
     }
 
-    private function displayMetaboxesHTML(string $contentOwnerId, string $contentOwnerType, string $isVerified, string $reviewDate, string $reminderDate, int $postID): string
+    private function displayMetaboxesHTML(int $postId): string
     {
         $html = sprintf('<p>%s</p>', __('Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.', 'yard-page-guard'));
 
-        if ($this->currentUserHasAccess($postID)) {
-            $html = $this->contentOwnerMetabox($html, $contentOwnerId, $contentOwnerType);
-            $html = $this->isVerifiedMetabox($html, $isVerified);
-            $html = $this->reviewDateMetabox($html, $reviewDate, $isVerified);
-            $html = $this->reminderDateMetabox($html, $reminderDate);
+        if ($this->currentUserHasAccess($postId)) {
+            $html = $this->contentOwnerMetabox($html, $postId);
+            $html = $this->isVerifiedMetabox($html, $postId);
+            $html = $this->reviewDateMetabox($html, $postId);
+            $html = $this->reminderMetabox($html, $postId);
         } else {
             $html .= sprintf('<p><b>%s</b></p>', __('U heeft geen toestemming om de houdbaarsheids module te bewerken.', 'yard-page-guard'));
         }
@@ -53,8 +46,11 @@ class Metabox
         return $html;
     }
 
-    private function contentOwnerMetabox(string $html, string $contentOwnerId, string $contentOwnerType): string
+    private function contentOwnerMetabox(string $html, int $postId): string
     {
+        $contentOwnerId = get_post_meta($postId, 'ypg_post_content_owner_id', true);
+        $contentOwnerType = get_post_meta($postId, 'ypg_post_content_owner_type', true);
+
         $wpUsers = get_users([
             'capability' => 'edit_pages',
         ]);
@@ -116,8 +112,9 @@ class Metabox
         return $html;
     }
 
-    private function isVerifiedMetabox(string $html, string $isVerified): string
+    private function isVerifiedMetabox(string $html, int $postId): string
     {
+        $isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
         $checked = checked($isVerified, 1, false);
         $label = __('Gecontroleerd?', 'yard-page-guard');
 
@@ -133,8 +130,11 @@ class Metabox
         return $html;
     }
 
-    private function reviewDateMetabox(string $html, string $reviewDate, bool $isVerified): string
+    private function reviewDateMetabox(string $html, int $postId): string
     {
+        $reviewDate = get_post_meta($postId, 'ypg_review_date', true);
+        $isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
+
         $label = $isVerified
             ? __('Volgende controle datum', 'yard-page-guard')
             : __('Controle datum', 'yard-page-guard');
@@ -150,34 +150,69 @@ class Metabox
 		<div class="ypg-metabox-wrapper flex-column">
 			<label for="ypg_review_date">$label:</label>
 			<input type="date" name="ypg_review_date" id="ypg_review_date" value="$reviewDateEscaped" min="$minDate" />
-			<p>$message</p>
+			<p style="margin-bottom: 0">$message</p>
 		</div>
 		HTML;
 
         return $html;
     }
 
-    private function reminderDateMetabox(string $html, string $reminderDate): string
+    private function reminderMetabox(string $html, int $postId): string
     {
-        $label = __('Volgende herinnering datum', 'yard-page-guard');
-        $reminderDateEscaped = esc_attr($reminderDate);
-        $minDate = esc_attr(date('Y-m-d'));
-        $message = __('De herinnering wordt via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard');
+        $postUnit = get_post_meta($postId, 'ypg_reminder_time_unit', true);
+        $postPeriod = get_post_meta($postId, 'ypg_reminder_time_period', true);
+        $isDefault = empty($postPeriod) || empty($postUnit);
+        $customReminderAriaHidden = $isDefault ? 'true' : 'false';
+        $currentUnit = ! empty($postUnit) ? $postUnit : get_option('ypg_reminder_time_unit', 'weeks');
+        $currentPeriod = ! empty($postPeriod) ? $postPeriod : intval(get_option('ypg_reminder_time_period', 1));
+
+        $unitOptionElements = '';
+
+        foreach ($this->getUnitOptions() as $unitValue => $label) {
+            $unitOptionElements .= sprintf('<option value="%s" %s>%s</option>', $unitValue, selected($currentUnit, $unitValue, false), $label);
+        }
+
+        $reminderTypes = ['default' => __('Standaard', 'yard-page-guard'), 'custom' => __('Aangepast', 'yard-page-guard')];
+        $typeOptionElements = '';
+
+        foreach ($reminderTypes as $value => $label) {
+            $checked = checked($isDefault, 'default' === $value, false);
+
+            $typeOptionElements .= <<<HTML
+			<div>
+					<input type="radio" id="ypg-reminder-$value" name="ypg_reminder_type" value="$value" $checked/>
+					<label for="ypg-reminder-$value">$label</label>
+			</div>
+			HTML;
+        }
+
+        $label = __('Herinnering periode', 'yard-page-guard');
 
         $html .= <<<HTML
-		<div class="ypg-metabox-wrapper flex-column">
+		<div class="ypg-metabox-wrapper flex-column mb-0">
 			<label for="ypg_reminder_date">$label:</label>
-			<input type="date" name="ypg_reminder_date" id="ypg_reminder_date" value="$reminderDateEscaped" min="$minDate" />
-			<p>$message</p>
+
+			<fieldset id="ypg-reminder-type-radio">
+				$typeOptionElements
+			</fieldset>
+
+			<div class="ypg-reminder-date-input-wrapper" aria-hidden="$customReminderAriaHidden">
+				<div class="d-flex">
+					<input class="w-full" type="number" name="ypg_reminder_time_period" value="$currentPeriod" min="1" />
+					<select class="w-full" name="ypg_reminder_time_unit">
+						$unitOptionElements
+					</select>
+				</div>
+			</div>
 		</div>
 		HTML;
 
         return $html;
     }
 
-    public function saveMetaboxValues(int $postID): void
+    public function saveMetaboxValues(int $postId): void
     {
-        if (! $this->shouldSave($postID)) {
+        if (! $this->shouldSave($postId)) {
             return;
         }
 
@@ -188,32 +223,40 @@ class Metabox
         $contentOwner = sanitize_text_field($_POST['ypg_post_content_owner']);
 
         if ('none' === $contentOwner) {
-            $this->clearOwnerMeta($postID);
+            $this->clearOwnerMeta($postId);
 
             return;
         }
 
         $ownerData = $this->parseContentOwnerData($contentOwner);
-        $this->updateOwnerMeta($postID, $ownerData);
+        $this->updateOwnerMeta($postId, $ownerData);
 
-        $wasPreviouslyVerified = (bool) get_post_meta($postID, 'ypg_is_verified', true);
+        $wasPreviouslyVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
         $toBeVerified = isset($_POST['ypg_is_verified']);
 
         // Remove mail sent status if verified (date will update) OR post is manually being unverified
         if ($toBeVerified || ! $toBeVerified && $wasPreviouslyVerified) {
-            delete_post_meta($postID, 'ypg_review_mail_sent');
+            delete_post_meta($postId, 'ypg_review_mail_sent');
         }
 
-        $reviewDate = $this->computeReviewDate($postID, $toBeVerified, $wasPreviouslyVerified);
-        $reminderDate = $this->computeReminderDate($postID, $reviewDate, $toBeVerified, $wasPreviouslyVerified);
+        if ('custom' === $_POST['ypg_reminder_type']) {
+            update_post_meta($postId, 'ypg_reminder_time_period', $_POST['ypg_reminder_time_period']);
+            update_post_meta($postId, 'ypg_reminder_time_unit', $_POST['ypg_reminder_time_unit']);
+        } else {
+            delete_post_meta($postId, 'ypg_reminder_time_period');
+            delete_post_meta($postId, 'ypg_reminder_time_unit');
+        }
 
-        $this->updateVerificationMeta($postID, $toBeVerified, $reviewDate, $reminderDate);
+        $reviewDate = $this->computeReviewDate($postId, $toBeVerified, $wasPreviouslyVerified);
+        $reminderDate = $this->computeReminderDate($postId, $toBeVerified, $wasPreviouslyVerified);
+
+        $this->updateVerificationMeta($postId, $toBeVerified, $reviewDate, $reminderDate);
 
         // TODO: Remove when done
         do_action('ypg_site_cron');
     }
 
-    private function clearOwnerMeta(int $postID): void
+    private function clearOwnerMeta(int $postId): void
     {
         $keys = [
             'ypg_post_content_owner_id',
@@ -225,30 +268,34 @@ class Metabox
         ];
 
         foreach ($keys as $key) {
-            delete_post_meta($postID, $key);
+            delete_post_meta($postId, $key);
         }
     }
 
-    private function updateOwnerMeta(int $postID, array $ownerData): void
+    private function updateOwnerMeta(int $postId, array $ownerData): void
     {
-        update_post_meta($postID, 'ypg_post_content_owner_id', $ownerData['id']);
-        update_post_meta($postID, 'ypg_post_content_owner_name', $ownerData['name']);
-        update_post_meta($postID, 'ypg_post_content_owner_email', $ownerData['email']);
-        update_post_meta($postID, 'ypg_post_content_owner_type', $ownerData['type']);
+        update_post_meta($postId, 'ypg_post_content_owner_id', $ownerData['id']);
+        update_post_meta($postId, 'ypg_post_content_owner_name', $ownerData['name']);
+        update_post_meta($postId, 'ypg_post_content_owner_email', $ownerData['email']);
+        update_post_meta($postId, 'ypg_post_content_owner_type', $ownerData['type']);
     }
 
-    private function updateVerificationMeta(int $postID, bool $isVerified, string $reviewDate, string $reminderDate): void
+    private function updateVerificationMeta(int $postId, bool $isVerified, string $reviewDate, string $reminderDate): void
     {
-        update_post_meta($postID, 'ypg_is_verified', $isVerified);
-        update_post_meta($postID, 'ypg_review_date', $reviewDate);
-        update_post_meta($postID, 'ypg_reminder_date', $reminderDate);
+        update_post_meta($postId, 'ypg_is_verified', $isVerified);
+        update_post_meta($postId, 'ypg_review_date', $reviewDate);
+        update_post_meta($postId, 'ypg_reminder_date', $reminderDate);
+
+        if ($isVerified) {
+            update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
+        }
     }
 
-    private function shouldSave(int $postID): bool
+    private function shouldSave(int $postId): bool
     {
         // Check save location
-        if (isset($_POST['yard_page_guard_metaboxes_nonce'])) {
-            if (! wp_verify_nonce($_POST['yard_page_guard_metaboxes_nonce'], basename(__FILE__))) {
+        if (isset($_POST['ypg_metaboxes_nonce'])) {
+            if (! wp_verify_nonce($_POST['ypg_metaboxes_nonce'], basename(__FILE__))) {
                 return false;
             }
         } elseif (isset($_POST['_inline_edit'])) {
@@ -281,22 +328,22 @@ class Metabox
             return false;
         }
 
-        if (! current_user_can('edit_pages', $postID)) {
+        if (! current_user_can('edit_pages', $postId)) {
             return false;
         }
 
-        if (! $this->currentUserHasAccess($postID)) {
+        if (! $this->currentUserHasAccess($postId)) {
             return false;
         }
 
         return true;
     }
 
-    private function currentUserHasAccess(int $postID): bool
+    private function currentUserHasAccess(int $postId): bool
     {
-        $post = get_post($postID);
-        $contentOwnerId = get_post_meta($postID, 'ypg_post_content_owner_id', true) ?: '';
-        $contentOwnerType = get_post_meta($postID, 'ypg_post_content_owner_type', true);
+        $post = get_post($postId);
+        $contentOwnerId = get_post_meta($postId, 'ypg_post_content_owner_id', true) ?: '';
+        $contentOwnerType = get_post_meta($postId, 'ypg_post_content_owner_type', true);
         $currentUser = wp_get_current_user();
 
         // Regardless of content owner type: newly created posts, administrators, current user is author or no content owner set

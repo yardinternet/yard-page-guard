@@ -7,160 +7,212 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-05T16:13:51+00:00\n"
+"POT-Creation-Date: 2025-11-11T16:02:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: yard-page-guard\n"
 
-#: PageGuard/Admin/AdminOverviewPage.php:21
-#: PageGuard/Admin/AdminOverviewPage.php:22
-#: PageGuard/Admin/AdminOverviewPage.php:52
-msgid "Houdbaarheids Overzicht"
-msgstr ""
-
-#: PageGuard/Admin/AdminOverviewPage.php:55
-msgid "Alle items"
-msgstr ""
-
-#: PageGuard/Admin/AdminOverviewPage.php:56
-#: PageGuard/Admin/AdminOverviewPage.php:81
-msgid "Achterstallig"
-msgstr ""
-
-#: PageGuard/Admin/AdminOverviewPage.php:57
-#: PageGuard/Admin/AdminOverviewPage.php:76
-msgid "Op schema"
-msgstr ""
-
-#: PageGuard/Admin/AdminOverviewPage.php:63
-msgid "Pagina"
-msgstr ""
-
-#: PageGuard/Admin/AdminOverviewPage.php:64
-msgid "Eigenaar"
-msgstr ""
-
-#: PageGuard/Admin/AdminOverviewPage.php:65
-msgid "Herzieningsdatum"
-msgstr ""
-
-#: PageGuard/Admin/AdminOverviewPage.php:66
-msgid "Status"
-msgstr ""
-
-#: PageGuard/Admin/AdminServiceProvider.php:58
+#: PageGuard/Admin/AdminServiceProvider.php:123
 msgid "Email"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:112
-#: PageGuard/Admin/AdminServiceProvider.php:174
-#: PageGuard/Metabox/Metabox.php:103
+#: PageGuard/Admin/AdminServiceProvider.php:149
+#: PageGuard/Admin/AdminServiceProvider.php:211
+#: PageGuard/Metabox/Metabox.php:101
 msgid "Inhoudseigenaar"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:138
-#: PageGuard/Admin/AdminServiceProvider.php:189
-#: PageGuard/Metabox/Metabox.php:98
+#: PageGuard/Admin/AdminServiceProvider.php:175
+#: PageGuard/Admin/AdminServiceProvider.php:226
+#: PageGuard/Admin/Services/AdminOverviewService.php:230
+#: PageGuard/Metabox/Metabox.php:96
 msgid "Extern"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:152
-#: PageGuard/Admin/AdminServiceProvider.php:175
-#: PageGuard/Metabox/Metabox.php:120
+#: PageGuard/Admin/AdminServiceProvider.php:189
+#: PageGuard/Admin/AdminServiceProvider.php:212
+#: PageGuard/Admin/Views/AdminOverviewPage.php:100
+#: PageGuard/Metabox/Metabox.php:119
 msgid "Gecontroleerd?"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:162
-#: PageGuard/Admin/AdminServiceProvider.php:176
-#: PageGuard/Metabox/Metabox.php:138
+#: PageGuard/Admin/AdminServiceProvider.php:199
+#: PageGuard/Admin/AdminServiceProvider.php:213
+#: PageGuard/Metabox/Metabox.php:140
 msgid "Controle datum"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:187
+#: PageGuard/Admin/AdminServiceProvider.php:224
 msgid "Onbekend"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:195
+#: PageGuard/Admin/AdminServiceProvider.php:232
+#: PageGuard/Admin/Views/AdminOverviewPage.php:104
 msgid "Ja"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:195
+#: PageGuard/Admin/AdminServiceProvider.php:232
+#: PageGuard/Admin/Views/AdminOverviewPage.php:105
 msgid "Nee"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:200
+#: PageGuard/Admin/AdminServiceProvider.php:237
 msgid "Niet ingesteld"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:16
-#: PageGuard/Admin/AdminSettingsPage.php:41
+#: PageGuard/Admin/Controllers/AdminOverviewController.php:30
+#: PageGuard/Admin/Controllers/AdminOverviewController.php:31
+#: PageGuard/Admin/Views/AdminOverviewPage.php:10
+msgid "Houdbaarheids Overzicht"
+msgstr ""
+
+#: PageGuard/Admin/Controllers/AdminSettingsController.php:20
+#: PageGuard/Admin/Views/AdminSettingsPage.php:8
 msgid "Houdbaarheidsmodule Instellingen"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:17
+#: PageGuard/Admin/Controllers/AdminSettingsController.php:21
 msgid "Houdbaarheidsmodule"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:47
+#: PageGuard/Admin/Services/AdminOverviewService.php:18
+msgid "U heeft geen toegang tot deze actie."
+msgstr ""
+
+#: PageGuard/Admin/Services/AdminOverviewService.php:181
+msgid "Geen"
+msgstr ""
+
+#: PageGuard/Admin/Services/AdminOverviewService.php:182
+#: PageGuard/Admin/Views/AdminOverviewPage.php:50
+msgid "Gecontroleerd"
+msgstr ""
+
+#: PageGuard/Admin/Services/AdminOverviewService.php:193
+#: PageGuard/Admin/Views/AdminOverviewPage.php:51
+msgid "Achterstallig"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:14
+msgid "Bulk update uitgevoerd."
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:18
+msgid "Geen items geselecteerd."
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:25
+msgid "Items per pagina:"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:32
+msgid "Eigenaar:"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:34
+#: PageGuard/Admin/Views/AdminOverviewPage.php:40
+#: PageGuard/Admin/Views/AdminOverviewPage.php:49
+msgid "Alle"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:38
+#: PageGuard/Admin/Views/AdminOverviewPage.php:66
+msgid "Type"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:47
+#: PageGuard/Admin/Views/AdminOverviewPage.php:70
+msgid "Status"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:54
+msgid "Filteren"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:65
+msgid "Pagina"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:67
+#: PageGuard/Admin/Views/AdminOverviewPage.php:91
+msgid "Eigenaar"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:68
+msgid "Laatst gecontroleerd op"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:69
+msgid "Volgende herzieningsdatum"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:76
+msgid "Geen resultaten gevonden."
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:86
+msgid "Nieuwe herzieningsdatum:"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:94
+#: PageGuard/Admin/Views/AdminOverviewPage.php:103
+msgid "Behouden"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:109
+msgid "Toepassen"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:116
+#, php-format
+msgid "Totaal aantal items: %d"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:14
 msgid "Afzend naam"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:53
+#: PageGuard/Admin/Views/AdminSettingsPage.php:20
 msgid "Afzend emailadres"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:59
+#: PageGuard/Admin/Views/AdminSettingsPage.php:26
 msgid "Herinneringmail BCC emailadres"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:65
-#: PageGuard/Admin/AdminSettingsPage.php:111
+#: PageGuard/Admin/Views/AdminSettingsPage.php:32
+#: PageGuard/Admin/Views/AdminSettingsPage.php:76
 msgid "Herzieningsperiode"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:70
-#: PageGuard/Admin/AdminSettingsPage.php:85
-msgid "Dagen"
-msgstr ""
-
-#: PageGuard/Admin/AdminSettingsPage.php:70
-#: PageGuard/Admin/AdminSettingsPage.php:85
-msgid "Weken"
-msgstr ""
-
-#: PageGuard/Admin/AdminSettingsPage.php:70
-#: PageGuard/Admin/AdminSettingsPage.php:85
-msgid "Maanden"
-msgstr ""
-
-#: PageGuard/Admin/AdminSettingsPage.php:80
-#: PageGuard/Admin/AdminSettingsPage.php:133
+#: PageGuard/Admin/Views/AdminSettingsPage.php:46
+#: PageGuard/Admin/Views/AdminSettingsPage.php:98
 msgid "Herinneringsperiode"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:95
+#: PageGuard/Admin/Views/AdminSettingsPage.php:60
 msgid "Herzieningsmail inhoud"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:107
-#: PageGuard/Admin/AdminSettingsPage.php:129
+#: PageGuard/Admin/Views/AdminSettingsPage.php:72
+#: PageGuard/Admin/Views/AdminSettingsPage.php:94
 msgid "De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:109
-#: PageGuard/Admin/AdminSettingsPage.php:131
+#: PageGuard/Admin/Views/AdminSettingsPage.php:74
+#: PageGuard/Admin/Views/AdminSettingsPage.php:96
 msgid "Naam van inhoudseigenaar"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:110
+#: PageGuard/Admin/Views/AdminSettingsPage.php:75
 msgid "Lijst van herzien items"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:117
+#: PageGuard/Admin/Views/AdminSettingsPage.php:82
 msgid "Herinneringsmail inhoud"
 msgstr ""
 
-#: PageGuard/Admin/AdminSettingsPage.php:132
+#: PageGuard/Admin/Views/AdminSettingsPage.php:97
 msgid "Lijst van achterlopende items"
 msgstr ""
 
@@ -175,7 +227,7 @@ msgid "Sluit venster"
 msgstr ""
 
 #: PageGuard/Frontend/ReviewModal.php:52
-#: PageGuard/WPCron/Events/ReviewNotification.php:81
+#: PageGuard/WPCron/Events/ReviewNotification.php:80
 msgid "Houdbaarheidscontrole"
 msgstr ""
 
@@ -183,40 +235,44 @@ msgstr ""
 msgid "Gecontroleerd en akkoord"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:17
+#: PageGuard/Metabox/Metabox.php:19
 msgid "Houdbaarsheidsmodule"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:40
+#: PageGuard/Metabox/Metabox.php:35
 msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:48
+#: PageGuard/Metabox/Metabox.php:43
 msgid "U heeft geen toestemming om de houdbaarsheids module te bewerken."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:69
+#: PageGuard/Metabox/Metabox.php:67
 msgid "Maak een keuze"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:137
+#: PageGuard/Metabox/Metabox.php:139
 msgid "Volgende controle datum"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:141
+#: PageGuard/Metabox/Metabox.php:143
 msgid "Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:142
+#: PageGuard/Metabox/Metabox.php:144
 msgid "De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:160
-msgid "Volgende herinnering datum"
+#: PageGuard/Metabox/Metabox.php:175
+msgid "Standaard"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:163
-msgid "De herinnering wordt via de e-mail verstuurd op de ingestelde datum."
+#: PageGuard/Metabox/Metabox.php:175
+msgid "Aangepast"
+msgstr ""
+
+#: PageGuard/Metabox/Metabox.php:189
+msgid "Herinnering periode"
 msgstr ""
 
 #: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:12
@@ -233,27 +289,27 @@ msgstr ""
 msgid "Voer het e-mailadres van de externe inhoudseigenaar in."
 msgstr ""
 
-#: PageGuard/Traits/Date.php:27
+#: PageGuard/Traits/Date.php:33
 msgid "dag"
 msgstr ""
 
-#: PageGuard/Traits/Date.php:27
+#: PageGuard/Traits/Date.php:33
 msgid "dagen"
 msgstr ""
 
-#: PageGuard/Traits/Date.php:28
+#: PageGuard/Traits/Date.php:34
 msgid "week"
 msgstr ""
 
-#: PageGuard/Traits/Date.php:28
+#: PageGuard/Traits/Date.php:34
 msgid "weken"
 msgstr ""
 
-#: PageGuard/Traits/Date.php:29
+#: PageGuard/Traits/Date.php:35
 msgid "maand"
 msgstr ""
 
-#: PageGuard/Traits/Date.php:29
+#: PageGuard/Traits/Date.php:35
 msgid "maanden"
 msgstr ""
 
@@ -261,18 +317,30 @@ msgstr ""
 msgid "Dit bericht is automatisch gegenereerd vanuit"
 msgstr ""
 
+#: PageGuard/Traits/Text.php:29
+msgid "Dagen"
+msgstr ""
+
+#: PageGuard/Traits/Text.php:29
+msgid "Weken"
+msgstr ""
+
+#: PageGuard/Traits/Text.php:29
+msgid "Maanden"
+msgstr ""
+
 #: PageGuard/WPCron/Events/ReminderNotification.php:77
 msgid "Controle herinnering"
 msgstr ""
 
-#: PageGuard/WPJson/Controllers/VerifyPostController.php:76
+#: PageGuard/WPJson/Controllers/VerifyPostController.php:62
 msgid "Ongeldige post ID"
 msgstr ""
 
-#: PageGuard/WPJson/Controllers/VerifyPostController.php:103
+#: PageGuard/WPJson/Controllers/VerifyPostController.php:89
 msgid "De pagina is succesvol gecontroleerd!"
 msgstr ""
 
-#: PageGuard/WPJson/Controllers/VerifyPostController.php:121
+#: PageGuard/WPJson/Controllers/VerifyPostController.php:107
 msgid "Er is iets misgegaan."
 msgstr ""
