@@ -22,7 +22,7 @@ class AdminOverviewService
 
         $postIds = array_map('intval', $_POST['post_ids'] ?? []);
         $reviewDate = sanitize_text_field(! empty($_POST['ypg_review_date']) ? $_POST['ypg_review_date'] : 'none');
-        $reviewStatus = sanitize_text_field($_POST['ypg_review_status'] ?? 'none');
+        $reviewStatus = sanitize_text_field($_POST['ypg_review_status'] ?? 'none'); // Either 'none', '1' (verify) or '0' (unverify)
         $contentOwner = sanitize_text_field($_POST['ypg_post_content_owner'] ?? 'none');
 
         if ([] === $postIds) {
@@ -178,7 +178,7 @@ class AdminOverviewService
             $contentOwnerId = get_post_meta($reviewItem->ID, 'ypg_post_content_owner_id', true);
             $nextReviewDate = get_post_meta($reviewItem->ID, 'ypg_review_date', true);
             $formattedNextReviewDate = $this->formatDate($nextReviewDate);
-            $lastReviewDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) : __('Geen', 'yard-page-guard');
+            $lastReviewDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) : __('N.v.t.', 'yard-page-guard');
             $reviewStatus = __('Gecontroleerd', 'yard-page-guard');
             $contentOwner = (ContentOwnerType::EXTERNAL === $contentOwnerType)
                 ? get_term($contentOwnerId, 'ypg_external_content_owner')

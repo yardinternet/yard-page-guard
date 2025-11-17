@@ -14,24 +14,20 @@ class VerifyPostController
     use Text;
     use Token;
 
+    /**
+     * Updates a post's meta so it gets verified and receives its next review and reminder dates.
+     * Returns a HTML response since it gets handled by htmx on the frontend.
+     */
     public function handleRequest(WP_REST_Request $request): void
     {
         $postId = (int) $request->get_param('post_id');
-        $newReviewDate = $this->computeReviewDate(
-            $postId,
-            true,
-            false,
-        );
-        $newReminderDate = $this->computeReminderDate(
-            $postId,
-            true,
-            false,
-        );
+        $newReviewDate = $this->computeReviewDate($postId);
+        $newReminderDate = $this->computeReminderDate($postId);
 
         $updatedReviewDate = update_post_meta($postId, 'ypg_review_date', $newReviewDate);
         $updatedReminderDate = update_post_meta($postId, 'ypg_reminder_date', $newReminderDate);
         $updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', true);
-        update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d')); # Not used for if statement below because it doesn't define failure
+        update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d')); # TODO: Add return value to if statement
 
         header('Content-Type: text/html; charset=utf-8');
 
@@ -43,7 +39,7 @@ class VerifyPostController
         }
 
         error_log("[yard-page-guard] Failed to process review for post ID: $postId");
-        http_response_code(500);
+		http_response_code(200); # HTML needs to be returned properly, so no 500.
         echo self::getErrorResponse();
 
         exit();
@@ -56,7 +52,7 @@ class VerifyPostController
                 'required' => true,
                 'type' => 'integer',
                 'validate_callback' => function (int $postId) {
-                    if (get_post($postId) === null) {
+                    if (get_post_status($postId) === false) {
                         return new WP_Error(
                             'invalid_post_id',
                             __('Ongeldige post ID', 'yard-page-guard')
@@ -69,7 +65,7 @@ class VerifyPostController
             'ypg_review_token' => [
                 'required' => true,
                 'type' => 'string',
-                'validate_callback' => function (string $reviewToken, WP_REST_Request $request) {
+                'validate_callback' => function (string $reviewToken, WP_REST_Request $request): bool {
                     $postId = (int) $request->get_param('post_id');
                     $contentOwnerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?? '';
                     $reviewDate = get_post_meta($postId, 'ypg_review_date', true) ?? '';

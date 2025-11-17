@@ -22,7 +22,7 @@
 
 ### Fixed
 
-- Return type of saveMetaboxValues()
+- Return type of saveMetaValues()
 
 ## Version [1.0.1] (2024-10-18)
 

@@ -38,6 +38,7 @@
 !.gitignore
 
 !.php_cs
+!.nvmrc
 
 # Linting / Formatting
 !.eslintrc

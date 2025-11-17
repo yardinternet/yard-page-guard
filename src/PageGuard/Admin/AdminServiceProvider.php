@@ -196,7 +196,7 @@ class AdminServiceProvider extends ServiceProvider
             case 'ypg_review_date': {
                 ?>
 						<div class="ypg-quick-edit-fields">
-							<label><?= __('Controle datum', 'yard-page-guard') ?></label>
+							<label><?= __('Herzieningsdatum', 'yard-page-guard') ?></label>
 							<input type="date" id="ypg-review-date" name="ypg_review_date" min="<?= date('Y-m-d') ?>">
 						</div>
 					</fieldset>
@@ -208,9 +208,9 @@ class AdminServiceProvider extends ServiceProvider
 
     public function manageCustomColumns(array $columns): array
     {
-        $columns['ypg_post_content_owner'] = __('Inhoudseigenaar', 'yard-page-guard');
-        $columns['ypg_is_verified'] = __('Gecontroleerd?', 'yard-page-guard');
-        $columns['ypg_review_date'] = __('Controle datum', 'yard-page-guard');
+        $columns['ypg_post_content_owner'] = __('Eigenaar', 'yard-page-guard');
+        $columns['ypg_is_verified'] = __('Status', 'yard-page-guard');
+        $columns['ypg_review_date'] = __('Volgende herzieningsdatum', 'yard-page-guard');
 
         return $columns;
     }
@@ -229,7 +229,7 @@ class AdminServiceProvider extends ServiceProvider
 
         if ('ypg_is_verified' === $column) {
             $isVerified = get_post_meta($postId, 'ypg_is_verified', true);
-            echo $isVerified ? __('Ja', 'yard-page-guard') : __('Nee', 'yard-page-guard');
+            echo $isVerified ? __('Gecontroleerd', 'yard-page-guard') : __('Achterstallig', 'yard-page-guard');
         }
 
         if ('ypg_review_date' === $column) {
