@@ -14,6 +14,7 @@ class ExternalOwnerTaxonomy
             'show_ui' => true,
             'show_in_quick_edit' => false,
             'show_admin_column' => false,
+            'show_in_menu' => false,
             'hierarchical' => false,
             'rewrite' => [
                 'slug' => 'ypg-external-content-owner',
@@ -64,7 +65,7 @@ class ExternalOwnerTaxonomy
         if (isset($_POST['ypg_external_content_owner_email'])) {
             $email = sanitize_email($_POST['ypg_external_content_owner_email']);
 
-            if ('' !== $email) {
+            if ('' !== $email && is_email($email)) {
                 update_term_meta($termId, 'ypg_external_content_owner_email', $email);
             } else {
                 delete_term_meta($termId, 'ypg_external_content_owner_email');

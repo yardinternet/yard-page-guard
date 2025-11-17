@@ -19,26 +19,26 @@ trait Date
         return date_i18n($format, $date->getTimestamp());
     }
 
-    public function getPeriodOptionString(string $periodKey, string $unitKey, bool $hideOnSingle = true, ?int $postId = 0): string
+    public function getDatePeriodLabel(string $periodKey, string $unitKey, bool $hideOnSingle = true, ?int $postId = null): string
     {
-        $postUnit = get_post_meta($postId, $unitKey, true);
-        $postPeriod = get_post_meta($postId, $periodKey, true);
-        $period = ! empty($postUnit) ? $postUnit : get_option($unitKey, 'weeks');
-        $unit = ! empty($postPeriod) ? $postPeriod : intval(get_option($periodKey, 1));
-
-        $period = intval(get_option($periodKey, 2));
-        $unit = get_option($unitKey, 'weeks');
+        $dateUnitOverride = get_post_meta($postId, $unitKey, true);
+        $datePeriodOverride = (int) get_post_meta($postId, $periodKey, true);
+        $finalPeriod = ! empty($dateUnitOverride) ? $dateUnitOverride : get_option($unitKey, 'weeks');
+        $finalUnit = ! empty($datePeriodOverride) ? $datePeriodOverride : (int) get_option($periodKey, 1);
 
         $units = [
-            'days' => 1 === $period ? __('dag', 'yard-page-guard') : __('dagen', 'yard-page-guard'),
-            'weeks' => 1 === $period ? __('week', 'yard-page-guard') : __('weken', 'yard-page-guard'),
-            'months' => 1 === $period ? __('maand', 'yard-page-guard') : __('maanden', 'yard-page-guard'),
+            'days' => 1 === $finalPeriod ? __('dag', 'yard-page-guard') : __('dagen', 'yard-page-guard'),
+            'weeks' => 1 === $finalPeriod ? __('week', 'yard-page-guard') : __('weken', 'yard-page-guard'),
+            'months' => 1 === $finalPeriod ? __('maand', 'yard-page-guard') : __('maanden', 'yard-page-guard'),
         ];
-        $unitLabel = $units[$unit] ?? $unit;
+        $unitLabel = $units[$finalUnit] ?? $finalUnit;
 
-        return (1 === $period && $hideOnSingle ? '' : $period . ' ') . $unitLabel;
+        return (1 === $finalPeriod && $hideOnSingle ? '' : $finalPeriod . ' ') . $unitLabel;
     }
 
+    /**
+     * Adds a date period to a base date (provided as Y-m-d string)
+     */
     public function addPeriodToBase(string $base, int $period, string $unit): string
     {
         $date = new \DateTime($base);
@@ -54,13 +54,19 @@ trait Date
         return $date->format('Y-m-d');
     }
 
+    /**
+     * Computes the next date for a post's review / reminder meta
+     * $toBeVerified and $wasPreviouslyVerified are used
+     * because saving a post regardless of changing the yard-page-guard metabox values
+     * will be hooked into using 'save_post'.
+     */
     public function computeDateMeta(
         string $inputFieldName,
         mixed $baseValue,
         bool $toBeVerified,
         bool $wasPreviouslyVerified,
         int $period,
-        string $unit,
+        string $unit
     ): string {
         // #1 Manual change via metabox input (different from before)
         if (
@@ -89,37 +95,37 @@ trait Date
         return $baseValue;
     }
 
-    private function computeReviewDate(int $postId, bool $toBeVerified, bool $wasPreviouslyVerified): string
+    private function computeReviewDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
     {
         $currentReviewDate = get_post_meta($postId, 'ypg_review_date', true);
-        $period = (int) get_option('ypg_review_time_period', 1);
-        $unit = get_option('ypg_review_time_unit', 'weeks');
+        $datePeriod = (int) get_option('ypg_review_time_period', 1);
+        $dateUnit = get_option('ypg_review_time_unit', 'weeks');
 
         return $this->computeDateMeta(
             'ypg_review_date',
             $currentReviewDate,
             $toBeVerified,
             $wasPreviouslyVerified,
-            $period,
-            $unit,
+            $datePeriod,
+            $dateUnit,
         );
     }
 
-    private function computeReminderDate(int $postId, bool $toBeVerified, bool $wasPreviouslyVerified): string
+    private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
     {
         $currentReviewDate = get_post_meta($postId, 'ypg_review_date', true);
-        $postUnit = get_post_meta($postId, 'ypg_reminder_time_unit', true);
-        $postPeriod = get_post_meta($postId, 'ypg_reminder_time_period', true);
-        $currentPeriod = ! empty($postPeriod) ? $postPeriod : intval(get_option('ypg_reminder_time_period', 1));
-        $currentUnit = ! empty($postUnit) ? $postUnit : get_option('ypg_reminder_time_unit', 'weeks');
+        $dateUnitOverride = get_post_meta($postId, 'ypg_reminder_time_unit', true);
+        $datePeriodOverride = (int) get_post_meta($postId, 'ypg_reminder_time_period', true);
+        $finalPeriod = ! empty($datePeriodOverride) ? $datePeriodOverride : (int) get_option('ypg_reminder_time_period', 1);
+        $finalUnit = ! empty($dateUnitOverride) ? $dateUnitOverride : get_option('ypg_reminder_time_unit', 'weeks');
 
         $reminderDate = $this->computeDateMeta(
             'ypg_reminder_date',
             $currentReviewDate,
             $toBeVerified,
             $wasPreviouslyVerified,
-            $currentPeriod,
-            $currentUnit,
+            $finalPeriod,
+            $finalUnit,
         );
 
         return $reminderDate;

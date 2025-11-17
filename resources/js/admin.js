@@ -1,105 +1,121 @@
 import '../css/admin.css';
 
-document.addEventListener('DOMContentLoaded', () => {
-	const selectAll = document.querySelector('#ypg-select-all');
-	const checkboxes = document.querySelectorAll('input[name="post_ids[]"]');
-	const bulkBar = document.querySelector('.ypg-bulk-action-bar-wrapper');
+/**
+ * Functionality for bulk actions on plugin overview page
+ */
+function initBulkActions() {
+	const selectAllCheckbox = document.querySelector('#ypg-select-all');
+	const postCheckboxes = document.querySelectorAll(
+		'input[name="post_ids[]"]'
+	);
+	const bulkActionBar = document.querySelector(
+		'.ypg-bulk-action-bar-wrapper'
+	);
 
+	//Show bulk edit bar if at least 1 checkbox is checked
 	const updateBulkBarVisibility = () => {
-		const anyChecked = Array.from(checkboxes).some((cb) => cb.checked);
-		if (bulkBar) {
-			bulkBar.setAttribute('aria-hidden', !anyChecked);
-		}
+		if (!bulkActionBar) return;
+		const anyChecked = Array.from(postCheckboxes).some((cb) => cb.checked);
+		bulkActionBar.setAttribute('aria-hidden', !anyChecked);
 	};
 
-	// Toggle all checkboxes when "select all" is clicked
-	if (selectAll) {
-		selectAll.addEventListener('click', (e) => {
-			checkboxes.forEach((cb) => (cb.checked = e.target.checked));
+	// Toggle all checkboxes
+	if (selectAllCheckbox) {
+		selectAllCheckbox.addEventListener('click', (e) => {
+			postCheckboxes.forEach((cb) => (cb.checked = e.target.checked));
 			updateBulkBarVisibility();
 		});
 	}
 
-	// Update bulk bar when individual checkboxes are clicked
-	checkboxes.forEach((cb) => {
-		cb.addEventListener('click', updateBulkBarVisibility);
-	});
+	postCheckboxes.forEach((cb) =>
+		cb.addEventListener('click', updateBulkBarVisibility)
+	);
 
-	// Initialize on page load
+	// Initialize visibility on page load
 	updateBulkBarVisibility();
+}
+
+/**
+ * Necessary changes for handling yard-page-guard meta changes through quick edit
+ */
+function initInlineEditOverride() {
+	if (!window.inlineEditPost) {
+		return;
+	}
 
 	const { __ } = wp.i18n;
 	const originalInlineEdit = window.inlineEditPost.edit;
 
-	// Override inline edit
 	window.inlineEditPost.edit = function (postId) {
-		// Call original inline edit first
 		originalInlineEdit.apply(this, arguments);
 
-		// Handle object-style postId
 		if (typeof postId === 'object') {
 			postId = parseInt(this.getId(postId), 10);
 		}
 
-		const editRow = document.getElementById('edit-' + postId);
-		const postRow = document.getElementById('post-' + postId);
-
+		const editRow = document.getElementById(`edit-${postId}`);
+		const postRow = document.getElementById(`post-${postId}`);
 		if (!editRow || !postRow) return;
 
-		// Helper to get node innertext
 		const getText = (selector, context = document) =>
 			context.querySelector(selector)?.innerText.trim() || '';
 
-		// Get values through post overview columns for population
+		// Content Owner
 		const contentOwner = getText('.ypg_post_content_owner', postRow);
-		const contentOwnerValue =
-			Array.from(
-				editRow.querySelectorAll(
-					'select[name="ypg_post_content_owner"] option'
-				)
-			).find((option) => option.innerText.trim() === contentOwner)
-				?.value || '';
-
-		const isVerified =
-			getText('.ypg_is_verified', postRow) ===
-			__('Ja', 'yard-page-guard');
-
-		const reviewDate =
-			editRow.querySelector('.review-date-wrapper')?.dataset.date || '';
-
-		// Populate quick edit fields
 		const ownerSelect = editRow.querySelector(
 			'select[name="ypg_post_content_owner"]'
 		);
-		if (ownerSelect) ownerSelect.value = contentOwnerValue;
+		if (ownerSelect) {
+			const option = Array.from(ownerSelect.options).find(
+				(opt) => opt.text.trim() === contentOwner
+			);
+			ownerSelect.value = option?.value || '';
+		}
 
+		// Verified Checkbox
 		const verifiedCheckbox = editRow.querySelector(
 			'input[name="ypg_is_verified"]'
 		);
-		if (verifiedCheckbox) verifiedCheckbox.checked = isVerified;
+		if (verifiedCheckbox) {
+			verifiedCheckbox.checked =
+				getText('.ypg_is_verified', postRow) ===
+				__('Ja', 'yard-page-guard');
+		}
 
+		// Review Date
 		const reviewDateInput = editRow.querySelector(
 			'input[name="ypg_review_date"]'
 		);
-		if (reviewDateInput) reviewDateInput.value = reviewDate;
+		if (reviewDateInput) {
+			reviewDateInput.value =
+				editRow.querySelector('.review-date-wrapper')?.dataset.date ||
+				'';
+		}
 	};
-});
+}
 
-wp.domReady(() => {
-	const reminderRadio = document.querySelector('#ypg-reminder-type-radio');
-	const customReminderWrapper = document.querySelector(
+/**
+ * Makes edit post metabox reminder type radio show/hide the date input
+ */
+function initReminderRadioToggle() {
+	const reminderRadioGroup = document.querySelector(
+		'#ypg-reminder-type-radio'
+	);
+	const customDateWrapper = document.querySelector(
 		'.ypg-reminder-date-input-wrapper'
 	);
 
-	if (reminderRadio && customReminderWrapper) {
-		reminderRadio.querySelectorAll('input').forEach((radio) => {
-			radio.addEventListener('change', (e) => {
-				if (e.target.value === 'custom' && e.target.checked) {
-					customReminderWrapper.ariaHidden = false;
-				} else {
-					customReminderWrapper.ariaHidden = true;
-				}
-			});
+	if (!reminderRadioGroup || !customDateWrapper) return;
+
+	reminderRadioGroup.querySelectorAll('input').forEach((radio) => {
+		radio.addEventListener('change', (e) => {
+			customDateWrapper.ariaHidden = e.target.value !== 'custom';
 		});
-	}
+	});
+}
+
+wp.domReady(() => {
+	initBulkActions();
+	initInlineEditOverride();
+	initReminderRadioToggle();
 });

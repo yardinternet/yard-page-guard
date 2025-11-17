@@ -100,7 +100,6 @@ class ReminderNotification extends Event
         $values = [
             $owner->salutation(),
             $itemList,
-            $this->getPeriodOptionString('ypg_reminder_time_period', 'ypg_reminder_time_unit'),
         ];
 
         $contentHtml = $this->replacePlaceholders($content, $values);
@@ -111,11 +110,11 @@ class ReminderNotification extends Event
     private function updateModuleMeta(ReviewItem $item): void
     {
         $currentReminderDate = $item->reminderDate() ?: date('Y-m-d');
-        $postUnit = get_post_meta($item->ID(), 'ypg_reminder_time_unit', true);
-        $postPeriod = get_post_meta($item->ID(), 'ypg_reminder_time_period', true);
-        $currentUnit = ! empty($postUnit) ? $postUnit : get_option('ypg_reminder_time_unit', 'weeks');
-        $currentPeriod = ! empty($postPeriod) ? $postPeriod : intval(get_option('ypg_reminder_time_period', 1));
+        $overrideDateUnit = get_post_meta($item->ID(), 'ypg_reminder_time_unit', true);
+        $overrideDatePeriod = (int) get_post_meta($item->ID(), 'ypg_reminder_time_period', true);
+        $finalDateUnit = ! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit', 'weeks');
+        $finalDatePeriod = ! empty($overrideDatePeriod) ? $overrideDatePeriod : (int) get_option('ypg_reminder_time_period', 1);
 
-        update_post_meta($item->ID(), 'ypg_reminder_date', $this->addPeriodToBase($currentReminderDate, $currentUnit, $currentPeriod));
+        update_post_meta($item->ID(), 'ypg_reminder_date', $this->addPeriodToBase($currentReminderDate, $finalDateUnit, $finalDatePeriod));
     }
 }

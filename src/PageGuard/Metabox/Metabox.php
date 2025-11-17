@@ -136,8 +136,8 @@ class Metabox
         $isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
 
         $label = $isVerified
-            ? __('Volgende controle datum', 'yard-page-guard')
-            : __('Controle datum', 'yard-page-guard');
+            ? __('Volgende herzieningsdatum', 'yard-page-guard')
+            : __('Herzieningsdatum', 'yard-page-guard');
 
         $message = $isVerified
             ? __('Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar.', 'yard-page-guard')
@@ -164,7 +164,7 @@ class Metabox
         $isDefault = empty($postPeriod) || empty($postUnit);
         $customReminderAriaHidden = $isDefault ? 'true' : 'false';
         $currentUnit = ! empty($postUnit) ? $postUnit : get_option('ypg_reminder_time_unit', 'weeks');
-        $currentPeriod = ! empty($postPeriod) ? $postPeriod : intval(get_option('ypg_reminder_time_period', 1));
+        $currentPeriod = ! empty($postPeriod) ? $postPeriod : get_option('ypg_reminder_time_period', 1);
 
         $unitOptionElements = '';
 
@@ -210,7 +210,7 @@ class Metabox
         return $html;
     }
 
-    public function saveMetaboxValues(int $postId): void
+    public function saveMetaValues(int $postId): void
     {
         if (! $this->shouldSave($postId)) {
             return;
@@ -239,7 +239,7 @@ class Metabox
             delete_post_meta($postId, 'ypg_review_mail_sent');
         }
 
-        if ('custom' === $_POST['ypg_reminder_type']) {
+        if ('custom' === ($_POST['ypg_reminder_type'] ?? 'standard')) {
             update_post_meta($postId, 'ypg_reminder_time_period', $_POST['ypg_reminder_time_period']);
             update_post_meta($postId, 'ypg_reminder_time_unit', $_POST['ypg_reminder_time_unit']);
         } else {

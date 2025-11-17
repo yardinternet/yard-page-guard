@@ -21,6 +21,7 @@ class AdminOverviewController
     public function init(): void
     {
         add_action('admin_menu', [$this, 'addOverviewPage']);
+        add_action('admin_menu', [$this, 'addOverviewSubPage']);
         add_action('admin_post_ypg_bulk_update', [$this->service, 'handleBulkEdit']);
     }
 
@@ -37,8 +38,25 @@ class AdminOverviewController
         );
     }
 
+    public function addOverviewSubPage(): void
+    {
+        add_submenu_page(
+            'ypg-overview',
+            __('Externe inhoudseigenaren', 'yard-page-guard'),
+            __('Externe inhoudseigenaren', 'yard-page-guard'),
+            'manage_options',
+            'ypg-external-content-owners',
+            [$this, 'redirectToExternalContentOwners']
+        );
+    }
+
     public function renderOverviewPage(): void
     {
         require_once __DIR__ . '/../Views/AdminOverviewPage.php';
+    }
+
+    public function redirectToExternalContentOwners(): void
+    {
+        wp_safe_redirect(admin_url('edit-tags.php?taxonomy=ypg_external_content_owner'));
     }
 }

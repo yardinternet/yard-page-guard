@@ -103,7 +103,6 @@ class ReviewNotification extends Event
         $values = [
             $owner->salutation(),
             $itemList,
-            $this->getPeriodOptionString('ypg_review_time_period', 'ypg_review_time_unit'),
         ];
 
         $contentHtml = $this->replacePlaceholders($content, $values);

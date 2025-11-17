@@ -10,6 +10,6 @@ class MetaboxServiceProvider extends ServiceProvider
     {
         $metabox = new Metabox;
         add_action('add_meta_boxes', [$metabox, 'addMetaboxes'], 999, 0);
-        add_action('save_post', [$metabox, 'saveMetaboxValues'], 999, 1);
+        add_action('save_post', [$metabox, 'saveMetaValues'], 999, 1);
     }
 }
