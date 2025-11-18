@@ -39,7 +39,7 @@ class VerifyPostController
         }
 
         error_log("[yard-page-guard] Failed to process review for post ID: $postId");
-		http_response_code(200); # HTML needs to be returned properly, so no 500.
+        http_response_code(200); # HTML needs to be returned properly, so no 500.
         echo self::getErrorResponse();
 
         exit();

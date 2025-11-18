@@ -221,19 +221,20 @@ class AdminServiceProvider extends ServiceProvider
             $contentOwner = get_post_meta($postId, 'ypg_post_content_owner_name', true);
 
             if (false === $contentOwner || '' === $contentOwner) {
-                echo __('Onbekend', 'yard-page-guard');
+                echo __('Niet ingesteld', 'yard-page-guard');
             } else {
                 echo $contentOwner . (get_post_meta($postId, 'ypg_post_content_owner_type', true) === ContentOwnerType::EXTERNAL ? ' (' . __('Extern', 'yard-page-guard') . ')' : '');
             }
         }
 
+        $reviewDate = get_post_meta($postId, 'ypg_review_date', true);
+
         if ('ypg_is_verified' === $column) {
             $isVerified = get_post_meta($postId, 'ypg_is_verified', true);
-            echo $isVerified ? __('Gecontroleerd', 'yard-page-guard') : __('Achterstallig', 'yard-page-guard');
+            echo $isVerified ? __('Gecontroleerd', 'yard-page-guard') : ($reviewDate && date('Y-m-d') > $reviewDate ? __('Achterstallig', 'yard-page-guard') : __('N.v.t.', 'yard-page-guard'));
         }
 
         if ('ypg_review_date' === $column) {
-            $reviewDate = get_post_meta($postId, 'ypg_review_date', true);
             echo $reviewDate ? "<span class='review-date-wrapper' data-date='$reviewDate'>{$this->formatDate($reviewDate)}</span>" : __('Niet ingesteld', 'yard-page-guard');
         }
     }
