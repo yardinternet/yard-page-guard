@@ -49,6 +49,16 @@ class ReviewItem
 
         $permalink = add_query_arg('ypg_review_token', self::generateReviewToken($this->ID(), $ownerEmail, $reviewDate), $permalink);
 
+        $home = home_url();
+
+        if (strpos($home, 'pdc') !== false) {
+            add_query_arg('type', 'pdc', $permalink);
+            add_query_arg('post_id', $this->ID(), $permalink);
+        } elseif (strpos($home, 'pub') !== false) {
+            add_query_arg('type', 'pub', $permalink);
+            add_query_arg('post_id', $this->ID(), $permalink);
+        }
+
         return $permalink;
     }
 
