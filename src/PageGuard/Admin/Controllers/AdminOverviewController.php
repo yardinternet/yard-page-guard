@@ -54,8 +54,7 @@ class AdminOverviewController
             __('Externe inhoudseigenaren', 'yard-page-guard'),
             __('Externe inhoudseigenaren', 'yard-page-guard'),
             'manage_options',
-            'ypg-external-content-owners',
-            [$this, 'redirectToExternalContentOwners']
+            'edit-tags.php?taxonomy=ypg_external_content_owner',
         );
     }
 
@@ -67,5 +66,6 @@ class AdminOverviewController
     public function redirectToExternalContentOwners(): void
     {
         wp_safe_redirect(admin_url('edit-tags.php?taxonomy=ypg_external_content_owner'));
+        exit();
     }
 }
