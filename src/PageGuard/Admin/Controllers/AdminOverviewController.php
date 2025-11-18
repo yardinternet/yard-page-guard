@@ -1,6 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Yard\PageGuard\Admin\Controllers;
+
+/**
+ * Exit when accessed directly.
+ */
+if (! defined('ABSPATH')) {
+    exit;
+}
 
 use Yard\PageGuard\Admin\Services\AdminOverviewService;
 use Yard\PageGuard\Traits\Date;
@@ -58,5 +67,6 @@ class AdminOverviewController
     public function redirectToExternalContentOwners(): void
     {
         wp_safe_redirect(admin_url('edit-tags.php?taxonomy=ypg_external_content_owner'));
+        exit();
     }
 }
