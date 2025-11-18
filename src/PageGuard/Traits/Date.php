@@ -62,7 +62,7 @@ trait Date
      */
     public function computeDateMeta(
         string $inputFieldName,
-        mixed $baseValue,
+        $baseValue,
         bool $toBeVerified,
         bool $wasPreviouslyVerified,
         int $period,

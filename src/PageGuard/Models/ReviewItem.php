@@ -5,11 +5,13 @@ namespace Yard\PageGuard\Models;
 use DateTime;
 use DateTimeZone;
 use WP_Post;
+use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Token;
 
 class ReviewItem
 {
     use Token;
+    use Date;
 
     protected WP_Post $item;
 
@@ -53,6 +55,11 @@ class ReviewItem
     public function reviewDate(string $format = 'd-m-Y'): string
     {
         $date = get_post_meta($this->ID(), 'ypg_review_date', true);
+
+        if (! $this->isValidDate($date)) {
+            return __('Niet ingesteld', 'yard-page-guard');
+        }
+
         $date = new DateTime($date, new DateTimeZone(get_option('timezone_string')));
 
         return $date->format($format);

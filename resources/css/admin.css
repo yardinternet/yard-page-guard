@@ -124,8 +124,6 @@ body.taxonomy-ypg_external_content_owner {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	margin-bottom: 10px;
-	row-gap: 8px;
 }
 
 .ypg-reminder-date-input-wrapper {

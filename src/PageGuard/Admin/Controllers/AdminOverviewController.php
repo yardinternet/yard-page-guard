@@ -67,6 +67,5 @@ class AdminOverviewController
     public function redirectToExternalContentOwners(): void
     {
         wp_safe_redirect(admin_url('edit-tags.php?taxonomy=ypg_external_content_owner'));
-        exit();
     }
 }
