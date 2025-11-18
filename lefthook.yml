@@ -13,7 +13,7 @@ pre-commit:
       run: npx eslint --fix {staged_files}
       stage_fixed: true
 
-    - name: pint
+    - name: php-cs-fixer
       glob: '*.php'
       exclude: '*.blade.php'
       run: composer format
