@@ -41,7 +41,7 @@ trait Date
      */
     public function addPeriodToBase(string $base, int $period, string $unit): string
     {
-        $date = new \DateTime($base);
+        $date = new DateTime($base);
 
         if ('weeks' === $unit) {
             $date->modify("+{$period} weeks");
