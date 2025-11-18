@@ -145,7 +145,8 @@ class AdminServiceProvider extends ServiceProvider
                 ]);
 
                 ?>
-					<div class="ypg-quick-edit-fields">
+					<fieldset class="inline-edit-col-right">
+					<div class="ypg-quick-edit-fields inline-edit-col">
 						<label for="ypg-post-content-owner"><?= __('Inhoudseigenaar', 'yard-page-guard') ?></label>
 						<select name="ypg_post_content_owner" id="ypg-post-content-owner">
 							<?php
@@ -184,7 +185,7 @@ class AdminServiceProvider extends ServiceProvider
 
             case 'ypg_is_verified': {
                 ?>
-					<div class="ypg-quick-edit-fields">
+					<div class="ypg-quick-edit-fields inline-edit-col">
 						<label>
 							<input type="checkbox" id="ypg-is-verified" name="ypg_is_verified"> <?= __('Gecontroleerd?', 'yard-page-guard') ?>
 						</label>
@@ -195,7 +196,7 @@ class AdminServiceProvider extends ServiceProvider
 
             case 'ypg_review_date': {
                 ?>
-						<div class="ypg-quick-edit-fields">
+						<div class="ypg-quick-edit-fields inline-edit-col">
 							<label><?= __('Herzieningsdatum', 'yard-page-guard') ?></label>
 							<input type="date" id="ypg-review-date" name="ypg_review_date" min="<?= date('Y-m-d') ?>">
 						</div>
