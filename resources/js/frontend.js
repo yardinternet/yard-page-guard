@@ -3,6 +3,7 @@ import htmx from 'htmx.org';
 import '../css/frontend.css';
 
 document.addEventListener('DOMContentLoaded', function () {
+	htmx.config.selfRequestsOnly = false;
 	initReviewModal();
 });
 
