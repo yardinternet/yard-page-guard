@@ -8,7 +8,7 @@ namespace Yard\PageGuard\Admin\Controllers;
  * Exit when accessed directly.
  */
 if (! defined('ABSPATH')) {
-    exit;
+	exit;
 }
 
 use Yard\PageGuard\Admin\Services\AdminOverviewService;
@@ -17,55 +17,55 @@ use Yard\PageGuard\Traits\Text;
 
 class AdminOverviewController
 {
-    use Text;
-    use Date;
+	use Text;
+	use Date;
 
-    private AdminOverviewService $service;
+	private AdminOverviewService $service;
 
-    public function __construct()
-    {
-        $this->service = new AdminOverviewService();
-    }
+	public function __construct()
+	{
+		$this->service = new AdminOverviewService();
+	}
 
-    public function init(): void
-    {
-        add_action('admin_menu', [$this, 'addOverviewPage']);
-        add_action('admin_menu', [$this, 'addOverviewSubPage']);
-        add_action('admin_post_ypg_bulk_update', [$this->service, 'handleBulkEdit']);
-    }
+	public function init(): void
+	{
+		add_action('admin_menu', [$this, 'addOverviewPage']);
+		add_action('admin_menu', [$this, 'addOverviewSubPage']);
+		add_action('admin_post_ypg_bulk_update', [$this->service, 'handleBulkEdit']);
+	}
 
-    public function addOverviewPage(): void
-    {
-        add_menu_page(
-            __('Houdbaarheids Overzicht', 'yard-page-guard'),
-            __('Houdbaarheids Overzicht', 'yard-page-guard'),
-            'manage_options',
-            'ypg-overview',
-            [$this, 'renderOverviewPage'],
-            'dashicons-visibility',
-            20
-        );
-    }
+	public function addOverviewPage(): void
+	{
+		add_menu_page(
+			__('Houdbaarheids Overzicht', 'yard-page-guard'),
+			__('Houdbaarheids Overzicht', 'yard-page-guard'),
+			'manage_options',
+			'ypg-overview',
+			[$this, 'renderOverviewPage'],
+			'dashicons-visibility',
+			20
+		);
+	}
 
-    public function addOverviewSubPage(): void
-    {
-        add_submenu_page(
-            'ypg-overview',
-            __('Externe inhoudseigenaren', 'yard-page-guard'),
-            __('Externe inhoudseigenaren', 'yard-page-guard'),
-            'manage_options',
-            'edit-tags.php?taxonomy=ypg_external_content_owner',
-        );
-    }
+	public function addOverviewSubPage(): void
+	{
+		add_submenu_page(
+			'ypg-overview',
+			__('Externe inhoudseigenaren', 'yard-page-guard'),
+			__('Externe inhoudseigenaren', 'yard-page-guard'),
+			'manage_options',
+			'edit-tags.php?taxonomy=ypg_external_content_owner',
+		);
+	}
 
-    public function renderOverviewPage(): void
-    {
-        require_once __DIR__ . '/../Views/AdminOverviewPage.php';
-    }
+	public function renderOverviewPage(): void
+	{
+		require_once __DIR__ . '/../Views/AdminOverviewPage.php';
+	}
 
-    public function redirectToExternalContentOwners(): void
-    {
-        wp_safe_redirect(admin_url('edit-tags.php?taxonomy=ypg_external_content_owner'));
-        exit();
-    }
+	public function redirectToExternalContentOwners(): void
+	{
+		wp_safe_redirect(admin_url('edit-tags.php?taxonomy=ypg_external_content_owner'));
+		exit();
+	}
 }

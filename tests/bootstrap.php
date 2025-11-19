@@ -17,30 +17,30 @@ define('WP_DEBUG', false);
 \WP_Mock::bootstrap();
 
 $GLOBALS['yard-page-guard'] = [
-    'active_plugins' => ['yard-page-guard/yard-page-guard.php'],
+	'active_plugins' => ['yard-page-guard/yard-page-guard.php'],
 ];
 
 class WP_CLI
 {
-    public static function add_command()
-    {
-    }
+	public static function add_command()
+	{
+	}
 }
 
 if (! function_exists('get_echo')) {
-    /**
-     * Capture the echo of a callable function.
-     *
-     * @param       $callable
-     * @param array $args
-     *
-     * @return string
-     */
-    function get_echo($callable, $args = [])
-    {
-        ob_start();
-        call_user_func_array($callable, $args);
+	/**
+	 * Capture the echo of a callable function.
+	 *
+	 * @param       $callable
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+	function get_echo($callable, $args = [])
+	{
+		ob_start();
+		call_user_func_array($callable, $args);
 
-        return ob_get_clean();
-    }
+		return ob_get_clean();
+	}
 }

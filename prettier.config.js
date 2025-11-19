@@ -1,5 +1,7 @@
-module.exports = {
-	...require('@yardinternet/prettier-config'),
+import config from '@yardinternet/prettier-config';
+
+export default {
+	...config,
 
 	overrides: [
 		{

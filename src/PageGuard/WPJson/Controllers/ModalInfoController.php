@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Yard\PageGuard\WPJson\Controllers;
 
 use WP_REST_Request;
@@ -10,21 +12,21 @@ use Yard\PageGuard\Traits\Token;
 
 class ModalInfoController
 {
-    use Date;
-    use Text;
-    use Token;
+	use Date;
+	use Text;
+	use Token;
 
-    /**
-     * Returns post info (only title for now) for Fusion PDC/Pub connections
-     */
-    public function handleRequest(WP_REST_Request $request): WP_REST_Response
-    {
-        $postId = (int) $request->get_param('post_id');
+	/**
+	 * Returns post info (only title for now) for Fusion PDC/Pub connections
+	 */
+	public function handleRequest(WP_REST_Request $request): WP_REST_Response
+	{
+		$postId = (int) $request->get_param('post_id');
 
-        return new WP_REST_Response([
-            'id' => $postId,
-            'title' => get_the_title($postId),
-            'endpoint' => get_rest_url(null, '/yard-page-guard/v1/verify-post'),
-        ]);
-    }
+		return new WP_REST_Response([
+			'id' => $postId,
+			'title' => get_the_title($postId),
+			'endpoint' => get_rest_url(null, '/yard-page-guard/v1/verify-post'),
+		]);
+	}
 }

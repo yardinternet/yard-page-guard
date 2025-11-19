@@ -91,7 +91,8 @@ $query = $service->handleOverviewQuery();
 					<label for="ypg-post-content-owner"><?= __('Eigenaar', 'yard-page-guard') ?>:</label>
 
 					<select name="ypg_post_content_owner" id="ypg-post-content-owner">
-						<option value="none"><?= __('Behouden', 'yard-page-guard') ?></option>
+						<option value="keep"><?= __('Behouden', 'yard-page-guard') ?></option>
+						<option value="none"><?= __('Geen (weghalen)', 'yard-page-guard') ?></option>
 						<?php $service->buildUserList(); ?>
 					</select>
 				</div>
@@ -100,7 +101,7 @@ $query = $service->handleOverviewQuery();
 					<label for="ypg-review-status"><?= __('Gecontroleerd?', 'yard-page-guard') ?>:</label>
 
 					<select name="ypg_review_status" id="ypg-review-status">
-						<option value="none"><?= __('Behouden', 'yard-page-guard') ?></option>
+						<option value="keep"><?= __('Behouden', 'yard-page-guard') ?></option>
 						<option value="1"><?= __('Ja', 'yard-page-guard') ?></option>
 						<option value="0"><?= __('Nee', 'yard-page-guard') ?></option>
 					</select>
