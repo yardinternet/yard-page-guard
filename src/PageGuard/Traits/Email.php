@@ -78,7 +78,7 @@ trait Email
             $date = esc_html($item->reviewDate());
 
             $content = $appendDate
-                ? sprintf('<a href="%s">%s</a> — %s (' . __('elke', 'yard-page-guard') . ' %s)', $link, $title, $date, $this->getDatePeriodLabel('ypg_review_time_period', 'ypg_review_time_unit'))
+                ? sprintf('<a href="%s">%s</a> — %s %s', $link, $title, __('gepland voor', 'yard-page-guard'), $date)
                 : sprintf('<a href="%s">%s</a>', $link, $title);
 
             $list .= sprintf('<li>%s</li>', $content);

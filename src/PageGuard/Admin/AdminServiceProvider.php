@@ -153,6 +153,7 @@ class AdminServiceProvider extends ServiceProvider
 					<div class="ypg-quick-edit-fields inline-edit-col">
 						<label for="ypg-post-content-owner"><?= __('Inhoudseigenaar', 'yard-page-guard') ?></label>
 						<select name="ypg_post_content_owner" id="ypg-post-content-owner">
+							<option value="none"><?= __('Selecteer een eigenaar', 'yard-page-guard') ?></option>
 							<?php
                                 foreach ($wpUsers as $user) {
                                     $name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
@@ -235,7 +236,7 @@ class AdminServiceProvider extends ServiceProvider
         $reviewDate = get_post_meta($postId, 'ypg_review_date', true);
 
         if ('ypg_is_verified' === $column) {
-            $isVerified = get_post_meta($postId, 'ypg_is_verified', true);
+            $isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
             echo $isVerified ? __('Gecontroleerd', 'yard-page-guard') : ($reviewDate && date('Y-m-d') > $reviewDate ? __('Achterstallig', 'yard-page-guard') : __('N.v.t.', 'yard-page-guard'));
         }
 

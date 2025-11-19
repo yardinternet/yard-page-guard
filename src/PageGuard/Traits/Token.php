@@ -11,7 +11,7 @@ trait Token
         }
 
         $data = strtolower(trim("$postId|$contentOwnerEmail|$reviewDate"));
-        $rawHash = hash_hmac('sha256', $data, 'YPG_AUTH_SALT', true); # TODO: In case this goes open source, turn into env variable or something synced across sites, when fusion pdc setup.
+        $rawHash = hash_hmac('sha256', $data, 'YPG_AUTH_SALT', true); # TODO: In case this goes open source, turn into env variable synced across sites, when fusion pdc setup.
 
         return rtrim(strtr(base64_encode($rawHash), '+/', '-_'), '='); // URL safe
     }

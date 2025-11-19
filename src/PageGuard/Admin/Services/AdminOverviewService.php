@@ -5,12 +5,14 @@ namespace Yard\PageGuard\Admin\Services;
 use WP_Query;
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Traits\Meta;
 use Yard\PageGuard\Traits\Text;
 
 class AdminOverviewService
 {
     use Text;
     use Date;
+    use Meta;
 
     public function handleBulkEdit(): void
     {
@@ -22,23 +24,29 @@ class AdminOverviewService
 
         $postIds = array_map('intval', $_POST['post_ids'] ?? []);
         $reviewDate = sanitize_text_field(! empty($_POST['ypg_review_date']) ? $_POST['ypg_review_date'] : 'none');
-        $reviewStatus = sanitize_text_field($_POST['ypg_review_status'] ?? 'none'); // Either 'none', '1' (verify) or '0' (unverify)
-        $contentOwner = sanitize_text_field($_POST['ypg_post_content_owner'] ?? 'none');
+        $reviewStatus = sanitize_text_field($_POST['ypg_review_status'] ?? 'keep'); // Either 'keep', '1' (verify) or '0' (unverify)
+        $contentOwner = sanitize_text_field($_POST['ypg_post_content_owner'] ?? 'keep'); // Either 'keep', 'none' (removes all ypg meta) or | seperated owner data
 
         if ([] === $postIds) {
             wp_redirect(add_query_arg('ypg_updated', 'none', wp_get_referer()));
             exit;
         }
 
-        if ('none' !== $contentOwner) {
+        if ('none' !== $contentOwner && 'keep' !== $contentOwner) {
             $contentOwner = $this->parseContentOwnerData($contentOwner);
         }
 
         foreach ($postIds as $postId) {
             $previouslyVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
-            $toBeVerified = (bool) intval($reviewStatus);
+            $toBeVerified = intval($reviewStatus);
 
-            if ('none' !== $reviewStatus) {
+            if ('none' === $contentOwner) {
+                $this->clearReviewMeta($postId);
+
+                continue;
+            }
+
+            if ('keep' !== $reviewStatus) {
                 update_post_meta($postId, 'ypg_is_verified', $toBeVerified);
 
                 if ($toBeVerified) {
