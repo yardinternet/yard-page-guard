@@ -19,23 +19,6 @@ trait Date
         return date_i18n($format, $date->getTimestamp());
     }
 
-    public function getDatePeriodLabel(string $periodKey, string $unitKey, bool $hideOnSingle = true, ?int $postId = null): string
-    {
-        $dateUnitOverride = get_post_meta($postId, $unitKey, true);
-        $datePeriodOverride = (int) get_post_meta($postId, $periodKey, true);
-        $finalPeriod = ! empty($dateUnitOverride) ? $dateUnitOverride : get_option($unitKey, 'weeks');
-        $finalUnit = ! empty($datePeriodOverride) ? $datePeriodOverride : (int) get_option($periodKey, 1);
-
-        $units = [
-            'days' => 1 === $finalPeriod ? __('dag', 'yard-page-guard') : __('dagen', 'yard-page-guard'),
-            'weeks' => 1 === $finalPeriod ? __('week', 'yard-page-guard') : __('weken', 'yard-page-guard'),
-            'months' => 1 === $finalPeriod ? __('maand', 'yard-page-guard') : __('maanden', 'yard-page-guard'),
-        ];
-        $unitLabel = $units[$finalUnit] ?? $finalUnit;
-
-        return (1 === $finalPeriod && $hideOnSingle ? '' : $finalPeriod . ' ') . $unitLabel;
-    }
-
     /**
      * Adds a date period to a base date (provided as Y-m-d string)
      */

@@ -5,12 +5,14 @@ namespace Yard\PageGuard\Metabox;
 use WP_Post;
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Traits\Meta;
 use Yard\PageGuard\Traits\Text;
 
 class Metabox
 {
     use Date;
     use Text;
+    use Meta;
 
     public function addMetaboxes(): void
     {
@@ -227,7 +229,7 @@ class Metabox
         $contentOwner = sanitize_text_field($_POST['ypg_post_content_owner']);
 
         if ('none' === $contentOwner) {
-            $this->clearOwnerMeta($postId);
+            $this->clearReviewMeta($postId);
 
             return;
         }
@@ -255,25 +257,6 @@ class Metabox
         $reminderDate = $this->computeReminderDate($postId, $toBeVerified, $wasPreviouslyVerified);
 
         $this->updateVerificationMeta($postId, $toBeVerified, $reviewDate, $reminderDate);
-
-        // TODO: Remove when done
-        do_action('ypg_site_cron');
-    }
-
-    private function clearOwnerMeta(int $postId): void
-    {
-        $keys = [
-            'ypg_post_content_owner_id',
-            'ypg_post_content_owner_name',
-            'ypg_post_content_owner_email',
-            'ypg_post_content_owner_type',
-            'ypg_review_date',
-            'ypg_reminder_date',
-        ];
-
-        foreach ($keys as $key) {
-            delete_post_meta($postId, $key);
-        }
     }
 
     private function updateOwnerMeta(int $postId, array $ownerData): void
@@ -286,7 +269,7 @@ class Metabox
 
     private function updateVerificationMeta(int $postId, bool $isVerified, string $reviewDate, string $reminderDate): void
     {
-        update_post_meta($postId, 'ypg_is_verified', $isVerified);
+        update_post_meta($postId, 'ypg_is_verified', (int) $isVerified);
         update_post_meta($postId, 'ypg_review_date', $reviewDate);
         update_post_meta($postId, 'ypg_reminder_date', $reminderDate);
 

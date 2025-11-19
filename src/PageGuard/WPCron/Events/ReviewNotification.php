@@ -113,7 +113,7 @@ class ReviewNotification extends Event
 
     private function updateModuleMeta(ReviewItem $item): void
     {
-        delete_post_meta($item->ID(), 'ypg_is_verified');
+        update_post_meta($item->ID(), 'ypg_is_verified', 0);
         update_post_meta($item->ID(), 'ypg_review_mail_sent', 1);
     }
 }
