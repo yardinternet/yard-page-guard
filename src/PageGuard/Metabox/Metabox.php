@@ -60,6 +60,10 @@ class Metabox
             'hide_empty' => false,
         ]);
 
+        if (is_wp_error($externalUsers)) {
+            return '';
+        }
+
         $optionsHtml = '';
 
         $optionsHtml .= sprintf(
@@ -83,7 +87,7 @@ class Metabox
 
         if (! is_wp_error($externalUsers)) {
             foreach ($externalUsers as $user) {
-                $email = get_term_meta($user->term_id, 'ypg_external_content_owner_email', true);
+                $email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
                 $selected = ($contentOwnerId == $user->term_id && ContentOwnerType::EXTERNAL === $contentOwnerType) ? ' selected="selected"' : '';
 
                 $optionsHtml .= sprintf(

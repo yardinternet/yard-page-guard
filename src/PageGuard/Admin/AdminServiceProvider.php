@@ -144,6 +144,10 @@ class AdminServiceProvider extends ServiceProvider
                     'hide_empty' => false,
                 ]);
 
+                if (is_wp_error($externalUsers)) {
+                    return;
+                }
+
                 ?>
 					<fieldset class="inline-edit-col-right">
 					<div class="ypg-quick-edit-fields inline-edit-col">
@@ -165,7 +169,7 @@ class AdminServiceProvider extends ServiceProvider
 
 							<?php
                     foreach ($externalUsers as $user) {
-                        $email = get_term_meta($user->term_id, 'ypg_external_content_owner_email', true);
+                        $email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
 
                         printf(
                             '<option value="%s|%s|%s|external">%s (%s)</option>',

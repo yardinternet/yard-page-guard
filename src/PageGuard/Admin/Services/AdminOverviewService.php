@@ -213,6 +213,10 @@ class AdminOverviewService
         $wpUsers = get_users(['capability' => 'edit_pages']);
         $externalUsers = get_terms(['taxonomy' => 'ypg_external_content_owner', 'hide_empty' => false]);
 
+        if (is_wp_error($externalUsers)) {
+            return;
+        }
+
         foreach ($wpUsers as $user) {
             $name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
             $value = "{$user->ID}|{$name}|{$user->user_email}|user";
@@ -224,7 +228,7 @@ class AdminOverviewService
         }
 
         foreach ($externalUsers as $user) {
-            $email = get_term_meta($user->term_id, 'ypg_external_content_owner_email', true);
+            $email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
             $value = "{$user->term_id}|{$user->name}|{$email}|external";
             $selected = null !== $filterValue ? selected($value, $filterValue, false) : '';
             $label = __('Extern', 'yard-page-guard');
