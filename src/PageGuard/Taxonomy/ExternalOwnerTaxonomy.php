@@ -40,9 +40,9 @@ class ExternalOwnerTaxonomy
         <?php
     }
 
-    public function addUpdateEmailFormField(WP_Term $term): void
+    public function addUpdateEmailFormField(WP_Term $user): void
     {
-        $email = get_term_meta($term->term_id, 'ypg_external_content_owner_email', true);
+        $email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
         ?>
         <tr class="form-field">
             <th scope="row">
@@ -53,6 +53,7 @@ class ExternalOwnerTaxonomy
                        name="ypg_external_content_owner_email"
                        id="ypg_external_content_owner_email"
 					   size="40"
+					   required
                        value="<?= esc_attr($email); ?>" />
                 <p class="description"><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
             </td>
@@ -62,14 +63,18 @@ class ExternalOwnerTaxonomy
 
     public function handleSaveMeta(int $termId): void
     {
-        if (isset($_POST['ypg_external_content_owner_email'])) {
-            $email = sanitize_email($_POST['ypg_external_content_owner_email']);
-
-            if ('' !== $email && is_email($email)) {
-                update_term_meta($termId, 'ypg_external_content_owner_email', $email);
-            } else {
-                delete_term_meta($termId, 'ypg_external_content_owner_email');
-            }
+        if (! isset($_POST['ypg_external_content_owner_email'])) {
+            return;
         }
+
+        $email = sanitize_email($_POST['ypg_external_content_owner_email']);
+
+        if ('' === $email || ! is_email($email)) {
+            delete_term_meta($termId, 'ypg_external_content_owner_email');
+
+            return;
+        }
+
+        update_term_meta($termId, 'ypg_external_content_owner_email', $email);
     }
 }

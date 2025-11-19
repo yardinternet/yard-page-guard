@@ -44,6 +44,10 @@ class ReviewItem
     {
         $permalink = get_permalink($this->ID());
 
+        if (false === $permalink) {
+            return '';
+        }
+
         $ownerEmail = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true) ?? '';
         $reviewDate = get_post_meta($this->ID(), 'ypg_review_date', true) ?? '';
 
@@ -78,6 +82,11 @@ class ReviewItem
     public function reminderDate(string $format = 'd-m-Y'): string
     {
         $date = get_post_meta($this->ID(), 'ypg_reminder_date', true);
+
+        if (! $this->isValidDate($date)) {
+            return __('Niet ingesteld', 'yard-page-guard');
+        }
+
         $date = new DateTime($date, new DateTimeZone(get_option('timezone_string')));
 
         return $date->format($format);

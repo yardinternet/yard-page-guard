@@ -38,7 +38,7 @@ trait Text
         $ownerData = explode('|', $contentOwner);
 
         if (count($ownerData) !== 4) {
-            throw new \InvalidArgumentException('Invalid content owner data format.');
+            throw new \InvalidArgumentException('[yard-page-guard] Invalid content owner data format.');
         }
 
         return [
