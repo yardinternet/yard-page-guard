@@ -30,6 +30,8 @@ class VerifyPostController
         update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d')); # TODO: Add return value to if statement
 
         header('Content-Type: text/html; charset=utf-8');
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
 
         if ($updatedReviewDate && $updatedReminderDate && $updatedVerifiedStatus) {
             http_response_code(200);

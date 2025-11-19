@@ -25,8 +25,18 @@ class WPJsonServiceProvider extends ServiceProvider
                 'methods' => 'POST',
                 'callback' => [$modalInfoController, 'handleRequest'],
                 'args' => ModalInfoController::getEndpointArgs(),
-                'permission_callback' => fn () => '__return_true',
+                'permission_callback' => '__return_true',
             ]);
+
+            // Allow all origins and HTMX headers
+            add_filter('rest_pre_serve_request', function (bool $served) {
+                if (strpos($_SERVER['REQUEST_URI'], '/wp-json/yard-page-guard') !== false) {
+                    header('Access-Control-Allow-Origin: *');
+                    header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
+                }
+
+                return $served;
+            });
         });
     }
 }

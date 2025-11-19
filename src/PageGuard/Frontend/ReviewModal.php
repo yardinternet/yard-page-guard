@@ -61,17 +61,17 @@ class ReviewModal
      */
     private function getExternalModalInfo()
     {
-        if (('pdc' !== $_GET['external'] && 'pub' !== $_GET['external']) || ! is_integer($_GET['post_id'])) {
+        if (('pdc' !== $_GET['external'] && 'pub' !== $_GET['external']) || ! is_numeric($_GET['post_id'])) {
             return false;
         }
 
-        $endpointVariable = strtoupper('OPEN' . $_GET['external' . '_ENDPOINT']);
+        $endpointVariable = strtoupper('OPEN' . $_GET['external'] . '_ENDPOINT');
 
-        if (! is_string(getenv($endpointVariable))) {
+        if (! is_string($_ENV[$endpointVariable] ?? null)) {
             return false;
         }
 
-        $endpointUrl = trailingslashit(getenv($endpointVariable)) . 'yard-page-guard/v1/modal-info';
+        $endpointUrl = trailingslashit($_ENV[$endpointVariable]) . 'wp-json/yard-page-guard/v1/modal-info';
 
         $endpointArgs = [
             'method' => 'POST',
@@ -91,12 +91,13 @@ class ReviewModal
             return false;
         }
 
-        $endpointBody = json_decode(wp_remote_retrieve_body($endpointResponse));
+        $endpointBody = json_decode(wp_remote_retrieve_body($endpointResponse), true);
+
         if (! is_array($endpointBody)) {
             return false;
         }
 
-        return $endpointBody;
+        return isset($endpointBody['endpoint']) ? $endpointBody : false;
     }
 
     public function render(): void
