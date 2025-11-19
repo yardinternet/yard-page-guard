@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Yard\PageGuard\WPJson\Controllers;
 
 use WP_REST_Request;
@@ -9,48 +11,48 @@ use Yard\PageGuard\Traits\Token;
 
 class VerifyPostController
 {
-    use Date;
-    use Text;
-    use Token;
+	use Date;
+	use Text;
+	use Token;
 
-    /**
-     * Updates a post's meta so it gets verified and receives its next review and reminder dates.
-     * Returns a HTML response since it gets handled by htmx on the frontend.
-     */
-    public function handleRequest(WP_REST_Request $request): void
-    {
-        $postId = (int) $request->get_param('post_id');
-        $newReviewDate = $this->computeReviewDate($postId);
-        $newReminderDate = $this->computeReminderDate($postId);
+	/**
+	 * Updates a post's meta so it gets verified and receives its next review and reminder dates.
+	 * Returns a HTML response since it gets handled by htmx on the frontend.
+	 */
+	public function handleRequest(WP_REST_Request $request): void
+	{
+		$postId = (int) $request->get_param('post_id');
+		$newReviewDate = $this->computeReviewDate($postId);
+		$newReminderDate = $this->computeReminderDate($postId);
 
-        $updatedReviewDate = update_post_meta($postId, 'ypg_review_date', $newReviewDate);
-        $updatedReminderDate = update_post_meta($postId, 'ypg_reminder_date', $newReminderDate);
-        $updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', 1);
-        $updatedLastReviewDate = update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
+		$updatedReviewDate = update_post_meta($postId, 'ypg_review_date', $newReviewDate);
+		$updatedReminderDate = update_post_meta($postId, 'ypg_reminder_date', $newReminderDate);
+		$updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', 1);
+		$updatedLastReviewDate = update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
 
-        header('Content-Type: text/html; charset=utf-8');
-        header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
+		header('Content-Type: text/html; charset=utf-8');
+		header('Access-Control-Allow-Origin: *');
+		header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
 
-        if ($updatedReviewDate && $updatedReminderDate && $updatedVerifiedStatus && $updatedLastReviewDate) {
-            http_response_code(200);
-            echo self::getSuccessResponse();
+		if ($updatedReviewDate && $updatedReminderDate && $updatedVerifiedStatus && $updatedLastReviewDate) {
+			http_response_code(200);
+			echo self::getSuccessResponse();
 
-            exit();
-        }
+			exit();
+		}
 
-        error_log("[yard-page-guard] Failed to process review for post ID: $postId");
-        http_response_code(200); # HTML needs to be returned properly, so no 500.
-        echo self::getErrorResponse();
+		error_log("[yard-page-guard] Failed to process review for post ID: $postId");
+		http_response_code(200); # HTML needs to be returned properly, so no 500.
+		echo self::getErrorResponse();
 
-        exit();
-    }
+		exit();
+	}
 
-    public static function getSuccessResponse(): string
-    {
-        $message = __('De pagina is succesvol gecontroleerd!', 'yard-page-guard');
+	public static function getSuccessResponse(): string
+	{
+		$message = __('De pagina is succesvol gecontroleerd!', 'yard-page-guard');
 
-        $html = <<<HTML
+		$html = <<<HTML
             <div class="ypg-alert ypg-success">
                 <svg width="91" height="91" viewBox="0 0 91 91" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="45.5" cy="45.5" r="45.5" fill="currentColor"/>
@@ -61,14 +63,14 @@ class VerifyPostController
             </div>
         HTML;
 
-        return self::minifyHtml($html);
-    }
+		return self::minifyHtml($html);
+	}
 
-    public static function getErrorResponse(): string
-    {
-        $message = __('Er is iets misgegaan.', 'yard-page-guard');
+	public static function getErrorResponse(): string
+	{
+		$message = __('Er is iets misgegaan.', 'yard-page-guard');
 
-        $html = <<<HTML
+		$html = <<<HTML
 			<div class="ypg-alert ypg-error">
 				<svg width="91" height="91" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 91 91">
 					<circle cx="45.5" cy="45.5" r="45.5" fill="currentColor"/>
@@ -79,6 +81,6 @@ class VerifyPostController
 			</div>
 		HTML;
 
-        return self::minifyHtml($html);
-    }
+		return self::minifyHtml($html);
+	}
 }

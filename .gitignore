@@ -41,11 +41,7 @@
 !.nvmrc
 
 # Linting / Formatting
-!.eslintrc
-!.eslintignore
-!.prettierrc.cjs
 !.prettierignore
-!.stylelintrc.cjs
 
 # track .editorconfig file (i.e. do NOT ignore it)
 !.editorconfig

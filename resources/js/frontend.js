@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import htmx from 'htmx.org';
 import '../css/frontend.css';
 

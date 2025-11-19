@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "81246efc32aefa2217ad3212e1a11e7d",
+    "content-hash": "9aa3b27fcb198a4dc8d1e17270ff25d5",
     "packages": [],
     "packages-dev": [
         {
@@ -100,6 +100,49 @@
                 "source": "https://github.com/antecedent/patchwork/tree/2.2.3"
             },
             "time": "2025-09-17T09:00:56+00:00"
+        },
+        {
+            "name": "ckr/arraymerger",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ckressibucher/array_merger.git",
+                "reference": "e9ac57360ca8c3002a674fdca9fd0b527dd5b651"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ckressibucher/array_merger/zipball/e9ac57360ca8c3002a674fdca9fd0b527dd5b651",
+                "reference": "e9ac57360ca8c3002a674fdca9fd0b527dd5b651",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "~7.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ckr\\Util\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Claudio Kressibucher",
+                    "email": "ckressibucher@graphicworks.ch"
+                }
+            ],
+            "description": "Provides functionality to merge arrays recursively",
+            "support": {
+                "issues": "https://github.com/ckressibucher/array_merger/issues",
+                "source": "https://github.com/ckressibucher/array_merger/tree/3.0.0"
+            },
+            "time": "2022-04-23T20:26:40+00:00"
         },
         {
             "name": "clue/ndjson-react",
@@ -5037,6 +5080,64 @@
             "time": "2025-11-17T20:03:58+00:00"
         },
         {
+            "name": "webmozart/assert",
+            "version": "1.12.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/webmozarts/assert.git",
+                "reference": "9be6926d8b485f55b9229203f962b51ed377ba68"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/9be6926d8b485f55b9229203f962b51ed377ba68",
+                "reference": "9be6926d8b485f55b9229203f962b51ed377ba68",
+                "shasum": ""
+            },
+            "require": {
+                "ext-ctype": "*",
+                "ext-date": "*",
+                "ext-filter": "*",
+                "php": "^7.2 || ^8.0"
+            },
+            "suggest": {
+                "ext-intl": "",
+                "ext-simplexml": "",
+                "ext-spl": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.10-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Webmozart\\Assert\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Bernhard Schussek",
+                    "email": "bschussek@gmail.com"
+                }
+            ],
+            "description": "Assertions to validate method input/output with nice error messages.",
+            "keywords": [
+                "assert",
+                "check",
+                "validate"
+            ],
+            "support": {
+                "issues": "https://github.com/webmozarts/assert/issues",
+                "source": "https://github.com/webmozarts/assert/tree/1.12.1"
+            },
+            "time": "2025-10-29T15:56:20+00:00"
+        },
+        {
             "name": "wp-cli/i18n-command",
             "version": "v2.6.5",
             "source": {
@@ -5339,6 +5440,50 @@
                 "source": "https://github.com/wp-cli/wp-cli"
             },
             "time": "2025-05-07T01:16:12+00:00"
+        },
+        {
+            "name": "yard/php-cs-fixer-rules",
+            "version": "v1.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yardinternet/php-cs-fixer-rules.git",
+                "reference": "32d91d38e08e7cc75df82467467670a446429330"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/yardinternet/php-cs-fixer-rules/zipball/32d91d38e08e7cc75df82467467670a446429330",
+                "reference": "32d91d38e08e7cc75df82467467670a446429330",
+                "shasum": ""
+            },
+            "require": {
+                "ckr/arraymerger": "^3.0",
+                "friendsofphp/php-cs-fixer": "^3.88",
+                "php": ">=7.4",
+                "webmozart/assert": "^1.11"
+            },
+            "require-dev": {
+                "pestphp/pest": "^2.36",
+                "phpstan/phpstan": "^2.1"
+            },
+            "type": "package",
+            "autoload": {
+                "psr-4": {
+                    "Yard\\PhpCsFixerRules\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Yard PHP CS Fixer rules",
+            "keywords": [
+                "static analysis"
+            ],
+            "support": {
+                "issues": "https://github.com/yardinternet/php-cs-fixer-rules/issues",
+                "source": "https://github.com/yardinternet/php-cs-fixer-rules/tree/v1.0.5"
+            },
+            "time": "2025-10-17T15:41:39+00:00"
         }
     ],
     "aliases": [],

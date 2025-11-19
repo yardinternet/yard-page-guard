@@ -34,9 +34,9 @@
 					<input type="number" name="ypg_review_time_period" value="<?= esc_attr(get_option('ypg_review_time_period', 2)); ?>" min="1" />
 					<select name="ypg_review_time_unit">
 						<?php
-                        $selected_unit = get_option('ypg_review_time_unit', 'weeks');
+						$selected_unit = get_option('ypg_review_time_unit', 'weeks');
 foreach ($this->getUnitOptions() as $key => $label) {
-    echo '<option value="' . esc_attr($key) . '"' . selected($selected_unit, $key, false) . '>' . esc_html($label) . '</option>';
+	echo '<option value="' . esc_attr($key) . '"' . selected($selected_unit, $key, false) . '>' . esc_html($label) . '</option>';
 }
 ?>
 					</select>
@@ -50,7 +50,7 @@ foreach ($this->getUnitOptions() as $key => $label) {
 						<?php
 $selected_unit = get_option('ypg_reminder_time_unit', 'weeks');
 foreach ($this->getUnitOptions() as $key => $label) {
-    echo '<option value="' . esc_attr($key) . '"' . selected($selected_unit, $key, false) . '>' . esc_html($label) . '</option>';
+	echo '<option value="' . esc_attr($key) . '"' . selected($selected_unit, $key, false) . '>' . esc_html($label) . '</option>';
 }
 ?>
 					</select>
@@ -60,12 +60,12 @@ foreach ($this->getUnitOptions() as $key => $label) {
 				<th scope="row"><?= __('Herzieningsmail inhoud', 'yard-page-guard') ?></th>
 				<td>
 					<?php
-                    $notificationContent = get_option('ypg_review_email_content', '');
+					$notificationContent = get_option('ypg_review_email_content', '');
 wp_editor($notificationContent, 'ypg_review_email_content', [
-    'textarea_name' => 'ypg_review_email_content',
-    'textarea_rows' => 8,
-    'media_buttons' => false,
-    'teeny' => true,
+	'textarea_name' => 'ypg_review_email_content',
+	'textarea_rows' => 8,
+	'media_buttons' => false,
+	'teeny' => true,
 ]);
 ?>
 					<div class="description">
@@ -83,10 +83,10 @@ wp_editor($notificationContent, 'ypg_review_email_content', [
 					<?php
 $reminderContent = get_option('ypg_reminder_email_content', '');
 wp_editor($reminderContent, 'ypg_reminder_email_content', [
-    'textarea_name' => 'ypg_reminder_email_content',
-    'textarea_rows' => 8,
-    'media_buttons' => false,
-    'teeny' => true,
+	'textarea_name' => 'ypg_reminder_email_content',
+	'textarea_rows' => 8,
+	'media_buttons' => false,
+	'teeny' => true,
 ]);
 ?>
 					<div class="description">
