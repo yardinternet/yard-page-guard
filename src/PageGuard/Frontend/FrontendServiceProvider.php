@@ -10,8 +10,7 @@ class FrontendServiceProvider extends ServiceProvider
 {
 	public function register(): void
 	{
-		$reviewModal = new ReviewModal;
-		add_action('wp_footer', [$reviewModal, 'render']);
+		add_action('wp_footer', [new ReviewModal(), 'render']);
 		add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendAssets']);
 	}
 
