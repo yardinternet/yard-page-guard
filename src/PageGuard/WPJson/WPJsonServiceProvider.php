@@ -18,26 +18,23 @@ class WPJsonServiceProvider extends ServiceProvider
 	public function register(): void
 	{
 		add_action('rest_api_init', function () {
-			$verifyPostController = new VerifyPostController();
-			$modalInfoController = new ModalInfoController();
-
 			register_rest_route('yard-page-guard/v1', '/verify-post', [
 				'methods' => 'POST',
-				'callback' => [$verifyPostController, 'handleRequest'],
+				'callback' => [new VerifyPostController(), 'handleRequest'],
 				'args' => self::getEndpointArgs(),
 				'permission_callback' => '__return_true',
 			]);
 
 			register_rest_route('yard-page-guard/v1', '/modal-info', [
 				'methods' => 'POST',
-				'callback' => [$modalInfoController, 'handleRequest'],
+				'callback' => [new ModalInfoController(), 'handleRequest'],
 				'args' => self::getEndpointArgs(),
 				'permission_callback' => '__return_true',
 			]);
 
 			// Allow all origins and HTMX headers
 			add_filter('rest_pre_serve_request', function (bool $served) {
-				if (strpos($_SERVER['REQUEST_URI'], '/wp-json/yard-page-guard') !== false) {
+				if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/wp-json/yard-page-guard') !== false) {
 					header('Access-Control-Allow-Origin: *');
 					header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
 				}
@@ -69,8 +66,8 @@ class WPJsonServiceProvider extends ServiceProvider
 				'type' => 'string',
 				'validate_callback' => function (string $reviewToken, WP_REST_Request $request): bool {
 					$postId = (int) $request->get_param('post_id');
-					$contentOwnerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?? '';
-					$reviewDate = get_post_meta($postId, 'ypg_review_date', true) ?? '';
+					$contentOwnerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
+					$reviewDate = get_post_meta($postId, 'ypg_review_date', true) ?: '';
 
 					if ('' === $contentOwnerEmail || '' === $reviewDate) {
 						return false;

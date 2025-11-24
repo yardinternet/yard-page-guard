@@ -36,8 +36,8 @@ class ReviewModal
 			return false;
 		}
 
-		$contentOwnerEmail = get_post_meta(get_the_ID(), 'ypg_post_content_owner_email', true) ?? '';
-		$reviewDate = get_post_meta(get_the_ID(), 'ypg_review_date', true) ?? '';
+		$contentOwnerEmail = get_post_meta(get_the_ID(), 'ypg_post_content_owner_email', true) ?: '';
+		$reviewDate = get_post_meta(get_the_ID(), 'ypg_review_date', true) ?: '';
 
 		if ('' === $contentOwnerEmail || '' === $reviewDate) {
 			return false;
@@ -61,7 +61,7 @@ class ReviewModal
 	 */
 	private function getExternalModalInfo()
 	{
-		if (('pdc' !== $_GET['external'] && 'pub' !== $_GET['external']) || ! is_numeric($_GET['post_id'])) {
+		if (! in_array($_GET['external'], ['pdc', 'pub']) || ! is_numeric($_GET['post_id'])) {
 			return false;
 		}
 
