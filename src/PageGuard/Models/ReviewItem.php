@@ -105,6 +105,6 @@ class ReviewItem
 			return null;
 		}
 
-		return new ContentOwner($id, $name, $email, $type);
+		return new ContentOwner((int) $id, $name, $email, $type);
 	}
 }

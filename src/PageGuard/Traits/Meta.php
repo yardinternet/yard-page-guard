@@ -15,7 +15,11 @@ trait Meta
 			'ypg_post_content_owner_type',
 			'ypg_review_date',
 			'ypg_reminder_date',
+			'ypg_is_verified',
+			'ypg_reminder_time_period',
+			'ypg_reminder_time_unit',
 			'ypg_review_mail_sent',
+			'ypg_last_review_date',
 		];
 
 		foreach ($keys as $key) {

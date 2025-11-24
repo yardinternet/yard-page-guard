@@ -19,7 +19,7 @@
 			<tr valign="top">
 				<th scope="row"><?= __('Afzend emailadres', 'yard-page-guard') ?></th>
 				<td>
-					<input type="email" name="ypg_email_from_address" value="<?= esc_attr(get_option('ypg_email_from', 'houdbaarheid@' . $_SERVER['HTTP_HOST'])); ?>" />
+					<input type="email" name="ypg_email_from_address" value="<?= esc_attr(get_option('ypg_email_from_address', 'houdbaarheid@' . $_SERVER['HTTP_HOST'])); ?>" />
 				</td>
 			</tr>
 			<tr valign="top">
