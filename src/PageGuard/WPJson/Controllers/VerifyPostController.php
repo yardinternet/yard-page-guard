@@ -30,6 +30,9 @@ class VerifyPostController
 		$updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', 1);
 		$updatedLastReviewDate = update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
 
+		delete_post_meta($postId, 'ypg_review_mail_sent');
+		delete_post_meta($postId, 'ypg_last_reminder_date');
+
 		header('Content-Type: text/html; charset=utf-8');
 		header('Access-Control-Allow-Origin: *');
 		header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');

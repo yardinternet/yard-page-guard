@@ -245,6 +245,7 @@ class Metabox
 		// Remove mail sent status if verified (date will update) OR post is manually being unverified
 		if ($toBeVerified || ! $toBeVerified && $wasPreviouslyVerified) {
 			delete_post_meta($postId, 'ypg_review_mail_sent');
+			delete_post_meta($postId, 'ypg_last_reminder_date');
 		}
 
 		if ('custom' === ($_POST['ypg_reminder_type'] ?? 'standard')) {
@@ -341,5 +342,138 @@ class Metabox
 		}
 
 		return (int) $contentOwnerId === $currentUser->ID && ContentOwnerType::USER === $contentOwnerType;
+	}
+
+	public function addInternalData(int $postId)
+	{
+		if (! $this->shouldSave($postId)) {
+			return;
+		}
+
+		if (! isset($_POST['ypg_post_content_owner'])) {
+			return;
+		}
+
+		$ownerName = get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: '';
+		$ownerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
+
+		$title = __('Houdbaarheidsmodule', 'yard-page-guard');
+		$label = __('Inhoudseigenaar', 'yard-page-guard') . ': ';
+
+		if (empty($ownerName)) {
+			if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
+				$value = get_post_meta($postId, '_ys_post_information_internal', true);
+
+				$value = preg_replace(
+					'/Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/',
+					'',
+					$value
+				);
+
+				$value = preg_replace('/(<br>\s*){2,}/', '<br>', $value);
+				$value = trim($value, " \t\n\r\0\x0B<br>");
+
+				update_post_meta($postId, '_ys_post_information_internal', $value);
+			}
+
+			if (metadata_exists('post', $postId, '_ys_post_information_internal_title')) {
+				$value = get_post_meta($postId, '_ys_post_information_internal_title', true);
+				if ($value === $title) {
+					delete_post_meta($postId, '_ys_post_information_internal_title');
+				}
+			}
+
+			$arrayFields = [
+				'internal_information' => 'internal_information_title',
+				'_owc_pdc_internaldata' => 'internaldata_key',
+			];
+
+			foreach ($arrayFields as $key => $field) {
+				if (! metadata_exists('post', $postId, $key)) {
+					continue;
+				}
+
+				$entries = get_post_meta($postId, $key, true);
+				if (! is_array($entries)) {
+					continue;
+				}
+
+				$entries = array_values(array_filter($entries, function ($entry) use ($field, $title) {
+					return ! (isset($entry[$field]) && $entry[$field] === $title);
+				}));
+
+				update_post_meta($postId, $key, $entries);
+			}
+
+			return;
+		}
+
+		$ownerLink = sprintf(
+			'%s <a href="mailto:%s">%s</a>',
+			$label,
+			esc_attr($ownerEmail),
+			esc_html($ownerName)
+		);
+
+		if (! metadata_exists('post', $postId, '_ys_post_information_internal_title')) {
+			update_post_meta($postId, '_ys_post_information_internal_title', $title);
+		}
+
+		if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
+			$currentValue = get_post_meta($postId, '_ys_post_information_internal', true);
+
+			if (strpos($currentValue, 'mailto:') !== false) {
+				$updated = preg_replace(
+					'/Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/',
+					$ownerLink,
+					$currentValue
+				);
+			} else {
+				$updated = empty($currentValue)
+					? $ownerLink
+					: $currentValue . '<br>' . $ownerLink;
+			}
+
+			update_post_meta($postId, '_ys_post_information_internal', $updated);
+		} else {
+			update_post_meta($postId, '_ys_post_information_internal', $ownerLink);
+		}
+
+		$internalData = [
+			'internal_information' => [
+				'internal_information_title' => $title,
+				'internal_information_content' => $ownerLink,
+			],
+			'_owc_pdc_internaldata' => [
+				'internaldata_key' => $title,
+				'internaldata_value' => $ownerLink,
+			],
+		];
+
+		foreach ($internalData as $key => $newValue) {
+			$currentValue = get_post_meta($postId, $key, true);
+			$currentValue = is_array($currentValue) ? $currentValue : [];
+
+			$updated = false;
+
+			foreach ($currentValue as $idx => $entry) {
+				$fieldKey = ('internal_information' === $key)
+					? 'internal_information_title'
+					: 'internaldata_key';
+
+				if (isset($entry[$fieldKey]) && $entry[$fieldKey] === $title) {
+					$currentValue[$idx] = $newValue;
+					$updated = true;
+
+					break;
+				}
+			}
+
+			if (! $updated) {
+				$currentValue[] = $newValue;
+			}
+
+			update_post_meta($postId, $key, $currentValue);
+		}
 	}
 }

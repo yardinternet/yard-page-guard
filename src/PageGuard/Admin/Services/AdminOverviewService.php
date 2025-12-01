@@ -53,7 +53,9 @@ class AdminOverviewService
 
 				if ($toBeVerified) {
 					update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
+
 					delete_post_meta($postId, 'ypg_review_mail_sent');
+					delete_post_meta($postId, 'ypg_last_reminder_date');
 				}
 
 				if ('none' === $reviewDate && $toBeVerified) {
@@ -189,6 +191,7 @@ class AdminOverviewService
 			$nextReviewDate = get_post_meta($reviewItem->ID, 'ypg_review_date', true);
 			$formattedNextReviewDate = $this->formatDate($nextReviewDate);
 			$lastReviewDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) : __('N.v.t.', 'yard-page-guard');
+			$lastReminderDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_reminder_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_reminder_date', true)) : __('N.v.t.', 'yard-page-guard');
 			$reviewStatus = __('Gecontroleerd', 'yard-page-guard');
 			$contentOwner = (ContentOwnerType::EXTERNAL === $contentOwnerType)
 				? get_term($contentOwnerId, 'ypg_external_content_owner')
@@ -211,6 +214,7 @@ class AdminOverviewService
 				<td>$postTypeLabel</td>
 				<td><a href="$contentOwnerLink">$contentOwnerName</a></td>
 				<td>$lastReviewDate</td>
+				<td>$lastReminderDate</td>
 				<td $reviewAttributes>$formattedNextReviewDate</td>
 				<td>$reviewStatus</td>
 			</tr>
