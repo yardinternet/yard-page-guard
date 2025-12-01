@@ -17,8 +17,17 @@ class WPCronServiceProvider extends ServiceProvider
 		add_action('ypg_site_cron', [ReviewNotification::class, 'init']);
 		add_action('ypg_site_cron', [ReminderNotification::class, 'init']);
 
-		if (! wp_next_scheduled('ypg_site_cron')) {
-			wp_schedule_event($this->timeToExecute(), 'daily', 'ypg_site_cron');
+		$nextScheduled = wp_next_scheduled('ypg_site_cron');
+		$timeToExecute = $this->timeToExecute();
+
+		// Schedule the event
+		if ($nextScheduled !== $timeToExecute) {
+			// Overwrite if time is wrong
+			if ($nextScheduled) {
+				wp_clear_scheduled_hook('ypg_site_cron');
+			}
+
+			wp_schedule_event($timeToExecute, 'daily', 'ypg_site_cron');
 		}
 	}
 
