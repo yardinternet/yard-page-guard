@@ -117,6 +117,7 @@ class ReminderNotification extends Event
 		$finalDateUnit = ! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit', 'weeks');
 		$finalDatePeriod = ! empty($overrideDatePeriod) ? $overrideDatePeriod : (int) get_option('ypg_reminder_time_period', 1);
 
+		update_post_meta($item->ID(), 'ypg_last_reminder_date', date('Y-m-d'));
 		update_post_meta($item->ID(), 'ypg_reminder_date', $this->addPeriodToBase($currentReminderDate, $finalDatePeriod, $finalDateUnit));
 	}
 }

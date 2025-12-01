@@ -20,6 +20,7 @@ trait Meta
 			'ypg_reminder_time_unit',
 			'ypg_review_mail_sent',
 			'ypg_last_review_date',
+			'ypg_last_reminder_date',
 		];
 
 		foreach ($keys as $key) {

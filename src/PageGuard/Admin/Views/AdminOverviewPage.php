@@ -66,6 +66,7 @@ $query = $service->handleOverviewQuery();
 					<th><?= __('Type', 'yard-page-guard'); ?></th>
 					<th><?= __('Eigenaar', 'yard-page-guard'); ?></th>
 					<th><?= __('Laatst gecontroleerd op', 'yard-page-guard'); ?></th>
+					<th><?= __('Laatste herinneringmail', 'yard-page-guard'); ?></th>
 					<th><?= __('Volgende herzieningsdatum', 'yard-page-guard'); ?></th>
 					<th><?= __('Status', 'yard-page-guard'); ?></th>
 				</tr>
