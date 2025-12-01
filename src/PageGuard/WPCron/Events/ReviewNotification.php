@@ -89,8 +89,10 @@ class ReviewNotification extends Event
 				continue;
 			}
 
-			foreach ($ownerItems as $item) {
-				$this->updateModuleMeta($item);
+			if (! defined('WP_CLI') || ! WP_CLI) {
+				foreach ($ownerItems as $item) {
+					$this->updateModuleMeta($item);
+				}
 			}
 		}
 	}
