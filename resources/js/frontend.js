@@ -2,7 +2,7 @@ import htmx from 'htmx.org';
 import '../css/frontend.css';
 
 document.addEventListener('DOMContentLoaded', function () {
-	htmx.config.selfRequestsOnly = false;
+	htmx.config.selfRequestsOnly = false; // Required for doing WP-JSON requests to PDC/PUB endpoints
 	initReviewModal();
 });
 
@@ -58,9 +58,10 @@ function reposition(element, event) {
 	element.style.right = 'auto';
 }
 
-// ------------------------------
-// Enable dragging for modal
-// ------------------------------
+/**
+ * Handles drag functionality on an element
+ * @param {HTMLElement} element
+ */
 function enableDrag(element) {
 	let isDragging = false;
 

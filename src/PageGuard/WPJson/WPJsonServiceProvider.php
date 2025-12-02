@@ -21,14 +21,14 @@ class WPJsonServiceProvider extends ServiceProvider
 			register_rest_route('yard-page-guard/v1', '/verify-post', [
 				'methods' => 'POST',
 				'callback' => [new VerifyPostController(), 'handleRequest'],
-				'args' => self::getEndpointArgs(),
+				'args' => $this->getEndpointArgs(),
 				'permission_callback' => '__return_true',
 			]);
 
 			register_rest_route('yard-page-guard/v1', '/modal-info', [
 				'methods' => 'POST',
 				'callback' => [new ModalInfoController(), 'handleRequest'],
-				'args' => self::getEndpointArgs(),
+				'args' => $this->getEndpointArgs(),
 				'permission_callback' => '__return_true',
 			]);
 
@@ -44,7 +44,7 @@ class WPJsonServiceProvider extends ServiceProvider
 		});
 	}
 
-	public static function getEndpointArgs(): array
+	public function getEndpointArgs(): array
 	{
 		return [
 			'post_id' => [
@@ -73,7 +73,7 @@ class WPJsonServiceProvider extends ServiceProvider
 						return false;
 					}
 
-					return self::verifyReviewToken($postId, $contentOwnerEmail, $reviewDate, $reviewToken);
+					return $this->verifyReviewToken($postId, $contentOwnerEmail, $reviewDate, $reviewToken);
 				},
 			],
 		];

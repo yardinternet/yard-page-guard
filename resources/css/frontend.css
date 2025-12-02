@@ -44,6 +44,8 @@
 	}
 
 	.ypg-review-form {
+		margin-bottom: 0;
+
 		.ypg-alert {
 			display: flex;
 			flex-direction: column;

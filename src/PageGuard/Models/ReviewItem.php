@@ -53,7 +53,7 @@ class ReviewItem
 		$ownerEmail = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true) ?? '';
 		$reviewDate = get_post_meta($this->ID(), 'ypg_review_date', true) ?? '';
 
-		$permalink = add_query_arg('ypg_review_token', self::generateReviewToken($this->ID(), $ownerEmail, $reviewDate), $permalink);
+		$permalink = add_query_arg('ypg_review_token', $this->generateReviewToken($this->ID(), $ownerEmail, $reviewDate), $permalink);
 
 		$home = home_url();
 
@@ -76,7 +76,7 @@ class ReviewItem
 			return __('Niet ingesteld', 'yard-page-guard');
 		}
 
-		$date = new DateTime($date, new DateTimeZone(get_option('timezone_string')));
+		$date = new DateTime($date, new DateTimeZone(wp_timezone_string()));
 
 		return $date->format($format);
 	}
@@ -89,7 +89,7 @@ class ReviewItem
 			return __('Niet ingesteld', 'yard-page-guard');
 		}
 
-		$date = new DateTime($date, new DateTimeZone(get_option('timezone_string')));
+		$date = new DateTime($date, new DateTimeZone(wp_timezone_string()));
 
 		return $date->format($format);
 	}

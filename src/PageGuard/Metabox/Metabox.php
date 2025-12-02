@@ -344,7 +344,7 @@ class Metabox
 		return (int) $contentOwnerId === $currentUser->ID && ContentOwnerType::USER === $contentOwnerType;
 	}
 
-	public function addInternalData(int $postId)
+	public function handleInternalData(int $postId)
 	{
 		if (! $this->shouldSave($postId)) {
 			return;
@@ -354,59 +354,22 @@ class Metabox
 			return;
 		}
 
+		if (empty(get_post_meta($postId, 'ypg_post_content_owner_name', true))) {
+			$this->removeInternalData($postId);
+
+			return;
+		}
+
+		$this->addInternalData($postId);
+	}
+
+	private function addInternalData(int $postId)
+	{
 		$ownerName = get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: '';
 		$ownerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
 
 		$title = __('Houdbaarheidsmodule', 'yard-page-guard');
 		$label = __('Inhoudseigenaar', 'yard-page-guard') . ': ';
-
-		if (empty($ownerName)) {
-			if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
-				$value = get_post_meta($postId, '_ys_post_information_internal', true);
-
-				$value = preg_replace(
-					'/Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/',
-					'',
-					$value
-				);
-
-				$value = preg_replace('/(<br>\s*){2,}/', '<br>', $value);
-				$value = trim($value, " \t\n\r\0\x0B<br>");
-
-				update_post_meta($postId, '_ys_post_information_internal', $value);
-			}
-
-			if (metadata_exists('post', $postId, '_ys_post_information_internal_title')) {
-				$value = get_post_meta($postId, '_ys_post_information_internal_title', true);
-				if ($value === $title) {
-					delete_post_meta($postId, '_ys_post_information_internal_title');
-				}
-			}
-
-			$arrayFields = [
-				'internal_information' => 'internal_information_title',
-				'_owc_pdc_internaldata' => 'internaldata_key',
-			];
-
-			foreach ($arrayFields as $key => $field) {
-				if (! metadata_exists('post', $postId, $key)) {
-					continue;
-				}
-
-				$entries = get_post_meta($postId, $key, true);
-				if (! is_array($entries)) {
-					continue;
-				}
-
-				$entries = array_values(array_filter($entries, function ($entry) use ($field, $title) {
-					return ! (isset($entry[$field]) && $entry[$field] === $title);
-				}));
-
-				update_post_meta($postId, $key, $entries);
-			}
-
-			return;
-		}
 
 		$ownerLink = sprintf(
 			'%s <a href="mailto:%s">%s</a>',
@@ -415,6 +378,9 @@ class Metabox
 			esc_html($ownerName)
 		);
 
+		/**
+		 * Add entry to single meta fields (fusion portal)
+		 */
 		if (! metadata_exists('post', $postId, '_ys_post_information_internal_title')) {
 			update_post_meta($postId, '_ys_post_information_internal_title', $title);
 		}
@@ -422,23 +388,27 @@ class Metabox
 		if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
 			$currentValue = get_post_meta($postId, '_ys_post_information_internal', true);
 
+			// Check if mailto link already exists, if so, replace it. Otherwise append.
 			if (strpos($currentValue, 'mailto:') !== false) {
-				$updated = preg_replace(
+				$newValue = preg_replace(
 					'/Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/',
 					$ownerLink,
 					$currentValue
 				);
 			} else {
-				$updated = empty($currentValue)
+				$newValue = empty($currentValue)
 					? $ownerLink
 					: $currentValue . '<br>' . $ownerLink;
 			}
 
-			update_post_meta($postId, '_ys_post_information_internal', $updated);
+			update_post_meta($postId, '_ys_post_information_internal', $newValue);
 		} else {
 			update_post_meta($postId, '_ys_post_information_internal', $ownerLink);
 		}
 
+		/**
+		 * Add entry to meta repeater fields (brave, fusion pdc)
+		 */
 		$internalData = [
 			'internal_information' => [
 				'internal_information_title' => $title,
@@ -456,24 +426,84 @@ class Metabox
 
 			$updated = false;
 
-			foreach ($currentValue as $idx => $entry) {
+			// Find existing entry by title and update
+			foreach ($currentValue as $index => $entry) {
 				$fieldKey = ('internal_information' === $key)
 					? 'internal_information_title'
 					: 'internaldata_key';
 
 				if (isset($entry[$fieldKey]) && $entry[$fieldKey] === $title) {
-					$currentValue[$idx] = $newValue;
+					$currentValue[$index] = $newValue;
 					$updated = true;
 
 					break;
 				}
 			}
 
+			// If not found, append new entry
 			if (! $updated) {
 				$currentValue[] = $newValue;
 			}
 
 			update_post_meta($postId, $key, $currentValue);
+		}
+	}
+
+	private function removeInternalData(int $postId)
+	{
+		$newTitle = __('Houdbaarheidsmodule', 'yard-page-guard');
+
+		/**
+		 * Remove entry from single meta fields (fusion portal)
+		 */
+		if (metadata_exists('post', $postId, '_ys_post_information_internal_title')) {
+			$currentTitle = get_post_meta($postId, '_ys_post_information_internal_title', true);
+
+			if ($currentTitle === $newTitle) {
+				delete_post_meta($postId, '_ys_post_information_internal_title');
+			}
+		}
+
+		if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
+			$value = get_post_meta($postId, '_ys_post_information_internal', true);
+
+			$value = preg_replace(
+				'/Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/',
+				'',
+				$value
+			);
+
+			$value = preg_replace('/(<br>\s*){2,}/', '<br>', $value);
+			$value = trim($value, " \t\n\r\0\x0B<br>");
+
+			update_post_meta($postId, '_ys_post_information_internal', $value);
+		}
+
+		/**
+		 * Remove entry from meta repeater fields (brave, fusion pdc)
+		 */
+		$arrayFields = [
+			'internal_information' => 'internal_information_title',
+			'_owc_pdc_internaldata' => 'internaldata_key',
+		];
+
+		foreach ($arrayFields as $key => $field) {
+			if (! metadata_exists('post', $postId, $key)) {
+				continue;
+			}
+
+			$entries = get_post_meta($postId, $key, true);
+
+			if (! is_array($entries)) {
+				continue;
+			}
+
+			// Get the meta repeater entries without the entry with the matching title, which needs to be removed
+			$entries = array_values(array_filter($entries, function ($entry) use ($field, $newTitle) {
+				return ! (isset($entry[$field]) && $entry[$field] === $newTitle);
+			}));
+
+			update_post_meta($postId, $key, $entries);
 		}
 	}
 }
