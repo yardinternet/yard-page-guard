@@ -256,7 +256,7 @@ class Metabox
 			delete_post_meta($postId, 'ypg_reminder_time_unit');
 		}
 
-		$reviewDate = $this->computeReviewDate($postId, $toBeVerified, $wasPreviouslyVerified);
+		$reviewDate = $this->computeReviewDate($toBeVerified, $wasPreviouslyVerified);
 		$reminderDate = $this->computeReminderDate($postId, $toBeVerified, $wasPreviouslyVerified);
 
 		$this->updateVerificationMeta($postId, $toBeVerified, $reviewDate, $reminderDate);
@@ -344,7 +344,7 @@ class Metabox
 		return (int) $contentOwnerId === $currentUser->ID && ContentOwnerType::USER === $contentOwnerType;
 	}
 
-	public function handleInternalData(int $postId)
+	public function handleInternalData(int $postId): void
 	{
 		if (! $this->shouldSave($postId)) {
 			return;
@@ -363,7 +363,7 @@ class Metabox
 		$this->addInternalData($postId);
 	}
 
-	private function addInternalData(int $postId)
+	private function addInternalData(int $postId): void
 	{
 		$ownerName = get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: '';
 		$ownerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
@@ -379,7 +379,7 @@ class Metabox
 		);
 
 		/**
-		 * Add entry to single meta fields (fusion portal)
+		 * Fusion portal internal information
 		 */
 		if (! metadata_exists('post', $postId, '_ys_post_information_internal_title')) {
 			update_post_meta($postId, '_ys_post_information_internal_title', $title);
@@ -388,17 +388,16 @@ class Metabox
 		if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
 			$currentValue = get_post_meta($postId, '_ys_post_information_internal', true);
 
-			// Check if mailto link already exists, if so, replace it. Otherwise append.
 			if (strpos($currentValue, 'mailto:') !== false) {
 				$newValue = preg_replace(
-					'/Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/',
+					'/<p>\s*Inhoudseigenaar.*?<a href="mailto:.*?<\/a>\s*<\/p>|Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/i',
 					$ownerLink,
 					$currentValue
 				);
 			} else {
 				$newValue = empty($currentValue)
 					? $ownerLink
-					: $currentValue . '<br>' . $ownerLink;
+					: $currentValue . $ownerLink;
 			}
 
 			update_post_meta($postId, '_ys_post_information_internal', $newValue);
@@ -407,49 +406,64 @@ class Metabox
 		}
 
 		/**
-		 * Add entry to meta repeater fields (brave, fusion pdc)
+		 * Fusion PDC internal information
 		 */
-		$internalData = [
-			'internal_information' => [
-				'internal_information_title' => $title,
-				'internal_information_content' => $ownerLink,
-			],
-			'_owc_pdc_internaldata' => [
-				'internaldata_key' => $title,
-				'internaldata_value' => $ownerLink,
-			],
+		$key = '_owc_pdc_internaldata';
+		$current = get_post_meta($postId, $key, true);
+		$current = is_array($current) ? $current : [];
+
+		$newValue = [
+			'internaldata_key' => $title,
+			'internaldata_value' => $ownerLink,
 		];
 
-		foreach ($internalData as $key => $newValue) {
-			$currentValue = get_post_meta($postId, $key, true);
-			$currentValue = is_array($currentValue) ? $currentValue : [];
+		$updated = false;
+		foreach ($current as $i => $row) {
+			if (($row['internaldata_key'] ?? '') === $title) {
+				$current[$i] = $newValue;
+				$updated = true;
 
-			$updated = false;
-
-			// Find existing entry by title and update
-			foreach ($currentValue as $index => $entry) {
-				$fieldKey = ('internal_information' === $key)
-					? 'internal_information_title'
-					: 'internaldata_key';
-
-				if (isset($entry[$fieldKey]) && $entry[$fieldKey] === $title) {
-					$currentValue[$index] = $newValue;
-					$updated = true;
-
-					break;
-				}
+				break;
 			}
-
-			// If not found, append new entry
-			if (! $updated) {
-				$currentValue[] = $newValue;
-			}
-
-			update_post_meta($postId, $key, $currentValue);
 		}
+
+		if (! $updated) {
+			$current[] = $newValue;
+		}
+
+		update_post_meta($postId, $key, $current);
+
+		/**
+		 * Brave internal information
+		 */
+		if (! function_exists('get_field') || ! function_exists('update_field')) {
+			return; // Early return if ACF not active
+		}
+
+		$rows = get_field('internal_information', $postId);
+		$rows = is_array($rows) ? $rows : [];
+
+		$updated = false;
+		foreach ($rows as $i => $row) {
+			if (($row['internal_information_title'] ?? '') === $title) {
+				$rows[$i]['internal_information_content'] = $ownerLink;
+				$updated = true;
+
+				break;
+			}
+		}
+
+		if (! $updated) {
+			$rows[] = [
+				'internal_information_title' => $title,
+				'internal_information_content' => $ownerLink,
+			];
+		}
+
+		update_field('internal_information', $rows, $postId);
 	}
 
-	private function removeInternalData(int $postId)
+	private function removeInternalData(int $postId): void
 	{
 		$newTitle = __('Houdbaarheidsmodule', 'yard-page-guard');
 
@@ -467,43 +481,44 @@ class Metabox
 		if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
 			$value = get_post_meta($postId, '_ys_post_information_internal', true);
 
+			// Remove the Inhoudseigenaar mailto link if it exists
 			$value = preg_replace(
-				'/Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/',
+				'/<p>\s*Inhoudseigenaar.*?<a href="mailto:.*?<\/a>\s*<\/p>|Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/i',
 				'',
 				$value
 			);
-
-			$value = preg_replace('/(<br>\s*){2,}/', '<br>', $value);
-			$value = trim($value, " \t\n\r\0\x0B<br>");
 
 			update_post_meta($postId, '_ys_post_information_internal', $value);
 		}
 
 		/**
-		 * Remove entry from meta repeater fields (brave, fusion pdc)
+		 * Remove entry from Fusion PDC repeater
 		 */
-		$arrayFields = [
-			'internal_information' => 'internal_information_title',
-			'_owc_pdc_internaldata' => 'internaldata_key',
-		];
+		$pdcKey = '_owc_pdc_internaldata';
+		$pdcEntries = get_post_meta($postId, $pdcKey, true);
 
-		foreach ($arrayFields as $key => $field) {
-			if (! metadata_exists('post', $postId, $key)) {
-				continue;
-			}
-
-			$entries = get_post_meta($postId, $key, true);
-
-			if (! is_array($entries)) {
-				continue;
-			}
-
-			// Get the meta repeater entries without the entry with the matching title, which needs to be removed
-			$entries = array_values(array_filter($entries, function ($entry) use ($field, $newTitle) {
-				return ! (isset($entry[$field]) && $entry[$field] === $newTitle);
+		if (is_array($pdcEntries)) {
+			$pdcEntries = array_values(array_filter($pdcEntries, function ($entry) use ($newTitle) {
+				return ! (isset($entry['internaldata_key']) && $entry['internaldata_key'] === $newTitle);
 			}));
 
-			update_post_meta($postId, $key, $entries);
+			update_post_meta($postId, $pdcKey, $pdcEntries);
+		}
+
+		/**
+		 * Remove entry from Brave ACF repeater "internal_information"
+		 */
+		if (function_exists('get_field') && function_exists('update_field')) {
+			$acfRows = get_field('internal_information', $postId);
+
+			if (is_array($acfRows)) {
+				$acfRows = array_values(array_filter($acfRows, function ($row) use ($newTitle) {
+					return ! (isset($row['internal_information_title']) &&
+							  $row['internal_information_title'] === $newTitle);
+				}));
+
+				update_field('internal_information', $acfRows, $postId);
+			}
 		}
 	}
 }

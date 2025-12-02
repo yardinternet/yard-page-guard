@@ -59,7 +59,7 @@ class AdminOverviewService
 				}
 
 				if ('none' === $reviewDate && $toBeVerified) {
-					$calculatedReviewDate = $this->computeReviewDate($postId, (bool) $toBeVerified, $previouslyVerified);
+					$calculatedReviewDate = $this->computeReviewDate((bool) $toBeVerified, $previouslyVerified);
 					$calculatedReminderDate = $this->computeReminderDate($postId, (bool) $toBeVerified, $previouslyVerified);
 
 					update_post_meta($postId, 'ypg_review_date', $calculatedReviewDate);
