@@ -17,7 +17,8 @@
 		"symfony/var-dumper": "^5.1",
 		"10up/wp_mock": "^0.5.0",
 		"wp-cli/i18n-command": "^2.6",
-		"yard/php-cs-fixer-rules": "^1.0"
+		"yard/php-cs-fixer-rules": "^1.0",
+		"php-stubs/acf-pro-stubs": "^6.5"
 	},
 	"autoload": {
 		"psr-4": {

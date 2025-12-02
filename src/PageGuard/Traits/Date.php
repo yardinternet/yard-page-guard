@@ -80,15 +80,14 @@ trait Date
 		return $baseValue;
 	}
 
-	private function computeReviewDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
+	private function computeReviewDate(bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
 	{
-		$currentReviewDate = get_post_meta($postId, 'ypg_review_date', true);
 		$datePeriod = (int) get_option('ypg_review_time_period', 1);
 		$dateUnit = get_option('ypg_review_time_unit', 'weeks');
 
 		return $this->computeDateMeta(
 			'ypg_review_date',
-			$currentReviewDate,
+			false,
 			$toBeVerified,
 			$wasPreviouslyVerified,
 			$datePeriod,

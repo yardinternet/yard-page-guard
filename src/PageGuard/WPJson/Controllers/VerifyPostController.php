@@ -22,11 +22,13 @@ class VerifyPostController
 	public function handleRequest(WP_REST_Request $request): void
 	{
 		$postId = (int) $request->get_param('post_id');
-		$newReviewDate = $this->computeReviewDate($postId);
-		$newReminderDate = $this->computeReminderDate($postId);
 
+		$newReviewDate = $this->computeReviewDate();
 		$updatedReviewDate = update_post_meta($postId, 'ypg_review_date', $newReviewDate);
+
+		$newReminderDate = $this->computeReminderDate($postId);
 		$updatedReminderDate = update_post_meta($postId, 'ypg_reminder_date', $newReminderDate);
+
 		$updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', 1);
 		$updatedLastReviewDate = update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
 
