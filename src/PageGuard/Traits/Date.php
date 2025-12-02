@@ -13,7 +13,7 @@ trait Date
 	public function formatDate(string $date, string $format = 'd F Y'): string
 	{
 		try {
-			$date = new DateTime($date . ' 12:00:00', new DateTimeZone(get_option('timezone_string', 'Europe/Amsterdam')));
+			$date = new DateTime($date . ' 12:00:00', new DateTimeZone(wp_timezone_string()));
 		} catch (Exception $e) {
 			return '';
 		}
@@ -26,7 +26,7 @@ trait Date
 	 */
 	public function addPeriodToBase(string $base, int $period, string $unit): string
 	{
-		$date = new DateTime($base);
+		$date = new DateTime($base, new DateTimeZone(wp_timezone_string()));
 
 		if ('weeks' === $unit) {
 			$date->modify("+{$period} weeks");

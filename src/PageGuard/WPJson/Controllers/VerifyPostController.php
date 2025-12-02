@@ -36,16 +36,15 @@ class VerifyPostController
 		header('Content-Type: text/html; charset=utf-8');
 		header('Access-Control-Allow-Origin: *');
 		header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
+		http_response_code(200); # HTML needs to be returned properly, so no 500 in case of an error.
 
 		if ($updatedReviewDate && $updatedReminderDate && $updatedVerifiedStatus && $updatedLastReviewDate) {
-			http_response_code(200);
 			echo self::getSuccessResponse();
 
 			exit();
 		}
 
 		error_log("[yard-page-guard] Failed to process review for post ID: $postId");
-		http_response_code(200); # HTML needs to be returned properly, so no 500.
 		echo self::getErrorResponse();
 
 		exit();

@@ -74,7 +74,7 @@ $query = $service->handleOverviewQuery();
 			<tbody>
 				<?php if ([] === $query['items']): ?>
 					<tr>
-						<td colspan="7"><?= __('Geen resultaten gevonden.', 'yard-page-guard'); ?></td>
+						<td colspan="8"><?= __('Geen resultaten gevonden.', 'yard-page-guard'); ?></td>
 					</tr>
 				<?php else: $service->buildTableRows($query['items']) ?>
 				<?php endif; ?>
