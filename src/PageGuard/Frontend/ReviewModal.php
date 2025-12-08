@@ -27,7 +27,7 @@ class ReviewModal
 			$this->displayInfo = $this->handleInternalToken();
 		}
 
-		if (null !== $this->displayInfo && ! is_user_logged_in()) {
+		if (null !== $this->displayInfo && ! is_user_logged_in() && get_option('ypg_show_internal_data_on_review', false)) {
 			$this->loginReviewUser();
 		}
 	}
