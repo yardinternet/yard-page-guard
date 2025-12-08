@@ -15,7 +15,10 @@ class FrontendServiceProvider extends ServiceProvider
 	{
 		add_action('template_redirect', [new ReviewModal(), 'render'], 5, 0);
 		add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendAssets']);
-		add_filter('show_admin_bar', [$this, 'disableAdminBarForReviewUsers'], 10, 1);
+
+		if (get_option('ypg_show_internal_data_on_review', false)) {
+			add_filter('show_admin_bar', [$this, 'disableAdminBarForReviewUsers'], 10, 1);
+		}
 	}
 
 	public function enqueueFrontendAssets(): void

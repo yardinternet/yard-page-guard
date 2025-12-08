@@ -98,6 +98,12 @@ wp_editor($reminderContent, 'ypg_reminder_email_content', [
 					</div>
 				</td>
 			</tr>
+			<tr valign="top">
+				<th scope="row"><?= __('Externe eigenaren kunnen interne data inzien', 'yard-page-guard') ?></th>
+				<td>
+					<input type="checkbox" name="ypg_show_internal_data_on_review" <?= checked(get_option('ypg_show_internal_data_on_review', false)) ?> />
+				</td>
+			</tr>
 		</table>
 		<?php submit_button(); ?>
 	</form>
