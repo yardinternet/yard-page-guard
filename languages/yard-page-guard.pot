@@ -7,7 +7,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-11-19T15:12:07+00:00\n"
+"POT-Creation-Date: 2025-12-09T08:58:06+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: yard-page-guard\n"
@@ -18,6 +18,7 @@ msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:154
 #: PageGuard/Metabox/Metabox.php:109
+#: PageGuard/Metabox/Metabox.php:372
 msgid "Inhoudseigenaar"
 msgstr ""
 
@@ -27,13 +28,13 @@ msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:181
 #: PageGuard/Admin/AdminServiceProvider.php:232
-#: PageGuard/Admin/Services/AdminOverviewService.php:244
+#: PageGuard/Admin/Services/AdminOverviewService.php:248
 #: PageGuard/Metabox/Metabox.php:104
 msgid "Extern"
 msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:195
-#: PageGuard/Admin/Views/AdminOverviewPage.php:101
+#: PageGuard/Admin/Views/AdminOverviewPage.php:102
 #: PageGuard/Metabox/Metabox.php:127
 msgid "Gecontroleerd?"
 msgstr ""
@@ -45,18 +46,18 @@ msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:217
 #: PageGuard/Admin/Views/AdminOverviewPage.php:67
-#: PageGuard/Admin/Views/AdminOverviewPage.php:91
+#: PageGuard/Admin/Views/AdminOverviewPage.php:92
 msgid "Eigenaar"
 msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:218
 #: PageGuard/Admin/Views/AdminOverviewPage.php:47
-#: PageGuard/Admin/Views/AdminOverviewPage.php:70
+#: PageGuard/Admin/Views/AdminOverviewPage.php:71
 msgid "Status"
 msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:219
-#: PageGuard/Admin/Views/AdminOverviewPage.php:69
+#: PageGuard/Admin/Views/AdminOverviewPage.php:70
 #: PageGuard/Metabox/Metabox.php:147
 msgid "Volgende herzieningsdatum"
 msgstr ""
@@ -69,19 +70,20 @@ msgid "Niet ingesteld"
 msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:240
-#: PageGuard/Admin/Services/AdminOverviewService.php:192
+#: PageGuard/Admin/Services/AdminOverviewService.php:195
 #: PageGuard/Admin/Views/AdminOverviewPage.php:50
 msgid "Gecontroleerd"
 msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:240
-#: PageGuard/Admin/Services/AdminOverviewService.php:203
+#: PageGuard/Admin/Services/AdminOverviewService.php:206
 #: PageGuard/Admin/Views/AdminOverviewPage.php:51
 msgid "Achterstallig"
 msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:240
-#: PageGuard/Admin/Services/AdminOverviewService.php:191
+#: PageGuard/Admin/Services/AdminOverviewService.php:193
+#: PageGuard/Admin/Services/AdminOverviewService.php:194
 msgid "N.v.t."
 msgstr ""
 
@@ -103,6 +105,8 @@ msgid "Houdbaarheidsmodule Instellingen"
 msgstr ""
 
 #: PageGuard/Admin/Controllers/AdminSettingsController.php:23
+#: PageGuard/Metabox/Metabox.php:371
+#: PageGuard/Metabox/Metabox.php:468
 msgid "Houdbaarheidsmodule"
 msgstr ""
 
@@ -149,36 +153,40 @@ msgstr ""
 msgid "Laatst gecontroleerd op"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminOverviewPage.php:76
+#: PageGuard/Admin/Views/AdminOverviewPage.php:69
+msgid "Laatste herinneringmail"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminOverviewPage.php:77
 msgid "Geen resultaten gevonden."
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminOverviewPage.php:86
+#: PageGuard/Admin/Views/AdminOverviewPage.php:87
 msgid "Nieuwe herzieningsdatum:"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminOverviewPage.php:94
-#: PageGuard/Admin/Views/AdminOverviewPage.php:104
+#: PageGuard/Admin/Views/AdminOverviewPage.php:95
+#: PageGuard/Admin/Views/AdminOverviewPage.php:105
 msgid "Behouden"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminOverviewPage.php:95
+#: PageGuard/Admin/Views/AdminOverviewPage.php:96
 msgid "Geen (weghalen)"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminOverviewPage.php:105
+#: PageGuard/Admin/Views/AdminOverviewPage.php:106
 msgid "Ja"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminOverviewPage.php:106
+#: PageGuard/Admin/Views/AdminOverviewPage.php:107
 msgid "Nee"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminOverviewPage.php:110
+#: PageGuard/Admin/Views/AdminOverviewPage.php:111
 msgid "Toepassen"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminOverviewPage.php:117
+#: PageGuard/Admin/Views/AdminOverviewPage.php:118
 #, php-format
 msgid "Totaal aantal items: %d"
 msgstr ""
@@ -229,22 +237,26 @@ msgstr ""
 msgid "Lijst van achterlopende items"
 msgstr ""
 
+#: PageGuard/Admin/Views/AdminSettingsPage.php:102
+msgid "Externe eigenaren kunnen interne data inzien"
+msgstr ""
+
 #. translators: %s will be replaced with page title
-#: PageGuard/Frontend/ReviewModal.php:112
+#: PageGuard/Frontend/ReviewModal.php:68
 #, php-format
 msgid "U bent momenteel de pagina \"%s\" aan het controleren op houdbaarheid."
 msgstr ""
 
-#: PageGuard/Frontend/ReviewModal.php:115
+#: PageGuard/Frontend/ReviewModal.php:71
 msgid "Sluit venster"
 msgstr ""
 
-#: PageGuard/Frontend/ReviewModal.php:118
+#: PageGuard/Frontend/ReviewModal.php:74
 #: PageGuard/WPCron/Events/ReviewNotification.php:83
 msgid "Houdbaarheidscontrole"
 msgstr ""
 
-#: PageGuard/Frontend/ReviewModal.php:122
+#: PageGuard/Frontend/ReviewModal.php:78
 msgid "Gecontroleerd en akkoord"
 msgstr ""
 
@@ -318,14 +330,14 @@ msgstr ""
 msgid "Controle herinnering"
 msgstr ""
 
-#: PageGuard/WPJson/Controllers/VerifyPostController.php:53
+#: PageGuard/WPJson/Controllers/VerifyPostController.php:57
 msgid "De pagina is succesvol gecontroleerd!"
 msgstr ""
 
-#: PageGuard/WPJson/Controllers/VerifyPostController.php:71
+#: PageGuard/WPJson/Controllers/VerifyPostController.php:75
 msgid "Er is iets misgegaan."
 msgstr ""
 
-#: PageGuard/WPJson/WPJsonServiceProvider.php:60
+#: PageGuard/WPJson/WPJsonServiceProvider.php:57
 msgid "Ongeldige post ID"
 msgstr ""
