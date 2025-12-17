@@ -18,7 +18,7 @@ class AdminOverviewService
 
 	public function handleBulkEdit(): void
 	{
-		if (! current_user_can('manage_options')) {
+		if (! current_user_can('delete_others_pages')) {
 			wp_die(__('U heeft geen toegang tot deze actie.', 'yard-page-guard'));
 		}
 
