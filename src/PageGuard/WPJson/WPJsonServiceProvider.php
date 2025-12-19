@@ -33,7 +33,8 @@ class WPJsonServiceProvider extends ServiceProvider
 			]);
 
 			// Allow all origins and HTMX headers
-			add_filter('rest_pre_serve_request', function (bool $served) {
+			// No type hinting for $served on purpose because the bool type in the documentation isn't always the case (null in admin dashboard sometimes).
+			add_filter('rest_pre_serve_request', function ($served) {
 				if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/wp-json/yard-page-guard') !== false) {
 					header('Access-Control-Allow-Origin: *');
 					header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
