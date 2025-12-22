@@ -21,7 +21,7 @@ class AdminSettingsController
 		add_options_page(
 			__('Houdbaarheidsmodule Instellingen', 'yard-page-guard'),
 			__('Houdbaarheidsmodule', 'yard-page-guard'),
-			'manage_options',
+			'list_users',
 			'page-guard-settings',
 			[$this, 'renderSettingsPage']
 		);
