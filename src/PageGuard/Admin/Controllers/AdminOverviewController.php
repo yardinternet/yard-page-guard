@@ -39,7 +39,7 @@ class AdminOverviewController
 		add_menu_page(
 			__('Houdbaarheids Overzicht', 'yard-page-guard'),
 			__('Houdbaarheids Overzicht', 'yard-page-guard'),
-			'manage_options',
+			'list_users',
 			'ypg-overview',
 			[$this, 'renderOverviewPage'],
 			'dashicons-visibility',
@@ -53,7 +53,7 @@ class AdminOverviewController
 			'ypg-overview',
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
-			'manage_options',
+			'list_users',
 			'edit-tags.php?taxonomy=ypg_external_content_owner',
 		);
 	}
