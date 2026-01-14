@@ -337,7 +337,7 @@ class Metabox
 		$currentUser = wp_get_current_user();
 
 		// Regardless of content owner type: newly created posts, administrators, current user is author or no content owner set
-		if (0 === strlen($post->post_name) || in_array('administrator', $currentUser->roles) || in_array('yard_superuser', $currentUser->roles) || '' === $contentOwnerId || $currentUser->ID === $post->post_author) {
+		if (0 === strlen($post->post_name) || in_array('administrator', $currentUser->roles) || in_array('yard_superuser', $currentUser->roles) || in_array('superuser', $currentUser->roles) || '' === $contentOwnerId || $currentUser->ID === $post->post_author) {
 			return true;
 		}
 
