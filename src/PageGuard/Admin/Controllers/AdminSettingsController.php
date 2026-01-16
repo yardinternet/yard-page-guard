@@ -41,6 +41,8 @@ class AdminSettingsController
 		register_setting('ypg_settings', 'ypg_show_internal_data_on_review', [
 			'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
 		]);
+
+		add_filter('option_page_capability_ypg_settings', fn () => 'list_users');
 	}
 
 	public function renderSettingsPage(): void
