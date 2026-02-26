@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-28T14:56:14+00:00\n"
-"PO-Revision-Date: 2025-12-09 09:59+0100\n"
+"PO-Revision-Date: 2026-02-26 11:22+0100\n"
 "Last-Translator: \n"
 "Language-Team: English (United Kingdom) <LL@li.org>\n"
 "Language: en_GB\n"
@@ -167,7 +167,7 @@ msgstr "The checkbox will be reset on the date above for a new review. An email 
 msgid "De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum."
 msgstr "The review notification will be (or has already been) sent by email on the set date."
 
-#: PageGuard/WPJson/WPJsonServiceProvider.php:57
+#: PageGuard/WPJson/WPJsonServiceProvider.php:58
 msgid "Ongeldige post ID"
 msgstr "Invalid post ID"
 
@@ -332,10 +332,18 @@ msgstr "None (remove)"
 msgid "Laatste herinneringmail"
 msgstr "Last reminder mail"
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:102
+#: PageGuard/Admin/Views/AdminSettingsPage.php:119
 msgid "Externe eigenaren kunnen interne data inzien"
 msgstr "External owners can see internal data"
 
+#: PageGuard/Admin/Views/AdminSettingsPage.php:102
+msgid "Controleer venster footer inhoud"
+msgstr "Review modal footer content"
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:114
+msgid "Een knop kan aangemaakt worden door een link op een nieuwe regel toe te voegen en deze dikgedrukt te maken."
+msgstr "A button can be made by putting a link on a new line and making it bold."
+
 #: PageGuard/Metabox/Metabox.php:39
 msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
-msgstr "External owners get a reminder on the set date to review the content on this page."
+msgstr "Content owners get a reminder on the set dat to review the content of this page."

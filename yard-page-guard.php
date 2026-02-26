@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 /**
- * Plugin Name:     Yard Page Guard
+ * Plugin Name:     Yard | Page Guard
  * Plugin URI:      https://www.yard.nl
  * Description:     Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.
  * Author:          Yard | Digital Agency
  * Author URI:      http://www.yard.nl
  * Text Domain:     yard-page-guard
  * Domain Path:     /languages
- * Version:         1.1.0
+ * Version:         2.0.0
  *
  * @package         Yard_Page_Guard
  */
@@ -32,7 +32,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	$autoloader = new Yard\PageGuard\Autoloader();
 }
 
-define('YPG_VERSION', '1.1.0');
+define('YPG_VERSION', '2.0.0');
 define('YPG_PLUGIN_NAME', basename(__DIR__));
 
 /**

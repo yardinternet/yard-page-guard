@@ -99,6 +99,23 @@ wp_editor($reminderContent, 'ypg_reminder_email_content', [
 				</td>
 			</tr>
 			<tr valign="top">
+				<th scope="row"><?= __('Controleer venster footer inhoud', 'yard-page-guard') ?></th>
+				<td>
+					<?php
+$modalFooterContent = get_option('ypg_modal_footer_content', '');
+wp_editor($modalFooterContent, 'ypg_modal_footer_content', [
+	'textarea_name' => 'ypg_modal_footer_content',
+	'textarea_rows' => 6,
+	'media_buttons' => false,
+	'teeny' => true,
+]);
+?>
+					<div class="description">
+						<p><?= __('Een knop kan aangemaakt worden door een link op een nieuwe regel toe te voegen en deze dikgedrukt te maken.', 'yard-page-guard') ?></p>
+					</div>
+				</td>
+			</tr>
+			<tr valign="top">
 				<th scope="row"><?= __('Externe eigenaren kunnen interne data inzien', 'yard-page-guard') ?></th>
 				<td>
 					<input type="checkbox" name="ypg_show_internal_data_on_review" <?= checked(get_option('ypg_show_internal_data_on_review', false)) ?> />
