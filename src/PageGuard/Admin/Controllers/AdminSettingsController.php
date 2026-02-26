@@ -38,6 +38,7 @@ class AdminSettingsController
 		register_setting('ypg_settings', 'ypg_reminder_email_bcc');
 		register_setting('ypg_settings', 'ypg_review_email_content');
 		register_setting('ypg_settings', 'ypg_reminder_email_content');
+		register_setting('ypg_settings', 'ypg_modal_footer_content');
 		register_setting('ypg_settings', 'ypg_show_internal_data_on_review', [
 			'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
 		]);

@@ -50,9 +50,12 @@ trait Token
 			return null;
 		}
 
+		$footer = trim(strip_tags(get_option('ypg_modal_footer_content', ''))) !== '' ? wpautop(get_option('ypg_modal_footer_content', '')) : false;
+
 		return [
 			'id' => get_the_ID(),
 			'title' => get_the_title(),
+			'footer' => $footer,
 			'endpoint' => '/wp-json/yard-page-guard/v1/verify-post',
 		];
 	}

@@ -22,18 +22,43 @@
 		max-width: min(50vw, 390px);
 	}
 
-	.title {
+	.ypg-title {
 		margin-bottom: 8px;
 		font-family: 'acumin-pro', sans-serif;
 		font-size: 20px;
 		font-weight: 700;
 	}
 
-	.description {
+	.ypg-description {
 		margin-bottom: 16px;
 	}
 
-	.close-modal {
+	.ypg-footer {
+		padding-top: 16px;
+		border-top: 1px solid #b5b5b5;
+		margin-top: 24px;
+
+		> *:last-child {
+			margin-bottom: 0;
+		}
+
+		a > strong {
+			display: inline-block;
+			font-weight: 400;
+			padding: 10px 28px;
+			border: none;
+			border-radius: 10px;
+			background-color: #294587;
+			color: #fff;
+			transition: transform 0.25s ease-in-out;
+
+			&:hover {
+				transform: scale(1.025);
+			}
+		}
+	}
+
+	.ypg-close-modal {
 		position: absolute;
 		top: 1rem;
 		right: 1rem;
@@ -85,10 +110,10 @@
 			color: #fff;
 			gap: 14px;
 			transition: transform 0.25s ease-in-out;
-		}
 
-		button[type='submit']:hover {
-			transform: scale(1.025);
+			&:hover {
+				transform: scale(1.025);
+			}
 		}
 	}
 }

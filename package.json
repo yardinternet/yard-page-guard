@@ -1,6 +1,6 @@
 {
 	"name": "yard-page-guard",
-	"version": "1.1.0",
+	"version": "2.0.0",
 	"description": "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.",
 	"author": "Yard | Digital Agency",
 	"license": "MIT License",
