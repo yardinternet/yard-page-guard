@@ -336,8 +336,17 @@ class Metabox
 		$contentOwnerType = get_post_meta($postId, 'ypg_post_content_owner_type', true);
 		$currentUser = wp_get_current_user();
 
-		// Regardless of content owner type: newly created posts, administrators, current user is author or no content owner set
-		if (0 === strlen($post->post_name) || in_array('administrator', $currentUser->roles) || in_array('yard_superuser', $currentUser->roles) || in_array('superuser', $currentUser->roles) || '' === $contentOwnerId || $currentUser->ID === $post->post_author) {
+		// Make admin roles filterable
+		$defaultRoles = ['administrator', 'yard_superuser', 'super-user', 'superuser'];
+		$adminRoles = apply_filters('yard::page-guard/admin-roles', $defaultRoles);
+
+		// Regardless of content owner type: newly created posts, allowed roles, current user is author or no content owner set
+		if (
+			0 === strlen($post->post_name)
+			|| count(array_intersect($adminRoles, (array) $currentUser->roles)) > 0
+			|| '' === $contentOwnerId
+			|| $currentUser->ID === $post->post_author
+		) {
 			return true;
 		}
 

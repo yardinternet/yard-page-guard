@@ -4,7 +4,7 @@
 - Requires at least: 6.4
 - Tested up to: 6.8.3
 - Requires PHP: 7.4
-- Stable tag: 2.0.0
+- Stable tag: 2.0.1
 - License: EUPL v.1.2
 - License URI: <https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12>
 
@@ -52,6 +52,12 @@ apply_filters('yard::page-guard/post-types-to-use', ['page']);
 
 ```php
 apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']);
+```
+
+3. Roles that are allowed to bypass (in addition to the post author and content owner):
+
+```php
+apply_filters('yard::page-guard/admin-roles', ['administrator', 'yard_superuser', 'super-user', 'superuser']);
 ```
 
 ## Local Development
