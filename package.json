@@ -1,6 +1,6 @@
 {
 	"name": "yard-page-guard",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"description": "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.",
 	"author": "Yard | Digital Agency",
 	"license": "MIT License",
@@ -19,7 +19,7 @@
 		"lefthook": "^2.0.3",
 		"prettier": "^3.6.2",
 		"stylelint": "^16.25.0",
-		"vite": "^7.2.2"
+		"vite": "^8.0.0"
 	},
 	"dependencies": {
 		"htmx.org": "^2.0.8"

@@ -12,7 +12,7 @@ function initReviewModal() {
 
 	enableDrag(modal);
 
-	const closeButton = modal.querySelector('.close-modal');
+	const closeButton = modal.querySelector('.ypg-close-modal');
 	if (closeButton) {
 		closeButton.addEventListener('click', function () {
 			modal.classList.add('closed');
@@ -69,12 +69,7 @@ function enableDrag(element) {
 	element.addEventListener('mousedown', initDragging);
 
 	function initDragging(event) {
-		if (
-			event.target.closest(
-				'.close-button, button, input, textarea, a, select'
-			)
-		)
-			return;
+		if (event.target.closest('button, input, textarea, a, select')) return;
 
 		event.preventDefault();
 		isDragging = true;
