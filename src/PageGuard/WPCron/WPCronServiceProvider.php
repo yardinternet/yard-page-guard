@@ -17,17 +17,8 @@ class WPCronServiceProvider extends ServiceProvider
 		add_action('ypg_site_cron', [ReviewNotification::class, 'init']);
 		add_action('ypg_site_cron', [ReminderNotification::class, 'init']);
 
-		$nextScheduled = wp_next_scheduled('ypg_site_cron');
-		$timeToExecute = $this->timeToExecute();
-
-		// Schedule the event
-		if ($nextScheduled !== $timeToExecute) {
-			// Overwrite if time is wrong
-			if ($nextScheduled) {
-				wp_clear_scheduled_hook('ypg_site_cron');
-			}
-
-			wp_schedule_event($timeToExecute, 'daily', 'ypg_site_cron');
+		if (! wp_next_scheduled('ypg_site_cron')) {
+			wp_schedule_event($this->timeToExecute(), 'daily', 'ypg_site_cron');
 		}
 	}
 
@@ -36,10 +27,15 @@ class WPCronServiceProvider extends ServiceProvider
 	 */
 	protected function timeToExecute(): int
 	{
-		$currentDateTime = new DateTime('now', new DateTimeZone(wp_timezone_string()));
-		$tomorrowDateTime = $currentDateTime->modify('+1 day');
-		$tomorrowDateTime->setTime(6, 0, 0);
+		$now = new DateTime('now', new DateTimeZone(wp_timezone_string()));
+		$target = clone $now;
+		$target->setTime(6, 0, 0);
 
-		return $tomorrowDateTime->getTimestamp();
+		// If 6am today has already passed, move to tomorrow
+		if ($now >= $target) {
+			$target->modify('+1 day');
+		}
+
+		return $target->getTimestamp();
 	}
 }
