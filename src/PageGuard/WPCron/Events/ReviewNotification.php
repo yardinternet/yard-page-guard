@@ -89,10 +89,8 @@ class ReviewNotification extends Event
 				continue;
 			}
 
-			if (! defined('WP_CLI') || ! WP_CLI) {
-				foreach ($ownerItems as $item) {
-					$this->updateModuleMeta($item);
-				}
+			foreach ($ownerItems as $item) {
+				$this->updateModuleMeta($item);
 			}
 		}
 	}
@@ -117,7 +115,7 @@ class ReviewNotification extends Event
 
 	private function updateModuleMeta(ReviewItem $item): void
 	{
-		update_post_meta($item->ID(), 'ypg_is_verified', 0);
-		update_post_meta($item->ID(), 'ypg_review_mail_sent', 1);
+		update_post_meta($item->ID(), 'ypg_is_verified', '0');
+		update_post_meta($item->ID(), 'ypg_review_mail_sent', '1');
 	}
 }

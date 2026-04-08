@@ -29,7 +29,7 @@ class VerifyPostController
 		$newReminderDate = $this->computeReminderDate($postId);
 		$updatedReminderDate = update_post_meta($postId, 'ypg_reminder_date', $newReminderDate);
 
-		$updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', 1);
+		$updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', '1');
 		$updatedLastReviewDate = update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
 
 		delete_post_meta($postId, 'ypg_review_mail_sent');
