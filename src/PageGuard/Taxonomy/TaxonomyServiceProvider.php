@@ -18,6 +18,8 @@ class TaxonomyServiceProvider extends ServiceProvider
 			add_action('ypg_external_content_owner_edit_form_fields', [$externalOwnerTaxonomy, 'addUpdateEmailFormField']);
 			add_action('created_ypg_external_content_owner', [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 1);
 			add_action('edited_ypg_external_content_owner', [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 1);
+			add_filter('pre_insert_term', [$externalOwnerTaxonomy, 'preventDuplicateEmailOnInsert'], 10, 2);
+			add_filter('wp_update_term_data', [$externalOwnerTaxonomy, 'preventDuplicateEmailOnUpdate'], 10, 4);
 		});
 	}
 }
