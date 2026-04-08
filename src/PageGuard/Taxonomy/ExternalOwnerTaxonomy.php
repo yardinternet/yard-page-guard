@@ -34,7 +34,7 @@ class ExternalOwnerTaxonomy
 		?>
         <div class="form-field">
             <label for="ypg_external_content_owner_email"><?php _e('E-mailadres', 'yard-page-guard'); ?></label>
-            <input type="email" name="ypg_external_content_owner_email" id="ypg_external_content_owner_email" />
+            <input type="email" name="ypg_external_content_owner_email" id="ypg_external_content_owner_email" required />
             <p><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
         </div>
         <?php
@@ -52,8 +52,8 @@ class ExternalOwnerTaxonomy
                 <input type="email"
                        name="ypg_external_content_owner_email"
                        id="ypg_external_content_owner_email"
-					   size="40"
-					   required
+                       size="40"
+                       required
                        value="<?= esc_attr($email); ?>" />
                 <p class="description"><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
             </td>
@@ -61,6 +61,51 @@ class ExternalOwnerTaxonomy
         <?php
 	}
 
+	/**
+	 * Prevent creating a term if the email is missing, invalid, or already exists on another term.
+	 *
+	 * Returning a WP_Error from `pre_insert_term` cancels the insert and WordPress
+	 * displays the error message as an admin notice automatically.
+	 *
+	 * @param string|\WP_Error $term The term name or a WP_Error.
+	 * @param string $taxonomy The taxonomy slug.
+	 *
+	 * @return string|\WP_Error
+	 */
+	public function preventDuplicateEmailOnInsert($term, string $taxonomy)
+	{
+		if ('ypg_external_content_owner' !== $taxonomy) {
+			return $term;
+		}
+
+		return $this->validateEmail($term);
+	}
+
+	/**
+	 * Prevent updating a term if the email is missing, invalid, or already exists on another term.
+	 *
+	 * Returning a WP_Error from `wp_update_term_data` cancels the update and WordPress
+	 * displays the error message as an admin notice automatically.
+	 *
+	 * @param array $data The term data to be updated.
+	 * @param int $termId The term ID.
+	 * @param string $taxonomy The taxonomy slug.
+	 * @param array $args The raw arguments passed to wp_update_term().
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function preventDuplicateEmailOnUpdate(array $data, int $termId, string $taxonomy, array $args)
+	{
+		if ('ypg_external_content_owner' !== $taxonomy) {
+			return $data;
+		}
+
+		return $this->validateEmail($data, $termId);
+	}
+
+	/**
+	 * Force the term slug to be based on the email address after creating or editing.
+	 */
 	public function handleSaveMeta(int $termId): void
 	{
 		if (! isset($_POST['ypg_external_content_owner_email'])) {
@@ -76,5 +121,68 @@ class ExternalOwnerTaxonomy
 		}
 
 		update_term_meta($termId, 'ypg_external_content_owner_email', $email);
+
+		// Force the slug to be based on the email address.
+		$slug = sanitize_title($email);
+
+		remove_action('created_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10);
+		remove_action('edited_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10);
+
+		wp_update_term($termId, 'ypg_external_content_owner', ['slug' => $slug]);
+
+		add_action('created_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10, 1);
+		add_action('edited_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10, 1);
+	}
+
+	/**
+	 * @param mixed $passthrough Value to return on success.
+	 * @param int|null $excludeTermId Term ID to exclude from the duplicate check (for edits).
+	 *
+	 * @return mixed|\WP_Error
+	 */
+	private function validateEmail(mixed $passthrough, ?int $excludeTermId = null)
+	{
+		if (! isset($_POST['ypg_external_content_owner_email'])) {
+			return new \WP_Error(
+				'ypg_missing_email',
+				__('Een e-mailadres is verplicht voor een externe inhoudseigenaar.', 'yard-page-guard')
+			);
+		}
+
+		$email = sanitize_email($_POST['ypg_external_content_owner_email']);
+
+		if ('' === $email || ! is_email($email)) {
+			return new \WP_Error(
+				'ypg_invalid_email',
+				__('Voer een geldig e-mailadres in.', 'yard-page-guard')
+			);
+		}
+
+		$existingTerms = get_terms([
+			'taxonomy' => 'ypg_external_content_owner',
+			'hide_empty' => false,
+			'meta_key' => 'ypg_external_content_owner_email',
+			'meta_value' => $email,
+			'fields' => 'ids',
+		]);
+
+		if (is_wp_error($existingTerms)) {
+			return $passthrough;
+		}
+
+		if (null !== $excludeTermId) {
+			$existingTerms = array_filter($existingTerms, function ($id) use ($excludeTermId) {
+				return (int) $id !== $excludeTermId;
+			});
+		}
+
+		if (is_array($existingTerms) && count($existingTerms) > 0) {
+			return new \WP_Error(
+				'ypg_duplicate_email',
+				__('Er bestaat al een externe inhoudseigenaar met dit e-mailadres.', 'yard-page-guard')
+			);
+		}
+
+		return $passthrough;
 	}
 }
