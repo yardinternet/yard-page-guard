@@ -1,20 +1,17 @@
 {
 	"name": "plugin/yard-page-guard",
 	"description": "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.",
-	"homepage": "https://www.yard.nl",
 	"type": "wordpress-plugin",
-	"repositories": [
-		{
-			"type": "composer",
-			"url": "https://wpackagist.org"
-		}
-	],
+	"homepage": "https://www.yard.nl",
+	"license": "MIT",
+	"support": {
+		"issues": "https://github.com/yardinternet/yard-page-guard",
+		"source": "https://github.com/yardinternet/yard-page-guard"
+	},
 	"require": {
-		"php": "^7.4|^8.0"
+		"php": ">=7.4"
 	},
 	"require-dev": {
-		"friendsofphp/php-cs-fixer": "^3.0",
-		"symfony/var-dumper": "^5.1",
 		"10up/wp_mock": "^0.5.0",
 		"wp-cli/i18n-command": "^2.6",
 		"yard/php-cs-fixer-rules": "^1.0",

@@ -1,44 +1,27 @@
 # Yard Page Guard
 
-- Tags: content owners, notifications
-- Requires at least: 6.4
-- Tested up to: 6.8.3
-- Requires PHP: 7.4
-- Stable tag: 2.0.3
-- License: EUPL v.1.2
-- License URI: <https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12>
-
 ## Description
 
 Assign content owners to WordPress pages (or other post types), allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.
 
-## Installation
+## Installation through `/wp-admin`
 
-1. Upload plugin directory to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
+1. Upload [plugin .zip](https://github.com/yardinternet/yard-page-guard/archive/refs/heads/main.zip) through the 'Upload plugin' button
+2. Activate the plugin
 
-## Installation Brave
+## Installation through Composer
 
-1. Add the following to the repositories section of your composer.json:
-
-```json
-{
-	"type": "vcs",
-	"url": "git@github.com:yardinternet/yard-page-guard.git"
-}
-```
-
-2. Install this package with Composer:
+1. Install this package with Composer:
 
 ```
 composer require plugin/yard-page-guard
 ```
 
-3. Activate the plugin through the 'Plugins' menu in WordPress
+2. Activate the plugin through the 'Plugins' menu in WordPress
 
 ## Security
 
-Access to the metaboxes is granted to all users with the `edit_pages` capability initially. Once an author and content owner are connected to a post object, only these two entities will have access.
+Access to the metaboxes is granted to all users with the `edit_pages` capability initially. Once an author and content owner are connected to a post object, only these two entities will have access. Besides that, admin roles (see item #3 under the Hooks paragraph) also have access to the metaboxes. As well as the admin overview
 
 ## Hooks
 

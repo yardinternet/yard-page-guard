@@ -6,7 +6,7 @@ export default defineConfig({
 	build: {
 		outDir: '../build',
 		emptyOutDir: true,
-		rollupOptions: {
+		rolldownOptions: {
 			input: {
 				frontend: resolve(__dirname, 'resources/js/frontend.js'),
 				admin: resolve(__dirname, 'resources/js/admin.js'),
