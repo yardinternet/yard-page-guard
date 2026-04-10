@@ -7,7 +7,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-10T11:22:01+00:00\n"
+"POT-Creation-Date: 2026-04-10T15:17:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: yard-page-guard\n"
@@ -212,40 +212,58 @@ msgid "Herinneringsperiode"
 msgstr ""
 
 #: PageGuard/Admin/Views/AdminSettingsPage.php:60
+msgid "Herzieningsmail onderwerp"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:62
+#: PageGuard/WPCron/Events/ReviewNotification.php:83
+msgid "Controleer jouw webpagina('s)"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:66
 msgid "Herzieningsmail inhoud"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:72
-#: PageGuard/Admin/Views/AdminSettingsPage.php:93
+#: PageGuard/Admin/Views/AdminSettingsPage.php:78
+#: PageGuard/Admin/Views/AdminSettingsPage.php:105
 msgid "De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:74
-#: PageGuard/Admin/Views/AdminSettingsPage.php:95
+#: PageGuard/Admin/Views/AdminSettingsPage.php:80
+#: PageGuard/Admin/Views/AdminSettingsPage.php:107
 msgid "Naam van inhoudseigenaar"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:75
+#: PageGuard/Admin/Views/AdminSettingsPage.php:81
 msgid "Lijst van items die gecontroleerd moeten worden"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:81
+#: PageGuard/Admin/Views/AdminSettingsPage.php:87
+msgid "Herinneringsmail onderwerp"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:89
+#: PageGuard/WPCron/Events/ReminderNotification.php:79
+msgid "Herinnering controle webpagina('s)"
+msgstr ""
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:93
 msgid "Herinneringsmail inhoud"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:96
+#: PageGuard/Admin/Views/AdminSettingsPage.php:108
 msgid "Lijst van achterlopende items"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:102
+#: PageGuard/Admin/Views/AdminSettingsPage.php:114
 msgid "Controleer venster footer inhoud"
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:114
+#: PageGuard/Admin/Views/AdminSettingsPage.php:126
 msgid "Een knop kan aangemaakt worden door een link op een nieuwe regel toe te voegen en deze dikgedrukt te maken."
 msgstr ""
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:119
+#: PageGuard/Admin/Views/AdminSettingsPage.php:131
 msgid "Externe eigenaren kunnen interne data inzien"
 msgstr ""
 
@@ -260,7 +278,6 @@ msgid "Sluit venster"
 msgstr ""
 
 #: PageGuard/Frontend/ReviewModal.php:74
-#: PageGuard/WPCron/Events/ReviewNotification.php:83
 msgid "Houdbaarheidscontrole"
 msgstr ""
 
@@ -344,10 +361,6 @@ msgstr ""
 
 #: PageGuard/Traits/Text.php:31
 msgid "Maanden"
-msgstr ""
-
-#: PageGuard/WPCron/Events/ReminderNotification.php:79
-msgid "Controle herinnering"
 msgstr ""
 
 #: PageGuard/WPJson/Controllers/VerifyPostController.php:57

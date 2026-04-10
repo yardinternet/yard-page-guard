@@ -57,6 +57,12 @@ foreach ($this->getUnitOptions() as $key => $label) {
 				</td>
 			</tr>
 			<tr valign="top">
+				<th scope="row"><?= __('Herzieningsmail onderwerp', 'yard-page-guard') ?></th>
+				<td>
+					<input type="text" name="ypg_review_email_subject" value="<?= esc_attr(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))); ?>" />
+				</td>
+			</tr>
+			<tr valign="top">
 				<th scope="row"><?= __('Herzieningsmail inhoud', 'yard-page-guard') ?></th>
 				<td>
 					<?php
@@ -75,6 +81,12 @@ wp_editor($notificationContent, 'ypg_review_email_content', [
 							<li><?= __('Lijst van items die gecontroleerd moeten worden', 'yard-page-guard') ?></li>
 						</ol>
 					</div>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><?= __('Herinneringsmail onderwerp', 'yard-page-guard') ?></th>
+				<td>
+					<input type="text" name="ypg_reminder_email_subject" value="<?= esc_attr(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))); ?>" />
 				</td>
 			</tr>
 			<tr valign="top">
