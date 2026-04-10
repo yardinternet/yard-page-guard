@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-28T14:56:14+00:00\n"
-"PO-Revision-Date: 2026-04-10 13:23+0200\n"
+"PO-Revision-Date: 2026-04-10 16:02+0200\n"
 "Last-Translator: \n"
 "Language-Team: English (United Kingdom) <LL@li.org>\n"
 "Language: en_GB\n"
@@ -210,40 +210,59 @@ msgid "Herinneringsperiode"
 msgstr "Reminder period"
 
 #: PageGuard/Admin/Views/AdminSettingsPage.php:60
+msgid "Herzieningsmail onderwerp"
+msgstr "Review mail subject"
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:62
+#: PageGuard/Frontend/ReviewModal.php:74
+#: PageGuard/WPCron/Events/ReviewNotification.php:83
+msgid "Houdbaarheidscontrole"
+msgstr "Content Review"
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:66
 msgid "Herzieningsmail inhoud"
 msgstr "Review email content"
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:72
-#: PageGuard/Admin/Views/AdminSettingsPage.php:93
+#: PageGuard/Admin/Views/AdminSettingsPage.php:78
+#: PageGuard/Admin/Views/AdminSettingsPage.php:105
 msgid "De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):"
 msgstr "The following variables can be inserted by adding {#} to the text (e.g. {1}):"
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:74
-#: PageGuard/Admin/Views/AdminSettingsPage.php:95
+#: PageGuard/Admin/Views/AdminSettingsPage.php:80
+#: PageGuard/Admin/Views/AdminSettingsPage.php:107
 msgid "Naam van inhoudseigenaar"
 msgstr "Name of content owner"
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:75
+#: PageGuard/Admin/Views/AdminSettingsPage.php:81
 msgid "Lijst van items die gecontroleerd moeten worden"
 msgstr "List of items to be reviewed"
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:81
+#: PageGuard/Admin/Views/AdminSettingsPage.php:87
+msgid "Herinneringsmail onderwerp"
+msgstr "Reminder mail subject"
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:89
+#: PageGuard/WPCron/Events/ReminderNotification.php:79
+msgid "Controle herinnering"
+msgstr "Check reminder"
+
+#: PageGuard/Admin/Views/AdminSettingsPage.php:93
 msgid "Herinneringsmail inhoud"
 msgstr "Reminder email content"
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:96
+#: PageGuard/Admin/Views/AdminSettingsPage.php:108
 msgid "Lijst van achterlopende items"
 msgstr "List of overdue items"
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:102
+#: PageGuard/Admin/Views/AdminSettingsPage.php:114
 msgid "Controleer venster footer inhoud"
 msgstr "Review modal footer content"
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:114
+#: PageGuard/Admin/Views/AdminSettingsPage.php:126
 msgid "Een knop kan aangemaakt worden door een link op een nieuwe regel toe te voegen en deze dikgedrukt te maken."
 msgstr "A button can be made by putting a link on a new line and making it bold."
 
-#: PageGuard/Admin/Views/AdminSettingsPage.php:119
+#: PageGuard/Admin/Views/AdminSettingsPage.php:131
 msgid "Externe eigenaren kunnen interne data inzien"
 msgstr "External owners can see internal data"
 
@@ -257,11 +276,6 @@ msgstr "You are currently reviewing the page \"%s\" for content validity."
 msgid "Sluit venster"
 msgstr "Close window"
 
-#: PageGuard/Frontend/ReviewModal.php:74
-#: PageGuard/WPCron/Events/ReviewNotification.php:83
-msgid "Houdbaarheidscontrole"
-msgstr "Content Review"
-
 #: PageGuard/Frontend/ReviewModal.php:78
 msgid "Gecontroleerd en akkoord"
 msgstr "Checked and approved"
@@ -272,7 +286,7 @@ msgstr "Content Review Module"
 
 #: PageGuard/Metabox/Metabox.php:39
 msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
-msgstr "Content owners get a reminder on the set date to verify the content of this page."
+msgstr "Content owners get a reminder on the set date to review the content of the page."
 
 #: PageGuard/Metabox/Metabox.php:47
 msgid "U heeft geen toestemming om de houdbaarsheids module te bewerken."
@@ -343,10 +357,6 @@ msgstr "Weeks"
 #: PageGuard/Traits/Text.php:31
 msgid "Maanden"
 msgstr "Months"
-
-#: PageGuard/WPCron/Events/ReminderNotification.php:79
-msgid "Controle herinnering"
-msgstr "Check reminder"
 
 #: PageGuard/WPJson/Controllers/VerifyPostController.php:57
 msgid "De pagina is succesvol gecontroleerd!"

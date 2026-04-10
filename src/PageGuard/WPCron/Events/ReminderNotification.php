@@ -76,7 +76,7 @@ class ReminderNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(__('Controle herinnering', 'yard-page-guard')),
+				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Controle herinnering', 'yard-page-guard')), $owner),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
