@@ -76,7 +76,7 @@ class ReviewModal
 				<input type="hidden" name="post_id" value="<?= $this->displayInfo['id'] ?>">
 				<input type="hidden" name="ypg_review_token" value="<?= esc_attr(sanitize_text_field($_GET['ypg_review_token'])); ?>">
                 <button type="submit"><i class="fa-solid fa-check" aria-hidden="true"></i> <?= __('Gecontroleerd en akkoord', 'yard-page-guard') ?></button>
-				<?php if ($this->displayInfo['footer']): ?>
+				<?php if ($this->displayInfo['footer'] ?? false): ?>
 				<div class="ypg-footer">
 					<?= $this->displayInfo['footer'] ?>
 				</div>
