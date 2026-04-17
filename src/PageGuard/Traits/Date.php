@@ -41,9 +41,14 @@ trait Date
 
 	/**
 	 * Computes the next date for a post's review / reminder meta
-	 * $toBeVerified and $wasPreviouslyVerified are used
-	 * because saving a post regardless of changing the yard-page-guard metabox values
-	 * will be hooked into using 'save_post'.
+	 *
+	 * @param string $inputFieldName The POST field to check for manual changes
+	 * @param string|bool $baseValue The current value in the database for THIS field
+	 * @param bool $toBeVerified
+	 * @param bool $wasPreviouslyVerified
+	 * @param int $period The time period to add
+	 * @param string $unit The unit of time (days, weeks, months)
+	 * @param string $baseAdditionDate (Optional) An explicit date to add the period to (e.g., adding reminder period to review date)
 	 */
 	public function computeDateMeta(
 		string $inputFieldName,
@@ -51,7 +56,8 @@ trait Date
 		bool $toBeVerified,
 		bool $wasPreviouslyVerified,
 		int $period,
-		string $unit
+		string $unit,
+		string $baseAdditionDate = ''
 	): string {
 		// #1 Manual change via metabox input (different from before)
 		if (
@@ -64,20 +70,21 @@ trait Date
 
 		// #2 Keep current if not verified and current exists
 		if (! $toBeVerified && $baseValue) {
-			return $baseValue;
+			return (string) $baseValue;
 		}
 
 		$fallbackBaseDate = date('Y-m-d');
 
 		// #3 Auto increase when post has just been verified or no current value is set
 		if ($toBeVerified && ! $wasPreviouslyVerified || ! $baseValue) {
-			$baseDate = $baseValue ?: $fallbackBaseDate;
+			// Prioritize the base addition date (like a review date) over the current meta value
+			$baseDate = $baseAdditionDate ?: ($baseValue ?: $fallbackBaseDate);
 
-			return $this->addPeriodToBase($baseDate, $period, $unit);
+			return $this->addPeriodToBase((string) $baseDate, $period, $unit);
 		}
 
 		// Fallback: return current meta
-		return $baseValue;
+		return (string) $baseValue;
 	}
 
 	private function computeReviewDate(bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
@@ -91,28 +98,39 @@ trait Date
 			$toBeVerified,
 			$wasPreviouslyVerified,
 			$datePeriod,
-			$dateUnit,
+			$dateUnit
 		);
 	}
 
 	private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
 	{
-		$currentReviewDate = get_post_meta($postId, 'ypg_review_date', true);
+		// Get the current reminder date
+		$currentReminderDate = get_post_meta($postId, 'ypg_reminder_date', true);
+
+		// Get the review date (checking POST first for manual updates)
+		$reviewDateInput = isset($_POST['ypg_review_date']) ? sanitize_text_field($_POST['ypg_review_date']) : '';
+		$currentReviewDate = ! empty($reviewDateInput) ? $reviewDateInput : get_post_meta($postId, 'ypg_review_date', true);
+
+		// Fix bugged posts with a reminder date before the review date
+		if (! empty($currentReminderDate) && ! empty($currentReviewDate) && $currentReminderDate <= $currentReviewDate) {
+			$currentReminderDate = '';
+		}
+
 		$dateUnitOverride = get_post_meta($postId, 'ypg_reminder_time_unit', true);
 		$datePeriodOverride = (int) get_post_meta($postId, 'ypg_reminder_time_period', true);
+
 		$finalPeriod = ! empty($datePeriodOverride) ? $datePeriodOverride : (int) get_option('ypg_reminder_time_period', 1);
 		$finalUnit = ! empty($dateUnitOverride) ? $dateUnitOverride : get_option('ypg_reminder_time_unit', 'weeks');
 
-		$reminderDate = $this->computeDateMeta(
+		return $this->computeDateMeta(
 			'ypg_reminder_date',
-			$currentReviewDate,
+			$currentReminderDate, // If it was bugged, this passes as '' and forces a recalculation
 			$toBeVerified,
 			$wasPreviouslyVerified,
 			$finalPeriod,
 			$finalUnit,
+			$currentReviewDate
 		);
-
-		return $reminderDate;
 	}
 
 	public function isValidDate(string $date): bool
