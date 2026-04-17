@@ -7,7 +7,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-10T15:17:34+00:00\n"
+"POT-Creation-Date: 2026-04-17T10:51:19+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: yard-page-guard\n"
@@ -270,7 +270,7 @@ msgstr ""
 #. translators: %s will be replaced with page title
 #: PageGuard/Frontend/ReviewModal.php:68
 #, php-format
-msgid "U bent momenteel de pagina \"%s\" aan het controleren op houdbaarheid."
+msgid "Je bent momenteel de pagina \"%s\" aan het controleren op houdbaarheid."
 msgstr ""
 
 #: PageGuard/Frontend/ReviewModal.php:71

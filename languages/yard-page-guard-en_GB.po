@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-28T14:56:14+00:00\n"
-"PO-Revision-Date: 2026-04-10 17:18+0200\n"
+"PO-Revision-Date: 2026-04-17 12:52+0200\n"
 "Last-Translator: \n"
 "Language-Team: English (United Kingdom) <LL@li.org>\n"
 "Language: en_GB\n"
@@ -268,8 +268,8 @@ msgstr "External owners can see internal data"
 #. translators: %s will be replaced with page title
 #: PageGuard/Frontend/ReviewModal.php:68
 #, php-format
-msgid "U bent momenteel de pagina \"%s\" aan het controleren op houdbaarheid."
-msgstr "You are currently reviewing the page \"%s\" for content validity."
+msgid "Je bent momenteel de pagina \"%s\" aan het controleren op houdbaarheid."
+msgstr "You’re currently reviewing the page “%s” for outdated content."
 
 #: PageGuard/Frontend/ReviewModal.php:71
 msgid "Sluit venster"
