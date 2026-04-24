@@ -9,7 +9,21 @@ class ExternalOwnerTaxonomy
 	public function register(): void
 	{
 		register_taxonomy('ypg_external_content_owner', apply_filters('yard::page-guard/post-types-to-use', ['page']), [
-			'label' => __('Externe inhoudseigenaren', 'yard-page-guard'),
+			'labels' => [
+				'name' => __('Externe inhoudseigenaren', 'yard-page-guard'),
+				'singular_name' => __('Externe inhoudseigenaar', 'yard-page-guard'),
+				'menu_name' => __('Externe inhoudseigenaren', 'yard-page-guard'),
+				'all_items' => __('Alle externe inhoudseigenaren', 'yard-page-guard'),
+				'edit_item' => __('Bewerk externe inhoudseigenaar', 'yard-page-guard'),
+				'view_item' => __('Bekijk externe inhoudseigenaar', 'yard-page-guard'),
+				'update_item' => __('Werk externe inhoudseigenaar bij', 'yard-page-guard'),
+				'add_new_item' => __('Nieuwe externe inhoudseigenaar toevoegen', 'yard-page-guard'),
+				'new_item_name' => __('Naam van nieuwe externe inhoudseigenaar', 'yard-page-guard'),
+				'parent_item' => null,
+				'parent_item_colon' => null,
+				'search_items' => __('Zoek externe inhoudseigenaren', 'yard-page-guard'),
+				'not_found' => __('Geen externe inhoudseigenaren gevonden', 'yard-page-guard'),
+			],
 			'public' => false,
 			'show_ui' => true,
 			'show_in_quick_edit' => false,
@@ -40,6 +54,17 @@ class ExternalOwnerTaxonomy
         <?php
 	}
 
+	public function addInsertPhoneNumberFormField(): void
+	{
+		?>
+        <div class="form-field">
+            <label for="ypg_external_content_owner_phone_number"><?php _e('Telefoonnummer', 'yard-page-guard'); ?></label>
+            <input type="text" name="ypg_external_content_owner_phone_number" id="ypg_external_content_owner_phone_number" />
+            <p><?php _e('Voer het telefoonnummer van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
+        </div>
+        <?php
+	}
+
 	public function addUpdateEmailFormField(WP_Term $user): void
 	{
 		$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
@@ -56,6 +81,26 @@ class ExternalOwnerTaxonomy
                        required
                        value="<?= esc_attr($email); ?>" />
                 <p class="description"><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
+            </td>
+        </tr>
+        <?php
+	}
+
+	public function addUpdatePhoneNumberFormField(WP_Term $user): void
+	{
+		$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
+		?>
+        <tr class="form-field">
+            <th scope="row">
+                <label for="ypg_external_content_owner_phone_number"><?php _e('Telefoonnummer', 'yard-page-guard'); ?></label>
+            </th>
+            <td>
+                <input type="text"
+                       name="ypg_external_content_owner_phone_number"
+                       id="ypg_external_content_owner_phone_number"
+                       size="40"
+                       value="<?= esc_attr($phoneNumber); ?>" />
+                <p class="description"><?php _e('Voer het telefoonnummer van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
             </td>
         </tr>
         <?php
@@ -113,6 +158,7 @@ class ExternalOwnerTaxonomy
 		}
 
 		$email = sanitize_email($_POST['ypg_external_content_owner_email']);
+		$phoneNumber = trim(sanitize_text_field($_POST['ypg_external_content_owner_phone_number'] ?? ''));
 
 		if ('' === $email || ! is_email($email)) {
 			delete_term_meta($termId, 'ypg_external_content_owner_email');
@@ -120,7 +166,12 @@ class ExternalOwnerTaxonomy
 			return;
 		}
 
+		if ('' === $phoneNumber) {
+			delete_term_meta($termId, 'ypg_external_content_owner_phone_number');
+		}
+
 		update_term_meta($termId, 'ypg_external_content_owner_email', $email);
+		update_term_meta($termId, 'ypg_external_content_owner_phone_number', $phoneNumber);
 
 		// Force the slug to be based on the email address.
 		$slug = sanitize_title($email);

@@ -32,7 +32,11 @@
 }
 
 body.taxonomy-ypg_external_content_owner {
-	.term-description-wrap {
+	.term-slug-wrap,
+	.term-description-wrap,
+	.slug-wrap,
+	#name-description,
+	#slug {
 		display: none;
 	}
 }

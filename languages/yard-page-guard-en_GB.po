@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-28T14:56:14+00:00\n"
-"PO-Revision-Date: 2026-04-17 12:52+0200\n"
+"PO-Revision-Date: 2026-04-24 09:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: English (United Kingdom) <LL@li.org>\n"
 "Language: en_GB\n"
@@ -13,74 +13,80 @@ msgstr ""
 "X-Generator: Poedit 3.8\n"
 "X-Domain: yard-page-guard\n"
 
-#: PageGuard/Admin/AdminServiceProvider.php:123
+#: PageGuard/Admin/AdminServiceProvider.php:129
 msgid "Email"
 msgstr "Email"
 
-#: PageGuard/Admin/AdminServiceProvider.php:154
+#: PageGuard/Admin/AdminServiceProvider.php:130
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:61
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:95
+msgid "Telefoonnummer"
+msgstr "Phone number"
+
+#: PageGuard/Admin/AdminServiceProvider.php:161
 #: PageGuard/Metabox/Metabox.php:109 PageGuard/Metabox/Metabox.php:381
 msgid "Inhoudseigenaar"
 msgstr "Content owner"
 
-#: PageGuard/Admin/AdminServiceProvider.php:156
+#: PageGuard/Admin/AdminServiceProvider.php:163
 msgid "Selecteer een eigenaar"
 msgstr "Select an owner"
 
-#: PageGuard/Admin/AdminServiceProvider.php:181
-#: PageGuard/Admin/AdminServiceProvider.php:232
+#: PageGuard/Admin/AdminServiceProvider.php:188
+#: PageGuard/Admin/AdminServiceProvider.php:239
 #: PageGuard/Admin/Services/AdminOverviewService.php:248
 #: PageGuard/Metabox/Metabox.php:104
 msgid "Extern"
 msgstr "External"
 
-#: PageGuard/Admin/AdminServiceProvider.php:195
+#: PageGuard/Admin/AdminServiceProvider.php:202
 #: PageGuard/Admin/Views/AdminOverviewPage.php:102
 #: PageGuard/Metabox/Metabox.php:127
 msgid "Gecontroleerd?"
 msgstr "Checked?"
 
-#: PageGuard/Admin/AdminServiceProvider.php:205
+#: PageGuard/Admin/AdminServiceProvider.php:212
 #: PageGuard/Metabox/Metabox.php:148
 msgid "Herzieningsdatum"
 msgstr "Review date"
 
-#: PageGuard/Admin/AdminServiceProvider.php:217
+#: PageGuard/Admin/AdminServiceProvider.php:224
 #: PageGuard/Admin/Views/AdminOverviewPage.php:67
 #: PageGuard/Admin/Views/AdminOverviewPage.php:92
 msgid "Eigenaar"
 msgstr "Owner"
 
-#: PageGuard/Admin/AdminServiceProvider.php:218
+#: PageGuard/Admin/AdminServiceProvider.php:225
 #: PageGuard/Admin/Views/AdminOverviewPage.php:47
 #: PageGuard/Admin/Views/AdminOverviewPage.php:71
 msgid "Status"
 msgstr "Status"
 
-#: PageGuard/Admin/AdminServiceProvider.php:219
+#: PageGuard/Admin/AdminServiceProvider.php:226
 #: PageGuard/Admin/Views/AdminOverviewPage.php:70
 #: PageGuard/Metabox/Metabox.php:147
 msgid "Volgende herzieningsdatum"
 msgstr "Next review date"
 
-#: PageGuard/Admin/AdminServiceProvider.php:230
-#: PageGuard/Admin/AdminServiceProvider.php:244
+#: PageGuard/Admin/AdminServiceProvider.php:237
+#: PageGuard/Admin/AdminServiceProvider.php:251
 #: PageGuard/Models/ReviewItem.php:76 PageGuard/Models/ReviewItem.php:89
 msgid "Niet ingesteld"
 msgstr "Not set"
 
-#: PageGuard/Admin/AdminServiceProvider.php:240
+#: PageGuard/Admin/AdminServiceProvider.php:247
 #: PageGuard/Admin/Services/AdminOverviewService.php:195
 #: PageGuard/Admin/Views/AdminOverviewPage.php:50
 msgid "Gecontroleerd"
 msgstr "Reviewed"
 
-#: PageGuard/Admin/AdminServiceProvider.php:240
+#: PageGuard/Admin/AdminServiceProvider.php:247
 #: PageGuard/Admin/Services/AdminOverviewService.php:206
 #: PageGuard/Admin/Views/AdminOverviewPage.php:51
 msgid "Achterstallig"
 msgstr "Overdue"
 
-#: PageGuard/Admin/AdminServiceProvider.php:240
+#: PageGuard/Admin/AdminServiceProvider.php:247
 #: PageGuard/Admin/Services/AdminOverviewService.php:193
 #: PageGuard/Admin/Services/AdminOverviewService.php:194
 msgid "N.v.t."
@@ -94,7 +100,8 @@ msgstr "Review Overview"
 
 #: PageGuard/Admin/Controllers/AdminOverviewController.php:54
 #: PageGuard/Admin/Controllers/AdminOverviewController.php:55
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:12
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:13
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:15
 msgid "Externe inhoudseigenaren"
 msgstr "External content owners"
 
@@ -319,25 +326,66 @@ msgstr "Custom"
 msgid "Herinnering periode"
 msgstr "Reminder period"
 
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:36
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:49
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:14
+msgid "Externe inhoudseigenaar"
+msgstr "External content owner"
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:16
+msgid "Alle externe inhoudseigenaren"
+msgstr "All external content owners"
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:17
+msgid "Bewerk externe inhoudseigenaar"
+msgstr "Edit external content owner"
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:18
+msgid "Bekijk externe inhoudseigenaar"
+msgstr "View external content owner"
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:19
+msgid "Werk externe inhoudseigenaar bij"
+msgstr "Update external content owner"
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:20
+msgid "Nieuwe externe inhoudseigenaar toevoegen"
+msgstr "Add new external content owner"
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:21
+msgid "Naam van nieuwe externe inhoudseigenaar"
+msgstr "Name of new external content owner"
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:24
+msgid "Zoek externe inhoudseigenaren"
+msgstr "Search external content owner"
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:25
+msgid "Geen externe inhoudseigenaren gevonden"
+msgstr "No external content owners found"
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:50
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:74
 msgid "E-mailadres"
 msgstr "Email address"
 
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:38
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:58
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:52
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:83
 msgid "Voer het e-mailadres van de externe inhoudseigenaar in."
 msgstr "Enter the email address of the external content owner."
 
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:148
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:63
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:103
+msgid "Voer het telefoonnummer van de externe inhoudseigenaar in."
+msgstr "Fill in the phone number of the external content owner."
+
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:199
 msgid "Een e-mailadres is verplicht voor een externe inhoudseigenaar."
 msgstr "An email address is required for an external content owner."
 
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:157
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:208
 msgid "Voer een geldig e-mailadres in."
 msgstr "Fill in a valid e-mail address."
 
-#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:182
+#: PageGuard/Taxonomy/ExternalOwnerTaxonomy.php:233
 msgid "Er bestaat al een externe inhoudseigenaar met dit e-mailadres."
 msgstr "An external content owner with this email already exists."
 
