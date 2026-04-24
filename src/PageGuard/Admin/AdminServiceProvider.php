@@ -65,6 +65,10 @@ class AdminServiceProvider extends ServiceProvider
 				$content = get_term_meta($termId, 'ypg_external_content_owner_email', true);
 			}
 
+			if ('phone_number' === $columnName) {
+				$content = get_term_meta($termId, 'ypg_external_content_owner_phone_number', true);
+			}
+
 			return $content;
 		}, 10, 3);
 
@@ -114,6 +118,8 @@ class AdminServiceProvider extends ServiceProvider
 	public function manageExternalContentOwnerColumns(array $columns): array
 	{
 		unset($columns['description']);
+		unset($columns['slug']);
+		unset($columns['posts']); // 'posts' is the key for the count column
 
 		$orderedColumns = [];
 		foreach ($columns as $key => $value) {
@@ -121,6 +127,7 @@ class AdminServiceProvider extends ServiceProvider
 
 			if ('name' === $key) {
 				$orderedColumns['email'] = __('Email', 'yard-page-guard');
+				$orderedColumns['phone_number'] = __('Telefoonnummer', 'yard-page-guard');
 			}
 		}
 
