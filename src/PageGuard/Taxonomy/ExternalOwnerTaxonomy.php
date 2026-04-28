@@ -191,7 +191,7 @@ class ExternalOwnerTaxonomy
 	 *
 	 * @return mixed|\WP_Error
 	 */
-	private function validateEmail(mixed $passthrough, ?int $excludeTermId = null)
+	private function validateEmail($passthrough, ?int $excludeTermId = null)
 	{
 		if (! isset($_POST['ypg_external_content_owner_email'])) {
 			return new \WP_Error(
