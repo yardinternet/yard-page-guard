@@ -178,12 +178,14 @@ class AdminServiceProvider extends ServiceProvider
 							<?php
 					foreach ($externalUsers as $user) {
 						$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
+						$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
 
 						printf(
-							'<option value="%s|%s|%s|external">%s (%s)</option>',
+							'<option value="%s|%s|%s|external|%s">%s (%s)</option>',
 							esc_attr($user->term_id),
 							esc_attr($user->name),
 							esc_attr($email),
+							esc_attr($phoneNumber),
 							esc_html($user->name),
 							__('Extern', 'yard-page-guard')
 						);

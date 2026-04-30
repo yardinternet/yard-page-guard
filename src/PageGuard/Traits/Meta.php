@@ -13,6 +13,7 @@ trait Meta
 			'ypg_post_content_owner_name',
 			'ypg_post_content_owner_email',
 			'ypg_post_content_owner_type',
+			'ypg_post_content_owner_phone_number',
 			'ypg_review_date',
 			'ypg_reminder_date',
 			'ypg_is_verified',

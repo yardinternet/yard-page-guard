@@ -92,13 +92,15 @@ class Metabox
 		if (! is_wp_error($externalUsers)) {
 			foreach ($externalUsers as $user) {
 				$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
+				$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
 				$selected = ($contentOwnerId == $user->term_id && ContentOwnerType::EXTERNAL === $contentOwnerType) ? ' selected="selected"' : '';
 
 				$optionsHtml .= sprintf(
-					'<option value="%s|%s|%s|external"%s>%s (%s)</option>',
+					'<option value="%s|%s|%s|external|%s"%s>%s (%s)</option>',
 					esc_attr($user->term_id),
 					esc_attr($user->name),
 					esc_attr($email),
+					esc_attr($phoneNumber),
 					$selected,
 					esc_html($user->name),
 					__('Extern', 'yard-page-guard')
@@ -268,6 +270,7 @@ class Metabox
 		update_post_meta($postId, 'ypg_post_content_owner_name', $ownerData['name']);
 		update_post_meta($postId, 'ypg_post_content_owner_email', $ownerData['email']);
 		update_post_meta($postId, 'ypg_post_content_owner_type', $ownerData['type']);
+		update_post_meta($postId, 'ypg_post_content_owner_phone_number', $ownerData['phone_number']);
 	}
 
 	private function updateVerificationMeta(int $postId, bool $isVerified, string $reviewDate, string $reminderDate): void
@@ -376,6 +379,7 @@ class Metabox
 	{
 		$ownerName = get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: '';
 		$ownerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
+		$ownerPhone = get_post_meta($postId, 'ypg_post_content_owner_phone_number', true) ?: '';
 
 		$title = __('Houdbaarheidsmodule', 'yard-page-guard');
 		$label = __('Inhoudseigenaar', 'yard-page-guard') . ': ';
@@ -386,6 +390,14 @@ class Metabox
 			esc_attr($ownerEmail),
 			esc_html($ownerName)
 		);
+
+		if ('' !== $ownerPhone) {
+			$telNumber = $this->formatPhoneForTel($ownerPhone);
+			$phoneDisplay = null !== $telNumber
+				? sprintf('<a href="tel:%s">%s</a>', esc_attr($telNumber), esc_html($ownerPhone))
+				: esc_html($ownerPhone);
+			$ownerLink .= sprintf(' (%s)', $phoneDisplay);
+		}
 
 		/**
 		 * Fusion portal internal information
@@ -399,7 +411,7 @@ class Metabox
 
 			if (strpos($currentValue, 'mailto:') !== false) {
 				$newValue = preg_replace(
-					'/<p>\s*Inhoudseigenaar.*?<a href="mailto:.*?<\/a>\s*<\/p>|Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/i',
+					'/<p>\s*Inhoudseigenaar.*?<a href="mailto:.*?<\/a>(\s*\(.*?\))?\s*<\/p>|Inhoudseigenaar.*?<a href="mailto:.*?<\/a>(\s*\(.*?\))?/i',
 					$ownerLink,
 					$currentValue
 				);
@@ -490,9 +502,9 @@ class Metabox
 		if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
 			$value = get_post_meta($postId, '_ys_post_information_internal', true);
 
-			// Remove the Inhoudseigenaar mailto link if it exists
+			// Remove the Inhoudseigenaar block (email link + optional phone link)
 			$value = preg_replace(
-				'/<p>\s*Inhoudseigenaar.*?<a href="mailto:.*?<\/a>\s*<\/p>|Inhoudseigenaar.*?<a href="mailto:.*?<\/a>/i',
+				'/<p>\s*Inhoudseigenaar.*?<a href="mailto:.*?<\/a>(\s*\(.*?\))?\s*<\/p>|Inhoudseigenaar.*?<a href="mailto:.*?<\/a>(\s*\(.*?\))?/i',
 				'',
 				$value
 			);
@@ -529,5 +541,20 @@ class Metabox
 				update_field('internal_information', $acfRows, $postId);
 			}
 		}
+	}
+
+	private function formatPhoneForTel(string $phone): ?string
+	{
+		$cleaned = preg_replace('/[\s\-\.\(\)]/', '', $phone);
+
+		if (str_starts_with($cleaned, '0')) {
+			$cleaned = '+31' . substr($cleaned, 1);
+		}
+
+		if (preg_match('/^\+\d{7,15}$/', $cleaned)) {
+			return $cleaned;
+		}
+
+		return null;
 	}
 }

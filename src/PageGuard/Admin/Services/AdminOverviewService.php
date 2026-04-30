@@ -79,6 +79,7 @@ class AdminOverviewService
 				update_post_meta($postId, 'ypg_post_content_owner_name', $contentOwner['name']);
 				update_post_meta($postId, 'ypg_post_content_owner_email', $contentOwner['email']);
 				update_post_meta($postId, 'ypg_post_content_owner_type', $contentOwner['type']);
+				update_post_meta($postId, 'ypg_post_content_owner_phone_number', $contentOwner['phone_number']);
 			}
 		}
 
@@ -243,7 +244,8 @@ class AdminOverviewService
 
 		foreach ($externalUsers as $user) {
 			$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
-			$value = "{$user->term_id}|{$user->name}|{$email}|external";
+			$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
+			$value = "{$user->term_id}|{$user->name}|{$email}|external|{$phoneNumber}";
 			$selected = null !== $filterValue ? selected($value, $filterValue, false) : '';
 			$label = __('Extern', 'yard-page-guard');
 
