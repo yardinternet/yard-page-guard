@@ -9,7 +9,7 @@ declare(strict_types=1);
  * Author URI:      http://www.yard.nl
  * Text Domain:     yard-page-guard
  * Domain Path:     /languages
- * Version:         2.1.0
+ * Version:         2.1.3
  *
  * @package         Yard_Page_Guard
  */
@@ -32,7 +32,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 	$autoloader = new Yard\PageGuard\Autoloader();
 }
 
-define('YPG_VERSION', '2.1.0');
+define('YPG_VERSION', '2.1.3');
 define('YPG_PLUGIN_NAME', basename(__DIR__));
 
 /**

@@ -46,7 +46,7 @@ class VerifyPostController
 			exit();
 		}
 
-		error_log("[yard-page-guard] Failed to process review for post ID: $postId");
+		trigger_error("[yard-page-guard] Failed to process review for post ID: $postId", E_USER_WARNING);
 		echo self::getErrorResponse();
 
 		exit();

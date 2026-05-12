@@ -80,11 +80,11 @@ class ReviewNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard')), $owner),
+				$this->formatSubject(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
-				error_log('[yard-page-guard] Failed to send review notification email to ' . $owner->email());
+				trigger_error('[yard-page-guard] Failed to send review notification email to ' . $owner->email(), E_USER_WARNING);
 
 				continue;
 			}

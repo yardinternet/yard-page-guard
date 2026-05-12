@@ -76,11 +76,11 @@ class ReminderNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard')), $owner),
+				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
-				error_log('[yard-page-guard] Failed to send reminder notification email to ' . $owner->email());
+				trigger_error('[yard-page-guard] Failed to send reminder notification email to ' . $owner->email(), E_USER_WARNING);
 
 				continue;
 			}
