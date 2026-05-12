@@ -96,15 +96,6 @@ class ReviewItem
 
 	public function contentOwner(): ?ContentOwner
 	{
-		$id = get_post_meta($this->ID(), 'ypg_post_content_owner_id', true);
-		$name = get_post_meta($this->ID(), 'ypg_post_content_owner_name', true);
-		$email = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true);
-		$type = get_post_meta($this->ID(), 'ypg_post_content_owner_type', true);
-
-		if (false === $id || '' === $id) {
-			return null;
-		}
-
-		return new ContentOwner((int) $id, $name, $email, $type);
+		return ContentOwner::fromPostMeta($this->ID());
 	}
 }
