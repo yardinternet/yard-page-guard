@@ -34,8 +34,9 @@ class AdminOverviewService
 			exit;
 		}
 
+		$parsedOwner = null;
 		if ('none' !== $contentOwner && 'keep' !== $contentOwner) {
-			$contentOwner = $this->parseContentOwnerData($contentOwner);
+			$parsedOwner = $this->parseContentOwnerData($contentOwner);
 		}
 
 		foreach ($postIds as $postId) {
@@ -91,12 +92,12 @@ class AdminOverviewService
 				update_post_meta($postId, 'ypg_reminder_date', $this->computeReminderDate($postId, $isVerified, $previouslyVerified));
 			}
 
-			if (is_array($contentOwner)) {
-				update_post_meta($postId, 'ypg_post_content_owner_id', $contentOwner['id']);
-				update_post_meta($postId, 'ypg_post_content_owner_name', $contentOwner['name']);
-				update_post_meta($postId, 'ypg_post_content_owner_email', $contentOwner['email']);
-				update_post_meta($postId, 'ypg_post_content_owner_type', $contentOwner['type']);
-				update_post_meta($postId, 'ypg_post_content_owner_phone_number', $contentOwner['phone_number']);
+			if (null !== $parsedOwner) {
+				update_post_meta($postId, 'ypg_post_content_owner_id', $parsedOwner->id());
+				update_post_meta($postId, 'ypg_post_content_owner_name', $parsedOwner->name());
+				update_post_meta($postId, 'ypg_post_content_owner_email', $parsedOwner->email());
+				update_post_meta($postId, 'ypg_post_content_owner_type', $parsedOwner->type());
+				update_post_meta($postId, 'ypg_post_content_owner_phone_number', $parsedOwner->phoneNumber());
 			}
 		}
 
@@ -127,13 +128,13 @@ class AdminOverviewService
 
 			$metaQuery[] = [
 				'key' => 'ypg_post_content_owner_id',
-				'value' => $owner['id'],
+				'value' => $owner->id(),
 				'compare' => '=',
 			];
 
 			$metaQuery[] = [
 				'key' => 'ypg_post_content_owner_type',
-				'value' => $owner['type'],
+				'value' => $owner->type(),
 				'compare' => '=',
 			];
 		}
