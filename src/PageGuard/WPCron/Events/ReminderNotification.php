@@ -76,7 +76,7 @@ class ReminderNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina\'s', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
@@ -116,7 +116,7 @@ class ReminderNotification extends Event
 		$currentReminderDate = $item->reminderDate() ?: date('Y-m-d');
 		$overrideDateUnit = get_post_meta($item->ID(), 'ypg_reminder_time_unit', true);
 		$overrideDatePeriod = (int) get_post_meta($item->ID(), 'ypg_reminder_time_period', true);
-		$finalDateUnit = ! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit', 'weeks');
+		$finalDateUnit = $this->resolveUnit(! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit'));
 		$finalDatePeriod = ! empty($overrideDatePeriod) ? $overrideDatePeriod : (int) get_option('ypg_reminder_time_period', 1);
 
 		update_post_meta($item->ID(), 'ypg_last_reminder_date', date('Y-m-d'));
