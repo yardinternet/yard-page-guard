@@ -166,12 +166,29 @@ class ExternalOwnerTaxonomy
 			return;
 		}
 
+		$previousEmail = (string) (get_term_meta($termId, 'ypg_external_content_owner_email', true) ?: '');
+		$previousPhoneNumber = (string) (get_term_meta($termId, 'ypg_external_content_owner_phone_number', true) ?: '');
+		$previousName = '';
+		$term = get_term($termId, 'ypg_external_content_owner');
+		if ($term && ! is_wp_error($term)) {
+			$previousName = $term->name;
+		}
+		$newName = sanitize_text_field($_POST['name'] ?? $previousName);
+
 		if ('' === $phoneNumber) {
 			delete_term_meta($termId, 'ypg_external_content_owner_phone_number');
 		}
 
 		update_term_meta($termId, 'ypg_external_content_owner_email', $email);
 		update_term_meta($termId, 'ypg_external_content_owner_phone_number', $phoneNumber);
+
+		$ownerChanged = $email !== $previousEmail
+			|| $phoneNumber !== $previousPhoneNumber
+			|| $newName !== $previousName;
+
+		if ($ownerChanged) {
+			$this->triggerSavePostForOwnerPosts($previousEmail ?: $email);
+		}
 
 		// Force the slug to be based on the email address.
 		$slug = sanitize_title($email);
@@ -183,6 +200,29 @@ class ExternalOwnerTaxonomy
 
 		add_action('created_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10, 1);
 		add_action('edited_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10, 1);
+	}
+
+	private function triggerSavePostForOwnerPosts(string $email): void
+	{
+		$query = new \WP_Query([
+			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+			'posts_per_page' => -1,
+			'post_status' => 'any',
+			'meta_query' => [
+				[
+					'key' => 'ypg_post_content_owner_email',
+					'value' => $email,
+					'compare' => '=',
+				],
+			],
+			'fields' => 'ids',
+			'update_post_term_cache' => false,
+			'update_post_meta_cache' => false,
+		]);
+
+		foreach ($query->posts as $postId) {
+			wp_update_post(['ID' => (int) $postId]);
+		}
 	}
 
 	/**
