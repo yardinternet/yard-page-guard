@@ -80,7 +80,7 @@ class ReviewNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option('ypg_review_email_subject', __('Controleer jouw webpagina\'s', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {

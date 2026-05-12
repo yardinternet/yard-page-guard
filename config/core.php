@@ -18,18 +18,4 @@ return [
 			Yard\PageGuard\Metabox\MetaboxServiceProvider::class,
 		],
 	],
-	/**
-	 * Dependencies upon which the plugin relies.
-	 *
-	 * Required: type, label
-	 * Optional: message
-	 *
-	 * Type: plugin
-	 * - Required: file
-	 * - Optional: version
-	 *
-	 * Type: class
-	 * - Required: name
-	 */
-	'dependencies' => [],
 ];

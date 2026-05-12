@@ -7,7 +7,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-24T07:42:33+00:00\n"
+"POT-Creation-Date: 2026-05-12T09:59:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: yard-page-guard\n"
@@ -23,8 +23,8 @@ msgid "Telefoonnummer"
 msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:161
-#: PageGuard/Metabox/Metabox.php:109
-#: PageGuard/Metabox/Metabox.php:381
+#: PageGuard/Metabox/InternalDataSync.php:53
+#: PageGuard/Metabox/MetaboxRenderer.php:116
 msgid "Inhoudseigenaar"
 msgstr ""
 
@@ -32,64 +32,64 @@ msgstr ""
 msgid "Selecteer een eigenaar"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:188
-#: PageGuard/Admin/AdminServiceProvider.php:239
-#: PageGuard/Admin/Services/AdminOverviewService.php:248
-#: PageGuard/Metabox/Metabox.php:104
+#: PageGuard/Admin/AdminServiceProvider.php:190
+#: PageGuard/Admin/AdminServiceProvider.php:241
+#: PageGuard/Admin/Services/AdminOverviewService.php:251
+#: PageGuard/Metabox/MetaboxRenderer.php:112
 msgid "Extern"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:202
+#: PageGuard/Admin/AdminServiceProvider.php:204
 #: PageGuard/Admin/Views/AdminOverviewPage.php:102
-#: PageGuard/Metabox/Metabox.php:127
+#: PageGuard/Metabox/MetaboxRenderer.php:134
 msgid "Gecontroleerd?"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:212
-#: PageGuard/Metabox/Metabox.php:148
+#: PageGuard/Admin/AdminServiceProvider.php:214
+#: PageGuard/Metabox/MetaboxRenderer.php:155
 msgid "Herzieningsdatum"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:224
+#: PageGuard/Admin/AdminServiceProvider.php:226
 #: PageGuard/Admin/Views/AdminOverviewPage.php:67
 #: PageGuard/Admin/Views/AdminOverviewPage.php:92
 msgid "Eigenaar"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:225
+#: PageGuard/Admin/AdminServiceProvider.php:227
 #: PageGuard/Admin/Views/AdminOverviewPage.php:47
 #: PageGuard/Admin/Views/AdminOverviewPage.php:71
 msgid "Status"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:226
+#: PageGuard/Admin/AdminServiceProvider.php:228
 #: PageGuard/Admin/Views/AdminOverviewPage.php:70
-#: PageGuard/Metabox/Metabox.php:147
+#: PageGuard/Metabox/MetaboxRenderer.php:154
 msgid "Volgende herzieningsdatum"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:237
-#: PageGuard/Admin/AdminServiceProvider.php:251
+#: PageGuard/Admin/AdminServiceProvider.php:239
+#: PageGuard/Admin/AdminServiceProvider.php:253
 #: PageGuard/Models/ReviewItem.php:76
 #: PageGuard/Models/ReviewItem.php:89
 msgid "Niet ingesteld"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:247
-#: PageGuard/Admin/Services/AdminOverviewService.php:195
+#: PageGuard/Admin/AdminServiceProvider.php:249
+#: PageGuard/Admin/Services/AdminOverviewService.php:197
 #: PageGuard/Admin/Views/AdminOverviewPage.php:50
 msgid "Gecontroleerd"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:247
-#: PageGuard/Admin/Services/AdminOverviewService.php:206
+#: PageGuard/Admin/AdminServiceProvider.php:249
+#: PageGuard/Admin/Services/AdminOverviewService.php:208
 #: PageGuard/Admin/Views/AdminOverviewPage.php:51
 msgid "Achterstallig"
 msgstr ""
 
-#: PageGuard/Admin/AdminServiceProvider.php:247
-#: PageGuard/Admin/Services/AdminOverviewService.php:193
-#: PageGuard/Admin/Services/AdminOverviewService.php:194
+#: PageGuard/Admin/AdminServiceProvider.php:249
+#: PageGuard/Admin/Services/AdminOverviewService.php:195
+#: PageGuard/Admin/Services/AdminOverviewService.php:196
 msgid "N.v.t."
 msgstr ""
 
@@ -112,8 +112,8 @@ msgid "Houdbaarheidsmodule Instellingen"
 msgstr ""
 
 #: PageGuard/Admin/Controllers/AdminSettingsController.php:23
-#: PageGuard/Metabox/Metabox.php:380
-#: PageGuard/Metabox/Metabox.php:477
+#: PageGuard/Metabox/InternalDataSync.php:52
+#: PageGuard/Metabox/InternalDataSync.php:157
 msgid "Houdbaarheidsmodule"
 msgstr ""
 
@@ -292,39 +292,39 @@ msgstr ""
 msgid "Gecontroleerd en akkoord"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:23
+#: PageGuard/Metabox/MetaboxRenderer.php:32
 msgid "Houdbaarsheidsmodule"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:39
-msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
+#: PageGuard/Metabox/MetaboxRenderer.php:48
+msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:47
+#: PageGuard/Metabox/MetaboxRenderer.php:51
 msgid "U heeft geen toestemming om de houdbaarsheids module te bewerken."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:75
+#: PageGuard/Metabox/MetaboxRenderer.php:82
 msgid "Maak een keuze"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:151
+#: PageGuard/Metabox/MetaboxRenderer.php:158
 msgid "Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:152
+#: PageGuard/Metabox/MetaboxRenderer.php:159
 msgid "De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:183
+#: PageGuard/Metabox/MetaboxRenderer.php:190
 msgid "Standaard"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:183
+#: PageGuard/Metabox/MetaboxRenderer.php:190
 msgid "Aangepast"
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:197
+#: PageGuard/Metabox/MetaboxRenderer.php:204
 msgid "Herinnering periode"
 msgstr ""
 
@@ -399,15 +399,15 @@ msgstr ""
 msgid "Dit bericht is automatisch gegenereerd vanuit"
 msgstr ""
 
-#: PageGuard/Traits/Text.php:31
+#: PageGuard/Traits/Text.php:33
 msgid "Dagen"
 msgstr ""
 
-#: PageGuard/Traits/Text.php:31
+#: PageGuard/Traits/Text.php:33
 msgid "Weken"
 msgstr ""
 
-#: PageGuard/Traits/Text.php:31
+#: PageGuard/Traits/Text.php:33
 msgid "Maanden"
 msgstr ""
 
