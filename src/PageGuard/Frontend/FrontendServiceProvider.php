@@ -5,12 +5,9 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Frontend;
 
 use Yard\PageGuard\Foundation\ServiceProvider;
-use Yard\PageGuard\Traits\Token;
 
 class FrontendServiceProvider extends ServiceProvider
 {
-	use Token;
-
 	public function register(): void
 	{
 		add_action('template_redirect', [new ReviewModal(), 'render'], 5, 0);
@@ -31,7 +28,7 @@ class FrontendServiceProvider extends ServiceProvider
 			'ypg-frontend-styles',
 			$this->plugin->resourceUrl('frontend.css'),
 			[],
-			filemtime($this->plugin->resourcePath('frontend.css')),
+			$this->plugin::VERSION,
 		);
 
 		wp_enqueue_style(
@@ -45,7 +42,7 @@ class FrontendServiceProvider extends ServiceProvider
 			'ypg-frontend-scripts',
 			$this->plugin->resourceUrl('frontend.js'),
 			[],
-			filemtime($this->plugin->resourcePath('frontend.js')),
+			$this->plugin::VERSION,
 		);
 	}
 
