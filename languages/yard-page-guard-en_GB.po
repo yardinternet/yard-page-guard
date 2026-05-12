@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-28T14:56:14+00:00\n"
-"PO-Revision-Date: 2026-04-24 09:50+0200\n"
+"PO-Revision-Date: 2026-05-12 12:00+0200\n"
 "Last-Translator: \n"
 "Language-Team: English (United Kingdom) <LL@li.org>\n"
 "Language: en_GB\n"
@@ -24,7 +24,8 @@ msgid "Telefoonnummer"
 msgstr "Phone number"
 
 #: PageGuard/Admin/AdminServiceProvider.php:161
-#: PageGuard/Metabox/Metabox.php:109 PageGuard/Metabox/Metabox.php:381
+#: PageGuard/Metabox/InternalDataSync.php:53
+#: PageGuard/Metabox/MetaboxRenderer.php:116
 msgid "Inhoudseigenaar"
 msgstr "Content owner"
 
@@ -32,63 +33,63 @@ msgstr "Content owner"
 msgid "Selecteer een eigenaar"
 msgstr "Select an owner"
 
-#: PageGuard/Admin/AdminServiceProvider.php:188
-#: PageGuard/Admin/AdminServiceProvider.php:239
-#: PageGuard/Admin/Services/AdminOverviewService.php:248
-#: PageGuard/Metabox/Metabox.php:104
+#: PageGuard/Admin/AdminServiceProvider.php:190
+#: PageGuard/Admin/AdminServiceProvider.php:241
+#: PageGuard/Admin/Services/AdminOverviewService.php:251
+#: PageGuard/Metabox/MetaboxRenderer.php:112
 msgid "Extern"
 msgstr "External"
 
-#: PageGuard/Admin/AdminServiceProvider.php:202
+#: PageGuard/Admin/AdminServiceProvider.php:204
 #: PageGuard/Admin/Views/AdminOverviewPage.php:102
-#: PageGuard/Metabox/Metabox.php:127
+#: PageGuard/Metabox/MetaboxRenderer.php:134
 msgid "Gecontroleerd?"
 msgstr "Checked?"
 
-#: PageGuard/Admin/AdminServiceProvider.php:212
-#: PageGuard/Metabox/Metabox.php:148
+#: PageGuard/Admin/AdminServiceProvider.php:214
+#: PageGuard/Metabox/MetaboxRenderer.php:155
 msgid "Herzieningsdatum"
 msgstr "Review date"
 
-#: PageGuard/Admin/AdminServiceProvider.php:224
+#: PageGuard/Admin/AdminServiceProvider.php:226
 #: PageGuard/Admin/Views/AdminOverviewPage.php:67
 #: PageGuard/Admin/Views/AdminOverviewPage.php:92
 msgid "Eigenaar"
 msgstr "Owner"
 
-#: PageGuard/Admin/AdminServiceProvider.php:225
+#: PageGuard/Admin/AdminServiceProvider.php:227
 #: PageGuard/Admin/Views/AdminOverviewPage.php:47
 #: PageGuard/Admin/Views/AdminOverviewPage.php:71
 msgid "Status"
 msgstr "Status"
 
-#: PageGuard/Admin/AdminServiceProvider.php:226
+#: PageGuard/Admin/AdminServiceProvider.php:228
 #: PageGuard/Admin/Views/AdminOverviewPage.php:70
-#: PageGuard/Metabox/Metabox.php:147
+#: PageGuard/Metabox/MetaboxRenderer.php:154
 msgid "Volgende herzieningsdatum"
 msgstr "Next review date"
 
-#: PageGuard/Admin/AdminServiceProvider.php:237
-#: PageGuard/Admin/AdminServiceProvider.php:251
+#: PageGuard/Admin/AdminServiceProvider.php:239
+#: PageGuard/Admin/AdminServiceProvider.php:253
 #: PageGuard/Models/ReviewItem.php:76 PageGuard/Models/ReviewItem.php:89
 msgid "Niet ingesteld"
 msgstr "Not set"
 
-#: PageGuard/Admin/AdminServiceProvider.php:247
-#: PageGuard/Admin/Services/AdminOverviewService.php:195
+#: PageGuard/Admin/AdminServiceProvider.php:249
+#: PageGuard/Admin/Services/AdminOverviewService.php:197
 #: PageGuard/Admin/Views/AdminOverviewPage.php:50
 msgid "Gecontroleerd"
 msgstr "Reviewed"
 
-#: PageGuard/Admin/AdminServiceProvider.php:247
-#: PageGuard/Admin/Services/AdminOverviewService.php:206
+#: PageGuard/Admin/AdminServiceProvider.php:249
+#: PageGuard/Admin/Services/AdminOverviewService.php:208
 #: PageGuard/Admin/Views/AdminOverviewPage.php:51
 msgid "Achterstallig"
 msgstr "Overdue"
 
-#: PageGuard/Admin/AdminServiceProvider.php:247
-#: PageGuard/Admin/Services/AdminOverviewService.php:193
-#: PageGuard/Admin/Services/AdminOverviewService.php:194
+#: PageGuard/Admin/AdminServiceProvider.php:249
+#: PageGuard/Admin/Services/AdminOverviewService.php:195
+#: PageGuard/Admin/Services/AdminOverviewService.php:196
 msgid "N.v.t."
 msgstr "N/A"
 
@@ -111,7 +112,8 @@ msgid "Houdbaarheidsmodule Instellingen"
 msgstr "Content Review Module Settings"
 
 #: PageGuard/Admin/Controllers/AdminSettingsController.php:23
-#: PageGuard/Metabox/Metabox.php:380 PageGuard/Metabox/Metabox.php:477
+#: PageGuard/Metabox/InternalDataSync.php:52
+#: PageGuard/Metabox/InternalDataSync.php:157
 msgid "Houdbaarheidsmodule"
 msgstr "Content Review Module"
 
@@ -290,39 +292,39 @@ msgstr "Content Review"
 msgid "Gecontroleerd en akkoord"
 msgstr "Checked and approved"
 
-#: PageGuard/Metabox/Metabox.php:23
+#: PageGuard/Metabox/MetaboxRenderer.php:32
 msgid "Houdbaarsheidsmodule"
 msgstr "Content Review Module"
 
-#: PageGuard/Metabox/Metabox.php:39
+#: PageGuard/Metabox/MetaboxRenderer.php:48
 msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
 msgstr ""
 
-#: PageGuard/Metabox/Metabox.php:47
+#: PageGuard/Metabox/MetaboxRenderer.php:51
 msgid "U heeft geen toestemming om de houdbaarsheids module te bewerken."
 msgstr "You do not have permission to edit the content review module."
 
-#: PageGuard/Metabox/Metabox.php:75
+#: PageGuard/Metabox/MetaboxRenderer.php:82
 msgid "Maak een keuze"
 msgstr "Select an option"
 
-#: PageGuard/Metabox/Metabox.php:151
+#: PageGuard/Metabox/MetaboxRenderer.php:158
 msgid "Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar."
 msgstr "The checkbox will be reset on the date above for a new review. An email will also be sent to the owner."
 
-#: PageGuard/Metabox/Metabox.php:152
+#: PageGuard/Metabox/MetaboxRenderer.php:159
 msgid "De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum."
 msgstr "The review notification will be (or has already been) sent by email on the set date."
 
-#: PageGuard/Metabox/Metabox.php:183
+#: PageGuard/Metabox/MetaboxRenderer.php:190
 msgid "Standaard"
 msgstr "Default"
 
-#: PageGuard/Metabox/Metabox.php:183
+#: PageGuard/Metabox/MetaboxRenderer.php:190
 msgid "Aangepast"
 msgstr "Custom"
 
-#: PageGuard/Metabox/Metabox.php:197
+#: PageGuard/Metabox/MetaboxRenderer.php:204
 msgid "Herinnering periode"
 msgstr "Reminder period"
 
@@ -397,15 +399,15 @@ msgstr "scheduled for"
 msgid "Dit bericht is automatisch gegenereerd vanuit"
 msgstr "This message has been automatically generated from"
 
-#: PageGuard/Traits/Text.php:31
+#: PageGuard/Traits/Text.php:33
 msgid "Dagen"
 msgstr "Days"
 
-#: PageGuard/Traits/Text.php:31
+#: PageGuard/Traits/Text.php:33
 msgid "Weken"
 msgstr "Weeks"
 
-#: PageGuard/Traits/Text.php:31
+#: PageGuard/Traits/Text.php:33
 msgid "Maanden"
 msgstr "Months"
 

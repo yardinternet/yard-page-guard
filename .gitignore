@@ -51,6 +51,7 @@
 
 # track .github in the root (i.e. do NOT ignore it)
 !.github
+!.gitattributes
 
 # ignore all files that start with ~
 ~*
