@@ -48,6 +48,23 @@ class AdminOverviewService
 				continue;
 			}
 
+			if ('keep' === $contentOwner && 'keep' === $reviewStatus && 'none' === $reviewDate) {
+				$currentReviewDate = get_post_meta($postId, 'ypg_review_date', true);
+
+				if (empty($currentReviewDate)) {
+					continue;
+				}
+
+				$dateUnitOverride = get_post_meta($postId, 'ypg_reminder_time_unit', true);
+				$datePeriodOverride = (int) get_post_meta($postId, 'ypg_reminder_time_period', true);
+				$finalPeriod = ! empty($datePeriodOverride) ? $datePeriodOverride : (int) get_option('ypg_reminder_time_period', 1);
+				$finalUnit = ! empty($dateUnitOverride) ? $dateUnitOverride : get_option('ypg_reminder_time_unit', 'weeks');
+
+				update_post_meta($postId, 'ypg_reminder_date', $this->addPeriodToBase($currentReviewDate, $finalPeriod, $finalUnit));
+
+				continue;
+			}
+
 			if ('keep' !== $reviewStatus) {
 				update_post_meta($postId, 'ypg_is_verified', $toBeVerified);
 
