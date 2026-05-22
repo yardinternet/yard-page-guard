@@ -277,6 +277,7 @@ body.taxonomy-ypg_external_content_owner {
 .ypg-field input[type='text'],
 .ypg-field input[type='email'],
 .ypg-field input[type='number'],
+.ypg-field input[type='time'],
 .ypg-field select {
 	padding: 0.5rem 0.75rem;
 	border: 1px solid #dcdcde;
@@ -287,6 +288,10 @@ body.taxonomy-ypg_external_content_owner {
 		border-color 0.15s,
 		box-shadow 0.15s;
 	min-height: 0;
+}
+
+.ypg-field input[type='time'] {
+	max-width: 140px;
 }
 
 .ypg-field input:focus,

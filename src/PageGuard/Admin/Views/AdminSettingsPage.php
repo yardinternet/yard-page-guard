@@ -96,7 +96,7 @@ foreach ($this->getUnitOptions() as $key => $label) {
 				</div>
 				<div class="ypg-field">
 					<label for="ypg_cron_send_time"><?= esc_html(__('Tijdstip van versturen', 'yard-page-guard')) ?></label>
-					<input type="time" id="ypg_cron_send_time" name="ypg_cron_send_time" value="<?= esc_attr(get_option('ypg_cron_send_time', '06:00')); ?>" />
+					<input type="time" id="ypg_cron_send_time" name="ypg_cron_send_time" value="<?= esc_attr(get_option('ypg_cron_send_time', '06:00')); ?>" lang="nl" step="60" />
 					<p class="ypg-help"><?= esc_html(__('Klokmoment waarop de dagelijkse herzienings- en herinneringsmails worden verstuurd (siteklok).', 'yard-page-guard')) ?></p>
 				</div>
 			</div>

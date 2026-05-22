@@ -6,6 +6,7 @@ export default defineConfig({
 	build: {
 		outDir: '../build',
 		emptyOutDir: true,
+		sourcemap: true,
 		rolldownOptions: {
 			input: {
 				frontend: resolve(__dirname, 'resources/js/frontend.js'),
