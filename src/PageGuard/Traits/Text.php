@@ -9,12 +9,12 @@ use Yard\PageGuard\Models\ContentOwner;
 trait Text
 {
 	/**
-	 * @param array<int, string> $values
+	 * @param array<string, string> $values
 	 */
 	private function replacePlaceholders(string $content, array $values): string
 	{
-		foreach ($values as $i => $value) {
-			$content = str_replace('{' . ($i + 1) . '}', $value, $content);
+		foreach ($values as $key => $value) {
+			$content = str_replace('{' . $key . '}', $value, $content);
 		}
 
 		return $content;

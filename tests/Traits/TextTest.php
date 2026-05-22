@@ -30,11 +30,11 @@ final class TextTest extends TestCase
 		});
 	}
 
-	public function testReplacePlaceholdersSubstitutesNumberedTokens(): void
+	public function testReplacePlaceholdersSubstitutesNamedTokens(): void
 	{
 		$result = $this->invokeMethod($this->subject, 'replacePlaceholders', [
-			'Hi {1}, you have {2} pages.',
-			['Alice', '3'],
+			'Hi {name}, you have {item_list} pages.',
+			['name' => 'Alice', 'item_list' => '3'],
 		]);
 
 		$this->assertSame('Hi Alice, you have 3 pages.', $result);
@@ -43,11 +43,11 @@ final class TextTest extends TestCase
 	public function testReplacePlaceholdersLeavesUnknownTokensIntact(): void
 	{
 		$result = $this->invokeMethod($this->subject, 'replacePlaceholders', [
-			'Hi {1} and {3}.',
-			['Alice'],
+			'Hi {name} and {missing}.',
+			['name' => 'Alice'],
 		]);
 
-		$this->assertSame('Hi Alice and {3}.', $result);
+		$this->assertSame('Hi Alice and {missing}.', $result);
 	}
 
 	public function testMinifyHtmlCollapsesWhitespaceAndTagGaps(): void

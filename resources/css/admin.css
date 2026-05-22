@@ -156,14 +156,54 @@ body.taxonomy-ypg_external_content_owner {
 }
 
 .ypg-settings-title {
-	margin: 0 0 1.5rem;
-	font-size: 1.6rem;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	margin: 0 0 1.75rem;
+	padding: 0 0 1rem;
+	border-bottom: 1px solid #dcdcde;
+	color: #1d2327;
+	font-size: 1.5rem;
 	font-weight: 600;
+	line-height: 1.3;
+}
+
+.ypg-settings-title::before {
+	content: '';
+	width: 4px;
+	height: 1.2em;
+	background: var(--wp-admin-theme-color, #2271b1);
+	border-radius: 2px;
 }
 
 .ypg-settings-form > .submit {
+	display: flex;
+	justify-content: flex-end;
 	padding: 0;
 	margin: 1.5rem 0 0;
+}
+
+.ypg-settings-form > .submit input[type='submit'] {
+	height: 40px;
+	padding: 0 1.5rem;
+	border-radius: 6px;
+	font-size: 0.95rem;
+	font-weight: 500;
+	letter-spacing: 0.01em;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+	transition:
+		background-color 0.15s,
+		box-shadow 0.15s,
+		transform 0.05s;
+}
+
+.ypg-settings-form > .submit input[type='submit']:hover {
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.ypg-settings-form > .submit input[type='submit']:active {
+	transform: translateY(1px);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .ypg-settings-card {
@@ -190,9 +230,14 @@ body.taxonomy-ypg_external_content_owner {
 }
 
 .ypg-settings-card__hint {
-	margin: 0;
+	margin: 0 0 0.4rem;
 	color: #646970;
 	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
+.ypg-settings-card__hint:last-child {
+	margin-bottom: 0;
 }
 
 .ypg-settings-card__hint code {
@@ -464,6 +509,60 @@ body.taxonomy-ypg_external_content_owner {
 .ypg-lex-link {
 	color: var(--wp-admin-theme-color, #2271b1);
 	text-decoration: underline;
+}
+
+.ypg-lex-editable a.ypg-button {
+	display: inline-block;
+	padding: 8px 20px;
+	border-radius: 8px;
+	background: #294587;
+	color: #fff;
+	text-decoration: none;
+	font-weight: 500;
+}
+
+/* --- Email log --- */
+
+.ypg-status-pill {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 500;
+	line-height: 1.4;
+}
+
+.ypg-status-pill--sent {
+	background: #e6f4ea;
+	color: #1f6f3b;
+}
+
+.ypg-status-pill--failed {
+	background: #fde7e9;
+	color: #a31515;
+}
+
+.ypg-email-log-items {
+	margin: 0 0 1rem;
+	padding-left: 1.25rem;
+}
+
+.ypg-email-log-items li {
+	margin: 0.25rem 0;
+}
+
+.ypg-email-log-item-date {
+	color: #646970;
+	font-size: 0.85em;
+}
+
+.ypg-email-log-preview {
+	max-height: 600px;
+	overflow: auto;
+	padding: 1rem;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
 }
 
 .ypg-lex-ul,

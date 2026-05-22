@@ -32,10 +32,12 @@ Two types of **content owners** can be assigned to a post:
 
 When you assign an owner and check **Gecontroleerd?** in the metabox, the plugin stores a **review date** (next time the page needs a check) and a **reminder date** that follows it. Both dates are computed from the site-wide period/unit settings, or per-post overrides for the reminder.
 
-A daily cron (`ypg_site_cron`, configurable to run at 06:00 in the site timezone) does two things:
+A daily cron (`ypg_site_cron`, default 06:00 in the site timezone — configurable via the **Tijdstip van versturen** setting) does two things:
 
 1. **Review notification** — for every post whose `ypg_review_date` is today or earlier and that has not yet been notified, email the owner a list of pages to review. Each link carries an HMAC-signed token (`ypg_review_token`) so the owner can confirm the page from the public side.
 2. **Reminder notification** — for every post whose `ypg_reminder_date` has passed, send a follow-up. Reminders use the per-post period/unit override if set, otherwise the site default.
+
+The same cron sweeps the email log (see below), purging entries older than the configured retention window.
 
 When the owner clicks **Gecontroleerd en akkoord** on the review modal, the `verify-post` REST endpoint flips the post back to verified and rolls both dates forward.
 
@@ -43,21 +45,26 @@ The plugin also mirrors the assigned owner into a few third-party fields used by
 
 ## Configuration
 
-Most behavior is configurable from **Instellingen → Houdbaarheidsmodule** (`/wp-admin/options-general.php?page=page-guard-settings`):
+Most behavior is configurable from **Inhoudseigenarenmodule → Instellingen** (`/wp-admin/options-general.php?page=page-guard-settings`):
 
-- **Review** period + unit (`days` / `weeks` / `months`) — used when a post is marked verified.
-- **Reminder** period + unit — used after a missed review.
-- **From name / from address** for outgoing notification emails.
-- **BCC** recipient for reminder emails (optional).
-- **Email subject + body** for review and reminder notifications. Bodies support `{1}` (owner salutation) and `{2}` (item list) placeholders.
-- **Modal footer** shown on the verify-page modal.
-- **Show internal data on review** — when enabled, an unauthenticated reviewer is logged in as a dedicated `ypg_review_user` so internal-only blocks render during the review.
+- **Email afzender** — from name, from address, optional BCC for reminders.
+- **Periodes** — review period + unit (`days` / `weeks` / `months`), reminder period + unit, and the daily send time.
+- **Herzieningsmail** + **Herinneringsmail** — subject and body. Bodies are edited in a [Lexical](https://lexical.dev/)-backed rich editor with `{name}` (owner salutation) and `{item_list}` (item list) placeholder chips in the toolbar.
+- **Controleer venster** — modal footer shown on the verify-page modal. The footer editor also exposes a **▢ Knop** toolbar action that wraps selected text in `<a class="ypg-button">…</a>` for the styled call-to-action.
+- **Toegang** — `Show internal data on review`: when enabled, an unauthenticated reviewer is briefly logged in as a dedicated `ypg_review_user` so internal-only blocks render during the review.
 
-A separate **Houdbaarheidsmodule** menu item (`/wp-admin/admin.php?page=ypg-overview`) lists every page with an assigned owner and surfaces overdue items, plus a bulk-edit form for reassigning or updating dates.
+The **Inhoudseigenarenmodule** menu (`/wp-admin/admin.php?page=ypg-overview`) groups four pages: the overview itself (every page with an assigned owner, with overdue flags and a bulk-edit form), the **Externe inhoudseigenaren** taxonomy, the **Email log**, and **Instellingen**.
+
+### Email log
+
+Every outgoing review/reminder mail is captured in the `ypg_email_log` custom post type and surfaced under **Inhoudseigenarenmodule → Email log**. Each entry shows recipient, status (Verstuurd / Mislukt), the list of pages the mail concerned (clickable, with their review date), and the rendered body. The CPT is read-only — "Add New" is disabled and capabilities are mapped to the same admin cap that gates the other plugin pages.
+
+Entries older than 60 days are purged on the daily cron. Tune the window with the `yard::page-guard/email-log-retention-days` filter (return `0` to disable purging entirely).
 
 ## Security
 
-- Metaboxes are visible to anyone with the `edit_pages` capability while no owner is assigned. Once an owner is in place, only the post author, the assigned WP-user owner, and any role in `yard::page-guard/admin-roles` can edit the page-guard fields. External owners can never edit via `/wp-admin` — they only verify via the public review link.
+- Plugin admin pages (Inhoudseigenarenmodule, Email log, Instellingen) require the `yard_manage_page_guard` capability. The capability is granted dynamically via the `user_has_cap` filter to anyone whose roles intersect `yard::page-guard/admin-roles` — so the filter remains the single source of truth and there's no role storage to migrate when it changes.
+- Metaboxes are visible to anyone with `edit_pages` while no owner is assigned. Once an owner is in place, only the post author, the assigned WP-user owner, and any holder of `yard_manage_page_guard` can edit the page-guard fields. External owners can never edit via `/wp-admin` — they only verify via the public review link.
 - Review links are signed with HMAC-SHA256 over `post_id|owner_email|review_date`, base64url-encoded. The HMAC key is `YPG_AUTH_SALT` (env). PDC/Pub cross-site setups must share the same `YPG_AUTH_SALT`.
 - All `$_GET`/`$_POST` reads pass through `sanitize_text_field`, `isset` guards, and explicit type checks (see [Traits/Token.php](src/PageGuard/Traits/Token.php) and [Metabox/MetaboxAccess.php](src/PageGuard/Metabox/MetaboxAccess.php)).
 
@@ -70,20 +77,29 @@ apply_filters('yard::page-guard/post-types-to-use', ['page']);
 // Post statuses scanned by the daily cron when looking for owners to notify.
 apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']);
 
-// Roles that bypass the owner/author check (in addition to the post author and assigned WP-user owner).
+// Roles whose users automatically receive the `yard_manage_page_guard` cap and
+// bypass the owner/author metabox check.
 apply_filters('yard::page-guard/admin-roles', ['administrator', 'yard_superuser', 'super-user', 'superuser']);
+
+// Days to keep email-log entries. Return 0 to disable purging.
+apply_filters('yard::page-guard/email-log-retention-days', 60);
+
+// Fires after every plugin-sent email. EmailLogRecorder subscribes here to
+// persist the CPT entry; unhook it to disable admin-visible logging.
+do_action('ypg/email_sent', bool $sent, string $to, string $subject, string $message, array $headers, array $context);
 ```
 
 ## Architecture
 
 ```
 src/PageGuard/
-├── Admin/            Settings + overview pages, custom post columns, bulk edit
+├── Admin/            Settings + overview controllers, custom post columns, bulk edit, one-off migrations
+├── EmailLog/         ypg_email_log CPT, the `ypg/email_sent` recorder, retention sweep
 ├── Enums/            ContentOwnerType, DateUnit — closed sets of valid strings
-├── Foundation/       Plugin bootstrapping, service-provider plumbing
+├── Foundation/       Plugin bootstrapping, service-provider plumbing, AdminCapability
 ├── Frontend/         The review modal rendered on public pages
-├── Metabox/          MetaboxAccess (auth), MetaboxRenderer (HTML),
-│                     MetaboxSaver (save_post), InternalDataSync (3rd-party mirror)
+├── Metabox/          MetaboxAccess (auth), MetaboxRenderer (HTML), MetaboxSaver (save_post),
+│                     InternalDataSync (3rd-party mirror) + InternalDataSyncMigration
 ├── Models/           ContentOwner, ReviewItem
 ├── Taxonomy/         External-owner taxonomy + meta fields
 ├── Traits/           Date, Email, Meta, Text, Token — reused by controllers/events
@@ -91,7 +107,9 @@ src/PageGuard/
 └── WPJson/           REST endpoints: verify-post and modal-info
 ```
 
-Service providers are registered in [config/core.php](config/core.php). The `Foundation\Plugin` boots them on `after_setup_theme`.
+Service providers are registered in [config/core.php](config/core.php). [Foundation\Plugin](src/PageGuard/Foundation/Plugin.php) boots them on `after_setup_theme` and registers the [AdminCapability](src/PageGuard/Foundation/AdminCapability.php) `user_has_cap` filter before any provider runs.
+
+The settings page editors are a thin Vite-bundled Lexical setup in [resources/js/lexical-editor.js](resources/js/lexical-editor.js) + [resources/js/button-node.js](resources/js/button-node.js); PHP renders a hidden `<textarea>` carrying the option value, JS mounts a contenteditable surface that syncs back to it on every change so the standard WP form submit path is untouched.
 
 ## Testing
 
@@ -106,8 +124,9 @@ composer test
 Tests live under [tests/](tests/) and mirror the source tree:
 
 - `tests/Enums/` — value validation for `ContentOwnerType` and `DateUnit`.
+- `tests/Foundation/` — `AdminCapability` dynamic-grant logic.
 - `tests/Models/` — `ContentOwner` invariants and the `fromString` / `fromPostMeta` factories.
-- `tests/Traits/` — the `Date`, `Text`, and `Token` traits, including the date-recalculation rules and review-token HMAC.
+- `tests/Traits/` — `Date`, `Text`, and `Token` traits, including the date-recalculation rules and review-token HMAC.
 - `tests/Metabox/` — the `MetaboxAccess` save/auth gate.
 
 When adding new code, prefer extending the existing `Yard\PageGuard\Tests\TestCase` base — it wires `WP_Mock::setUp()` / `tearDown()` for you and exposes a reflection helper for invoking non-public methods.
@@ -129,4 +148,8 @@ add_filter('cron_schedules', function ($schedules) {
 wp_schedule_event(time(), 'five_seconds', 'ypg_site_cron');
 ```
 
-The event will then fire every 5 seconds. Make sure your dev environment intercepts outgoing email (Mailpit, MailHog, or similar) and that at least one post has a content owner + review date assigned so a notification is actually generated.
+The event will then fire every 5 seconds. Make sure your dev environment intercepts outgoing email (Mailpit, MailHog, or similar) and that at least one post has a content owner + review date assigned so a notification is actually generated. While iterating, the **Email log** submenu shows every send (recipient, items, status, body) so you don't need to dig through the SMTP catcher to see what was produced.
+
+### Frontend assets
+
+Editor JS/CSS lives under [resources/](resources/) and is bundled by Vite to [build/](build/). After touching either, run `npm run build` (or `npm run lint:fix` for prettier/eslint).

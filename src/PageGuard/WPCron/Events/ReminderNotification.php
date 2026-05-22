@@ -78,7 +78,8 @@ class ReminderNotification extends Event
 				$owner->email(),
 				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina\'s', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
-				$headers
+				$headers,
+				['items' => $this->itemsForLog($ownerItems)]
 			)) {
 				trigger_error('[yard-page-guard] Failed to send reminder notification email to ' . $owner->email(), E_USER_WARNING);
 
@@ -102,8 +103,8 @@ class ReminderNotification extends Event
 		$itemList = $this->buildItemListHtml($items, true);
 
 		$values = [
-			$owner->salutation(),
-			$itemList,
+			'name' => $owner->salutation(),
+			'item_list' => $itemList,
 		];
 
 		$contentHtml = $this->replacePlaceholders($content, $values);

@@ -30,6 +30,9 @@ class AdminServiceProvider extends ServiceProvider
 		$this->adminSettingsController->init();
 		$this->adminOverviewController->init();
 
+		(new EmailPlaceholderMigration())->register();
+		(new FooterButtonMigration())->register();
+
 		add_action('enqueue_block_editor_assets', [$this, 'enqueueAdminAssets']);
 
 		/**

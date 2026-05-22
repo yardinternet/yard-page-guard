@@ -7,14 +7,27 @@ $hostParts = explode('.', $host);
 $baseHost = count($hostParts) > 2 ? implode('.', array_slice($hostParts, -2)) : $host;
 $defaultFromAddress = 'houdbaarheid@' . $baseHost;
 
-$renderLexical = static function (string $name, string $value, string $variables = '', int $rows = 10): void {
+$renderLexical = static function (string $name, string $value, string $variables = '', int $rows = 10, string $features = ''): void {
+	// wpautop normalises legacy plain-text content with bare newlines into the
+	// `<p>` / `<br>` HTML Lexical can parse back into block nodes — without this
+	// stored options that pre-date the rich editor collapse onto one line.
+	$html = wpautop($value);
+
+	$dataAttrs = '';
+	if ('' !== $variables) {
+		$dataAttrs .= ' data-variables="' . esc_attr($variables) . '"';
+	}
+	if ('' !== $features) {
+		$dataAttrs .= ' data-features="' . esc_attr($features) . '"';
+	}
+
 	printf(
 		'<div class="ypg-lex-wrapper" data-ypg-lexical%s><textarea id="%s" name="%s" rows="%d">%s</textarea></div>',
-		'' !== $variables ? ' data-variables="' . esc_attr($variables) . '"' : '',
+		$dataAttrs,
 		esc_attr($name),
 		esc_attr($name),
 		$rows,
-		esc_textarea($value)
+		esc_textarea($html)
 	);
 };
 ?>
@@ -81,6 +94,11 @@ foreach ($this->getUnitOptions() as $key => $label) {
 						</select>
 					</div>
 				</div>
+				<div class="ypg-field">
+					<label for="ypg_cron_send_time"><?= esc_html(__('Tijdstip van versturen', 'yard-page-guard')) ?></label>
+					<input type="time" id="ypg_cron_send_time" name="ypg_cron_send_time" value="<?= esc_attr(get_option('ypg_cron_send_time', '06:00')); ?>" />
+					<p class="ypg-help"><?= esc_html(__('Klokmoment waarop de dagelijkse herzienings- en herinneringsmails worden verstuurd (siteklok).', 'yard-page-guard')) ?></p>
+				</div>
 			</div>
 		</section>
 
@@ -88,9 +106,12 @@ foreach ($this->getUnitOptions() as $key => $label) {
 			<header class="ypg-settings-card__header">
 				<h2><?= esc_html(__('Herzieningsmail', 'yard-page-guard')) ?></h2>
 				<p class="ypg-settings-card__hint">
+					<?= esc_html(__('Wordt verstuurd zodra een pagina toe is aan een herziening, met het verzoek aan de inhoudseigenaar om de inhoud te controleren.', 'yard-page-guard')) ?>
+				</p>
+				<p class="ypg-settings-card__hint">
 					<?= esc_html(__('Beschikbare variabelen:', 'yard-page-guard')) ?>
-					<code>{1}</code> <?= esc_html(__('inhoudseigenaar', 'yard-page-guard')) ?>,
-					<code>{2}</code> <?= esc_html(__('lijst te controleren items', 'yard-page-guard')) ?>
+					<code>{name}</code> <?= esc_html(__('naam inhoudseigenaar', 'yard-page-guard')) ?>,
+					<code>{item_list}</code> <?= esc_html(__('lijst te controleren items', 'yard-page-guard')) ?>
 				</p>
 			</header>
 			<div class="ypg-field">
@@ -99,7 +120,7 @@ foreach ($this->getUnitOptions() as $key => $label) {
 			</div>
 			<div class="ypg-field ypg-field--full">
 				<label for="ypg_review_email_content"><?= esc_html(__('Inhoud', 'yard-page-guard')) ?></label>
-				<?php $renderLexical('ypg_review_email_content', (string) get_option('ypg_review_email_content', ''), '1,2'); ?>
+				<?php $renderLexical('ypg_review_email_content', (string) get_option('ypg_review_email_content', ''), 'name,item_list'); ?>
 			</div>
 		</section>
 
@@ -107,9 +128,12 @@ foreach ($this->getUnitOptions() as $key => $label) {
 			<header class="ypg-settings-card__header">
 				<h2><?= esc_html(__('Herinneringsmail', 'yard-page-guard')) ?></h2>
 				<p class="ypg-settings-card__hint">
+					<?= esc_html(__('Periodieke herinnering aan inhoudseigenaren met achterstallige items die nog gecontroleerd moeten worden. Wordt alleen verstuurd zolang er openstaande herzieningen zijn.', 'yard-page-guard')) ?>
+				</p>
+				<p class="ypg-settings-card__hint">
 					<?= esc_html(__('Beschikbare variabelen:', 'yard-page-guard')) ?>
-					<code>{1}</code> <?= esc_html(__('inhoudseigenaar', 'yard-page-guard')) ?>,
-					<code>{2}</code> <?= esc_html(__('lijst van achterlopende items', 'yard-page-guard')) ?>
+					<code>{name}</code> <?= esc_html(__('naam inhoudseigenaar', 'yard-page-guard')) ?>,
+					<code>{item_list}</code> <?= esc_html(__('lijst van achterlopende items', 'yard-page-guard')) ?>
 				</p>
 			</header>
 			<div class="ypg-field">
@@ -118,7 +142,7 @@ foreach ($this->getUnitOptions() as $key => $label) {
 			</div>
 			<div class="ypg-field ypg-field--full">
 				<label for="ypg_reminder_email_content"><?= esc_html(__('Inhoud', 'yard-page-guard')) ?></label>
-				<?php $renderLexical('ypg_reminder_email_content', (string) get_option('ypg_reminder_email_content', ''), '1,2'); ?>
+				<?php $renderLexical('ypg_reminder_email_content', (string) get_option('ypg_reminder_email_content', ''), 'name,item_list'); ?>
 			</div>
 		</section>
 
@@ -129,8 +153,8 @@ foreach ($this->getUnitOptions() as $key => $label) {
 			</header>
 			<div class="ypg-field ypg-field--full">
 				<label for="ypg_modal_footer_content"><?= esc_html(__('Footer inhoud', 'yard-page-guard')) ?></label>
-				<?php $renderLexical('ypg_modal_footer_content', (string) get_option('ypg_modal_footer_content', ''), '', 6); ?>
-				<p class="ypg-help"><?= esc_html(__('Een knop kan aangemaakt worden door een link op een nieuwe regel toe te voegen en deze dikgedrukt te maken.', 'yard-page-guard')) ?></p>
+				<?php $renderLexical('ypg_modal_footer_content', (string) get_option('ypg_modal_footer_content', ''), '', 6, 'button'); ?>
+				<p class="ypg-help"><?= esc_html(__('Gebruik de “▢ Knop” actie in de toolbar om een knop in te voegen.', 'yard-page-guard')) ?></p>
 			</div>
 		</section>
 

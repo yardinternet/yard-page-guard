@@ -11,6 +11,7 @@ return [
 		Yard\PageGuard\WPJson\WPJsonServiceProvider::class,
 		Yard\PageGuard\Frontend\FrontendServiceProvider::class,
 		Yard\PageGuard\Taxonomy\TaxonomyServiceProvider::class,
+		Yard\PageGuard\EmailLog\EmailLogServiceProvider::class,
 
 		/** Providers specific to the admin */
 		'admin' => [

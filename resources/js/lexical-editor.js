@@ -1,4 +1,5 @@
 import {
+	$createTextNode,
 	$getRoot,
 	$getSelection,
 	$insertNodes,
@@ -15,8 +16,9 @@ import {
 	ListNode,
 	registerList,
 } from '@lexical/list';
-import { LinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
+import { $createLinkNode, $toggleLink, LinkNode } from '@lexical/link';
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
+import { $createButtonNode, ButtonNode } from './button-node.js';
 
 const THEME = {
 	paragraph: 'ypg-lex-p',
@@ -45,19 +47,18 @@ function makeButton(label, title, onClick, extraClass = '') {
 	return btn;
 }
 
-function buildLinkPopover(editor) {
+function buildUrlPopover(editor) {
 	const popover = document.createElement('div');
 	popover.className = 'ypg-lex-link-popover';
 	popover.hidden = true;
 	popover.setAttribute('role', 'dialog');
-	popover.setAttribute('aria-label', 'Link invoegen');
 
 	const input = document.createElement('input');
 	input.type = 'url';
 	input.className = 'ypg-lex-link-input';
-	input.placeholder = 'https://…';
 
 	let savedSelection = null;
+	let mode = 'link';
 
 	const close = () => {
 		popover.hidden = true;
@@ -65,15 +66,51 @@ function buildLinkPopover(editor) {
 		savedSelection = null;
 	};
 
+	const applyLink = (restored, url) => {
+		if (restored.isCollapsed()) {
+			// Nothing was selected — drop a link node carrying the URL as its
+			// own text, otherwise an empty link is unreachable in the output.
+			const linkNode = $createLinkNode(url);
+			linkNode.append($createTextNode(url));
+			restored.insertNodes([linkNode]);
+		} else {
+			$toggleLink(url);
+		}
+	};
+
+	const applyButton = (restored, url) => {
+		const text = restored.isCollapsed()
+			? 'Knop'
+			: restored.getTextContent() || 'Knop';
+		const buttonNode = $createButtonNode(url);
+		buttonNode.append($createTextNode(text));
+		if (!restored.isCollapsed()) {
+			restored.removeText();
+		}
+		restored.insertNodes([buttonNode]);
+	};
+
 	const submit = () => {
 		const url = input.value.trim();
 		const sel = savedSelection;
+		const submitMode = mode;
 		close();
 		if (!url || !sel) return;
+
+		// Restoring the selection and applying the node must happen inside the
+		// same update — running it outside reads whatever is "live", which after
+		// the popover stole focus is no longer the original editor selection.
 		editor.update(() => {
 			$setSelection(sel.clone());
+			const restored = $getSelection();
+			if (!$isRangeSelection(restored)) return;
+
+			if (submitMode === 'button') {
+				applyButton(restored, url);
+			} else {
+				applyLink(restored, url);
+			}
 		});
-		editor.dispatchCommand(TOGGLE_LINK_COMMAND, url);
 	};
 
 	const apply = makeButton('OK', 'Toepassen', submit);
@@ -98,8 +135,15 @@ function buildLinkPopover(editor) {
 
 	return {
 		element: popover,
-		open(selection) {
+		open(nextMode, selection) {
+			mode = nextMode;
 			savedSelection = selection;
+			popover.setAttribute(
+				'aria-label',
+				nextMode === 'button' ? 'Knop invoegen' : 'Link invoegen'
+			);
+			input.placeholder =
+				nextMode === 'button' ? 'URL voor knop' : 'https://…';
 			popover.hidden = false;
 			input.focus();
 		},
@@ -107,7 +151,25 @@ function buildLinkPopover(editor) {
 	};
 }
 
-function buildToolbar(editor, variables, linkPopover) {
+function captureSelection(editor) {
+	let cloned = null;
+	editor.getEditorState().read(() => {
+		const sel = $getSelection();
+		if ($isRangeSelection(sel)) cloned = sel.clone();
+	});
+	if (!cloned) {
+		// No live selection (e.g. user never focused the editor) — anchor at
+		// end of content so the inserted node lands somewhere visible.
+		editor.update(() => {
+			$getRoot().selectEnd();
+			const sel = $getSelection();
+			if ($isRangeSelection(sel)) cloned = sel.clone();
+		});
+	}
+	return cloned;
+}
+
+function buildToolbar(editor, variables, features, urlPopover) {
 	const toolbar = document.createElement('div');
 	toolbar.className = 'ypg-lex-toolbar';
 	toolbar.setAttribute('role', 'toolbar');
@@ -123,12 +185,8 @@ function buildToolbar(editor, variables, linkPopover) {
 			editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')
 		),
 		makeButton('↗', 'Link invoegen', () => {
-			let cloned = null;
-			editor.getEditorState().read(() => {
-				const sel = $getSelection();
-				if ($isRangeSelection(sel)) cloned = sel.clone();
-			});
-			if (cloned) linkPopover.open(cloned);
+			const cloned = captureSelection(editor);
+			if (cloned) urlPopover.open('link', cloned);
 		}),
 		makeButton('•', 'Ongeordende lijst', () =>
 			editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
@@ -137,6 +195,15 @@ function buildToolbar(editor, variables, linkPopover) {
 			editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
 		)
 	);
+
+	if (features.includes('button')) {
+		toolbar.append(
+			makeButton('▢ Knop', 'Knop invoegen', () => {
+				const cloned = captureSelection(editor);
+				if (cloned) urlPopover.open('button', cloned);
+			})
+		);
+	}
 
 	if (variables.length > 0) {
 		const sep = document.createElement('span');
@@ -187,6 +254,10 @@ export function mountLexical(wrapper) {
 		.split(',')
 		.map((v) => v.trim())
 		.filter(Boolean);
+	const features = (wrapper.dataset.features || '')
+		.split(',')
+		.map((v) => v.trim())
+		.filter(Boolean);
 
 	const editable = document.createElement('div');
 	editable.className = 'ypg-lex-editable';
@@ -197,7 +268,14 @@ export function mountLexical(wrapper) {
 
 	const editor = createEditor({
 		namespace: 'ypg',
-		nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode],
+		nodes: [
+			HeadingNode,
+			QuoteNode,
+			ListNode,
+			ListItemNode,
+			LinkNode,
+			ButtonNode,
+		],
 		theme: THEME,
 		onError: (e) => {
 			// eslint-disable-next-line no-console -- surface editor failures during integration
@@ -209,12 +287,12 @@ export function mountLexical(wrapper) {
 	registerRichText(editor);
 	registerList(editor);
 
-	const linkPopover = buildLinkPopover(editor);
-	const toolbar = buildToolbar(editor, variables, linkPopover);
+	const urlPopover = buildUrlPopover(editor);
+	const toolbar = buildToolbar(editor, variables, features, urlPopover);
 
 	textarea.hidden = true;
 	wrapper.insertBefore(toolbar, textarea);
-	wrapper.insertBefore(linkPopover.element, textarea);
+	wrapper.insertBefore(urlPopover.element, textarea);
 	wrapper.insertBefore(editable, textarea);
 
 	loadInitialHtml(editor, initialHtml);

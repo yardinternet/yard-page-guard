@@ -12,6 +12,7 @@ if (! defined('ABSPATH')) {
 }
 
 use Yard\PageGuard\Admin\Services\AdminOverviewService;
+use Yard\PageGuard\EmailLog\EmailLog;
 use Yard\PageGuard\Foundation\AdminCapability;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Text;
@@ -56,6 +57,14 @@ class AdminOverviewController
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
 			AdminCapability::NAME,
 			'edit-tags.php?taxonomy=ypg_external_content_owner',
+		);
+
+		add_submenu_page(
+			'ypg-overview',
+			__('Email log', 'yard-page-guard'),
+			__('Email log', 'yard-page-guard'),
+			AdminCapability::NAME,
+			'edit.php?post_type=' . EmailLog::POST_TYPE,
 		);
 
 		add_submenu_page(
