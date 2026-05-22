@@ -57,6 +57,14 @@ class AdminOverviewController
 			AdminCapability::NAME,
 			'edit-tags.php?taxonomy=ypg_external_content_owner',
 		);
+
+		add_submenu_page(
+			'ypg-overview',
+			__('Instellingen', 'yard-page-guard'),
+			__('Instellingen', 'yard-page-guard'),
+			AdminCapability::NAME,
+			'options-general.php?page=page-guard-settings',
+		);
 	}
 
 	public function renderOverviewPage(): void
