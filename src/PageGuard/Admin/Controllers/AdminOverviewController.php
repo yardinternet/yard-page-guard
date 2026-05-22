@@ -12,6 +12,7 @@ if (! defined('ABSPATH')) {
 }
 
 use Yard\PageGuard\Admin\Services\AdminOverviewService;
+use Yard\PageGuard\Foundation\AdminCapability;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Text;
 
@@ -39,7 +40,7 @@ class AdminOverviewController
 		add_menu_page(
 			__('Houdbaarheids Overzicht', 'yard-page-guard'),
 			__('Houdbaarheids Overzicht', 'yard-page-guard'),
-			'list_users',
+			AdminCapability::NAME,
 			'ypg-overview',
 			[$this, 'renderOverviewPage'],
 			'dashicons-visibility',
@@ -53,7 +54,7 @@ class AdminOverviewController
 			'ypg-overview',
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
-			'list_users',
+			AdminCapability::NAME,
 			'edit-tags.php?taxonomy=ypg_external_content_owner',
 		);
 	}

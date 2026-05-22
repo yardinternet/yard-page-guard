@@ -119,7 +119,7 @@ trait Email
 		);
 	}
 
-	private function formatSubject(string $title = 'Houdbaarheidsmodule'): string
+	private function formatSubject(string $title = 'Inhoudseigenarenmodule'): string
 	{
 		return sprintf(
 			'%s - %s',
@@ -133,6 +133,13 @@ trait Email
 	 */
 	private function sendEmail(string $to, string $subject, string $message, array $headers): bool
 	{
-		return wp_mail($to, $subject, $message, $headers);
+		$sent = wp_mail($to, $subject, $message, $headers);
+
+		trigger_error(
+			sprintf('[yard-page-guard] Email %s to %s — subject: %s', $sent ? 'sent' : 'failed', $to, $subject),
+			$sent ? E_USER_NOTICE : E_USER_WARNING
+		);
+
+		return $sent;
 	}
 }

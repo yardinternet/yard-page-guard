@@ -29,6 +29,16 @@ if (! class_exists('WP_CLI')) {
 	}
 }
 
+if (! class_exists('WP_User')) {
+	class WP_User
+	{
+		/** @var array<int,string> */
+		public array $roles = [];
+
+		public int $ID = 0;
+	}
+}
+
 if (! function_exists('get_echo')) {
 	/**
 	 * Capture the echo of a callable function.

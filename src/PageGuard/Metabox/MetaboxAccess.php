@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Metabox;
 
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Foundation\AdminCapability;
 
 /**
  * Authorisation and save-gating shared by every metabox-related listener.
@@ -82,12 +83,9 @@ final class MetaboxAccess
 		$contentOwnerType = get_post_meta($postId, 'ypg_post_content_owner_type', true);
 		$currentUser = wp_get_current_user();
 
-		$defaultRoles = ['administrator', 'yard_superuser', 'super-user', 'superuser'];
-		$adminRoles = apply_filters('yard::page-guard/admin-roles', $defaultRoles);
-
 		if (
 			0 === strlen($post->post_name)
-			|| count(array_intersect($adminRoles, (array) $currentUser->roles)) > 0
+			|| current_user_can(AdminCapability::NAME)
 			|| '' === $contentOwnerId
 			|| $currentUser->ID === $post->post_author
 		) {

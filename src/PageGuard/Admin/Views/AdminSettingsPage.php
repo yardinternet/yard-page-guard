@@ -5,7 +5,7 @@
 ?>
 
 <div class="wrap">
-	<h1><?= __('Houdbaarheidsmodule Instellingen', 'yard-page-guard') ?></h1>
+	<h1><?= __('Inhoudseigenarenmodule Instellingen', 'yard-page-guard') ?></h1>
 	<form method="post" action="options.php">
 		<?php settings_fields('ypg_settings'); ?>
 		<?php do_settings_sections('ypg_settings'); ?>

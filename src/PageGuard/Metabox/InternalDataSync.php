@@ -49,7 +49,7 @@ final class InternalDataSync
 		$ownerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
 		$ownerPhone = get_post_meta($postId, 'ypg_post_content_owner_phone_number', true) ?: '';
 
-		$title = __('Houdbaarheidsmodule', 'yard-page-guard');
+		$title = __('Inhoudseigenarenmodule', 'yard-page-guard');
 		$label = __('Inhoudseigenaar', 'yard-page-guard') . ': ';
 
 		$ownerLink = sprintf(
@@ -154,7 +154,7 @@ final class InternalDataSync
 
 	private function removeInternalData(int $postId): void
 	{
-		$newTitle = __('Houdbaarheidsmodule', 'yard-page-guard');
+		$newTitle = __('Inhoudseigenarenmodule', 'yard-page-guard');
 
 		/**
 		 * Remove entry from single meta fields (fusion portal)

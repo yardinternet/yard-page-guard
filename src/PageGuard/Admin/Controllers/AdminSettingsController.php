@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Admin\Controllers;
 
+use Yard\PageGuard\Foundation\AdminCapability;
 use Yard\PageGuard\Traits\Text;
 
 class AdminSettingsController
@@ -19,9 +20,9 @@ class AdminSettingsController
 	public function addSettingsPage(): void
 	{
 		add_options_page(
-			__('Houdbaarheidsmodule Instellingen', 'yard-page-guard'),
-			__('Houdbaarheidsmodule', 'yard-page-guard'),
-			'list_users',
+			__('Inhoudseigenarenmodule Instellingen', 'yard-page-guard'),
+			__('Inhoudseigenarenmodule', 'yard-page-guard'),
+			AdminCapability::NAME,
 			'page-guard-settings',
 			[$this, 'renderSettingsPage']
 		);
@@ -45,7 +46,7 @@ class AdminSettingsController
 			'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
 		]);
 
-		add_filter('option_page_capability_ypg_settings', fn () => 'list_users');
+		add_filter('option_page_capability_ypg_settings', fn () => AdminCapability::NAME);
 	}
 
 	public function renderSettingsPage(): void
