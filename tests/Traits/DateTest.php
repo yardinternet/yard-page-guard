@@ -90,6 +90,41 @@ final class DateTest extends TestCase
 		$this->subject->addPeriodToBase('2024-12-01', 1, 'year');
 	}
 
+	public function testAdvanceToFutureStepsOnceWhenDueToday(): void
+	{
+		$today = date('Y-m-d');
+		$expected = date('Y-m-d', strtotime('+1 week', strtotime($today)));
+
+		$this->assertSame($expected, $this->subject->advanceToFuture($today, 1, DateUnit::WEEKS));
+	}
+
+	public function testAdvanceToFutureCollapsesMissedPeriodsIntoOneJump(): void
+	{
+		// Three weekly periods overdue collapses to the single next slot, not
+		// three separate advances.
+		$base = date('Y-m-d', strtotime('-3 weeks'));
+		$expected = date('Y-m-d', strtotime('+1 week'));
+
+		$this->assertSame($expected, $this->subject->advanceToFuture($base, 1, DateUnit::WEEKS));
+	}
+
+	public function testAdvanceToFutureLeavesAFutureDateUnchanged(): void
+	{
+		// Re-running on an already-advanced date is a no-op: this is what keeps
+		// repeated same-day cron runs idempotent.
+		$future = date('Y-m-d', strtotime('+2 weeks'));
+
+		$this->assertSame($future, $this->subject->advanceToFuture($future, 1, DateUnit::WEEKS));
+	}
+
+	public function testAdvanceToFutureClampsNonPositivePeriod(): void
+	{
+		$today = date('Y-m-d');
+		$expected = date('Y-m-d', strtotime('+1 day', strtotime($today)));
+
+		$this->assertSame($expected, $this->subject->advanceToFuture($today, 0, DateUnit::DAYS));
+	}
+
 	public function testComputeDateMetaPrefersManualOverride(): void
 	{
 		$_POST = ['ypg_review_date' => '2025-01-15'];

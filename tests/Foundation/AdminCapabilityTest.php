@@ -4,52 +4,150 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Tests\Foundation;
 
+use Mockery;
 use WP_Mock;
-use WP_User;
 use Yard\PageGuard\Foundation\AdminCapability;
 use Yard\PageGuard\Tests\TestCase;
 
 final class AdminCapabilityTest extends TestCase
 {
-	public function testGrantsCapToUserWithAdminRole(): void
+	protected function setUp(): void
 	{
-		WP_Mock::userFunction('apply_filters')
-			->with('yard::page-guard/admin-roles', AdminCapability::DEFAULT_ADMIN_ROLES)
-			->andReturnUsing(static fn ($_filter, $value) => $value);
-
-		$user = new WP_User();
-		$user->roles = ['administrator'];
-
-		$result = AdminCapability::grantToAdminRoles([], [], [], $user);
-
-		$this->assertTrue($result[AdminCapability::NAME] ?? false);
+		parent::setUp();
+		AdminCapability::reset();
 	}
 
-	public function testDoesNotGrantCapToUserWithoutAdminRole(): void
+	protected function tearDown(): void
 	{
-		WP_Mock::userFunction('apply_filters')
-			->with('yard::page-guard/admin-roles', AdminCapability::DEFAULT_ADMIN_ROLES)
-			->andReturnUsing(static fn ($_filter, $value) => $value);
-
-		$user = new WP_User();
-		$user->roles = ['editor'];
-
-		$result = AdminCapability::grantToAdminRoles([], [], [], $user);
-
-		$this->assertArrayNotHasKey(AdminCapability::NAME, $result);
+		AdminCapability::reset();
+		parent::tearDown();
 	}
 
-	public function testRespectsFilteredAdminRoles(): void
+	public function testReturnsDefaultCapWhenFilterDoesNotChangeIt(): void
 	{
-		WP_Mock::onFilter('yard::page-guard/admin-roles')
-			->with(AdminCapability::DEFAULT_ADMIN_ROLES)
-			->reply(['editor']);
+		WP_Mock::onFilter(AdminCapability::FILTER)
+			->with(AdminCapability::DEFAULT)
+			->reply(AdminCapability::DEFAULT);
 
-		$user = new WP_User();
-		$user->roles = ['editor'];
+		$this->assertSame('yard_manage_page_guard', AdminCapability::name());
+	}
 
-		$result = AdminCapability::grantToAdminRoles([], [], [], $user);
+	public function testReturnsFilteredCap(): void
+	{
+		WP_Mock::onFilter(AdminCapability::FILTER)
+			->with(AdminCapability::DEFAULT)
+			->reply('manage_options');
 
-		$this->assertTrue($result[AdminCapability::NAME] ?? false);
+		$this->assertSame('manage_options', AdminCapability::name());
+	}
+
+	public function testCachesResultWithinRequest(): void
+	{
+		WP_Mock::onFilter(AdminCapability::FILTER)
+			->with(AdminCapability::DEFAULT)
+			->reply('edit_users');
+
+		$this->assertSame('edit_users', AdminCapability::name());
+		$this->assertSame('edit_users', AdminCapability::name());
+	}
+
+	public function testRolesDefaultsToConfiguredRoles(): void
+	{
+		WP_Mock::onFilter(AdminCapability::ROLES_FILTER)
+			->with(AdminCapability::DEFAULT_ROLES)
+			->reply(AdminCapability::DEFAULT_ROLES);
+
+		$this->assertSame(AdminCapability::DEFAULT_ROLES, AdminCapability::roles());
+	}
+
+	public function testRolesIsFilterableAndKeepsOnlyStrings(): void
+	{
+		WP_Mock::onFilter(AdminCapability::ROLES_FILTER)
+			->with(AdminCapability::DEFAULT_ROLES)
+			->reply(['administrator', 'editor', 5]);
+
+		$this->assertSame(['administrator', 'editor'], AdminCapability::roles());
+	}
+
+	public function testAddToRolesGrantsDefaultCapToConfiguredRoles(): void
+	{
+		WP_Mock::onFilter(AdminCapability::FILTER)
+			->with(AdminCapability::DEFAULT)
+			->reply(AdminCapability::DEFAULT);
+		WP_Mock::onFilter(AdminCapability::ROLES_FILTER)
+			->with(AdminCapability::DEFAULT_ROLES)
+			->reply(['administrator', 'editor']);
+
+		$administrator = Mockery::mock('WP_Role');
+		$administrator->shouldReceive('add_cap')->once()->with(AdminCapability::DEFAULT);
+		$editor = Mockery::mock('WP_Role');
+		$editor->shouldReceive('add_cap')->once()->with(AdminCapability::DEFAULT);
+
+		WP_Mock::userFunction('get_role')->with('administrator')->andReturn($administrator);
+		WP_Mock::userFunction('get_role')->with('editor')->andReturn($editor);
+
+		AdminCapability::addToRoles();
+
+		// The add_cap() expectations above are verified on teardown.
+		$this->addToAssertionCount(2);
+	}
+
+	public function testAddToRolesSkipsRolesThatDoNotExist(): void
+	{
+		WP_Mock::onFilter(AdminCapability::FILTER)
+			->with(AdminCapability::DEFAULT)
+			->reply(AdminCapability::DEFAULT);
+		WP_Mock::onFilter(AdminCapability::ROLES_FILTER)
+			->with(AdminCapability::DEFAULT_ROLES)
+			->reply(['ghost']);
+
+		WP_Mock::userFunction('get_role')->with('ghost')->andReturn(null);
+
+		AdminCapability::addToRoles();
+
+		$this->assertTrue(true);
+	}
+
+	public function testAddToRolesIsNoOpWhenCapNameFiltered(): void
+	{
+		WP_Mock::onFilter(AdminCapability::FILTER)
+			->with(AdminCapability::DEFAULT)
+			->reply('edit_others_pages');
+
+		// get_role is intentionally not mocked: calling it would fail the test.
+		AdminCapability::addToRoles();
+
+		$this->assertTrue(true);
+	}
+
+	public function testRemoveFromRolesStripsDefaultCapFromConfiguredRoles(): void
+	{
+		WP_Mock::onFilter(AdminCapability::FILTER)
+			->with(AdminCapability::DEFAULT)
+			->reply(AdminCapability::DEFAULT);
+		WP_Mock::onFilter(AdminCapability::ROLES_FILTER)
+			->with(AdminCapability::DEFAULT_ROLES)
+			->reply(['administrator']);
+
+		$administrator = Mockery::mock('WP_Role');
+		$administrator->shouldReceive('remove_cap')->once()->with(AdminCapability::DEFAULT);
+
+		WP_Mock::userFunction('get_role')->with('administrator')->andReturn($administrator);
+
+		AdminCapability::removeFromRoles();
+
+		// The remove_cap() expectation above is verified on teardown.
+		$this->addToAssertionCount(1);
+	}
+
+	public function testRemoveFromRolesIsNoOpWhenCapNameFiltered(): void
+	{
+		WP_Mock::onFilter(AdminCapability::FILTER)
+			->with(AdminCapability::DEFAULT)
+			->reply('edit_others_pages');
+
+		AdminCapability::removeFromRoles();
+
+		$this->assertTrue(true);
 	}
 }

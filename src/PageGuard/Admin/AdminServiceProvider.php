@@ -5,6 +5,7 @@ namespace Yard\PageGuard\Admin;
 use WP_Query;
 use Yard\PageGuard\Admin\Controllers\AdminOverviewController;
 use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
+use Yard\PageGuard\EmailLog\EmailLog;
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
@@ -32,6 +33,7 @@ class AdminServiceProvider extends ServiceProvider
 
 		(new EmailPlaceholderMigration())->register();
 		(new FooterButtonMigration())->register();
+		(new AdminCapabilityMigration())->register();
 
 		add_action('enqueue_block_editor_assets', [$this, 'enqueueAdminAssets']);
 
@@ -115,6 +117,13 @@ class AdminServiceProvider extends ServiceProvider
 			if (in_array($_GET['post_type'], apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
 				$this->enqueueAdminAssets();
 			}
+		}
+
+		// Email log list & detail screens (styles the status pills, items list
+		// and mail preview).
+		$screen = get_current_screen();
+		if ($screen && EmailLog::POST_TYPE === $screen->post_type) {
+			$this->enqueueAdminAssets();
 		}
 	}
 

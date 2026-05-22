@@ -7,10 +7,10 @@ $hostParts = explode('.', $host);
 $baseHost = count($hostParts) > 2 ? implode('.', array_slice($hostParts, -2)) : $host;
 $defaultFromAddress = 'houdbaarheid@' . $baseHost;
 
-$renderLexical = static function (string $name, string $value, string $variables = '', int $rows = 10, string $features = ''): void {
+$renderEditor = static function (string $name, string $value, string $variables = '', int $rows = 10, string $features = ''): void {
 	// wpautop normalises legacy plain-text content with bare newlines into the
-	// `<p>` / `<br>` HTML Lexical can parse back into block nodes — without this
-	// stored options that pre-date the rich editor collapse onto one line.
+	// `<p>` / `<br>` HTML the editor can parse back into block nodes — without
+	// this stored options that pre-date the rich editor collapse onto one line.
 	$html = wpautop($value);
 
 	$dataAttrs = '';
@@ -22,7 +22,7 @@ $renderLexical = static function (string $name, string $value, string $variables
 	}
 
 	printf(
-		'<div class="ypg-lex-wrapper" data-ypg-lexical%s><textarea id="%s" name="%s" rows="%d">%s</textarea></div>',
+		'<div class="ypg-rte" data-ypg-editor%s><textarea id="%s" name="%s" rows="%d">%s</textarea></div>',
 		$dataAttrs,
 		esc_attr($name),
 		esc_attr($name),
@@ -39,10 +39,38 @@ $renderLexical = static function (string $name, string $value, string $variables
 		<?php settings_fields('ypg_settings'); ?>
 		<?php do_settings_sections('ypg_settings'); ?>
 
+		<?php
+			$cronLastRun = \Yard\PageGuard\WPCron\WPCronServiceProvider::lastRun();
+$cronNextRun = \Yard\PageGuard\WPCron\WPCronServiceProvider::nextRun();
+$cronDateTimeFormat = trim(get_option('date_format', 'd F Y') . ' ' . get_option('time_format', 'H:i'));
+?>
+
+		<section class="ypg-settings-card">
+			<header class="ypg-settings-card__header">
+				<h2><?= esc_html(__('Geplande controle', 'yard-page-guard')) ?></h2>
+				<p class="ypg-settings-card__hint"><?= esc_html(__('Status van de dagelijkse controle die de herzienings- en herinneringsmails verstuurt.', 'yard-page-guard')) ?></p>
+			</header>
+			<div class="ypg-settings-grid">
+				<div class="ypg-cron-stat">
+					<span class="ypg-cron-stat__label"><?= esc_html(__('Laatste controle', 'yard-page-guard')) ?></span>
+					<span class="ypg-cron-stat__value">
+						<?= null !== $cronLastRun
+					? esc_html(wp_date($cronDateTimeFormat, $cronLastRun))
+					: esc_html(__('Nog niet uitgevoerd', 'yard-page-guard')) ?>
+					</span>
+				</div>
+				<div class="ypg-cron-stat">
+					<span class="ypg-cron-stat__label"><?= esc_html(__('Volgende controle', 'yard-page-guard')) ?></span>
+					<span class="ypg-cron-stat__value"><?= esc_html(wp_date($cronDateTimeFormat, $cronNextRun)) ?></span>
+					<span class="ypg-cron-stat__countdown" data-ypg-cron-countdown="<?= esc_attr((string) $cronNextRun) ?>" aria-live="polite"></span>
+				</div>
+			</div>
+		</section>
+
 		<section class="ypg-settings-card">
 			<header class="ypg-settings-card__header">
 				<h2><?= esc_html(__('Email afzender', 'yard-page-guard')) ?></h2>
-				<p class="ypg-settings-card__hint"><?= esc_html(__('Hoe herinneringsmails worden verstuurd.', 'yard-page-guard')) ?></p>
+				<p class="ypg-settings-card__hint"><?= esc_html(__('Hoe herzienings- en herinneringsmails worden verstuurd.', 'yard-page-guard')) ?></p>
 			</header>
 			<div class="ypg-settings-grid">
 				<div class="ypg-field">
@@ -63,7 +91,7 @@ $renderLexical = static function (string $name, string $value, string $variables
 		<section class="ypg-settings-card">
 			<header class="ypg-settings-card__header">
 				<h2><?= esc_html(__('Periodes', 'yard-page-guard')) ?></h2>
-				<p class="ypg-settings-card__hint"><?= esc_html(__('Hoe vaak content gecontroleerd moet worden en wanneer de herinneringsmail wordt verstuurd.', 'yard-page-guard')) ?></p>
+				<p class="ypg-settings-card__hint"><?= esc_html(__('De standaard herzienings- en herinneringsperiodes.', 'yard-page-guard')) ?></p>
 			</header>
 			<div class="ypg-settings-grid">
 				<div class="ypg-field">
@@ -72,7 +100,7 @@ $renderLexical = static function (string $name, string $value, string $variables
 						<input type="number" id="ypg_review_time_period" name="ypg_review_time_period" value="<?= esc_attr(get_option('ypg_review_time_period', 2)); ?>" min="1" />
 						<select name="ypg_review_time_unit" aria-label="<?= esc_attr(__('Eenheid herzieningsperiode', 'yard-page-guard')) ?>">
 							<?php
-								$selected_unit = get_option('ypg_review_time_unit', 'weeks');
+						$selected_unit = get_option('ypg_review_time_unit', 'weeks');
 foreach ($this->getUnitOptions() as $key => $label) {
 	echo '<option value="' . esc_attr($key) . '"' . selected($selected_unit, $key, false) . '>' . esc_html($label) . '</option>';
 }
@@ -95,12 +123,13 @@ foreach ($this->getUnitOptions() as $key => $label) {
 					</div>
 				</div>
 				<div class="ypg-field">
-					<label for="ypg_cron_send_time"><?= esc_html(__('Tijdstip van versturen', 'yard-page-guard')) ?></label>
-					<input type="time" id="ypg_cron_send_time" name="ypg_cron_send_time" value="<?= esc_attr(get_option('ypg_cron_send_time', '06:00')); ?>" lang="nl" step="60" />
-					<p class="ypg-help"><?= esc_html(__('Klokmoment waarop de dagelijkse herzienings- en herinneringsmails worden verstuurd (siteklok).', 'yard-page-guard')) ?></p>
+					<label for="ypg_cron_send_time" title="<?= esc_html(__('Tijdstip waarop de dagelijkse controle voor herzienings- en herinneringsmails wordt uitgevoerd.', 'yard-page-guard')) ?>"><?= esc_html(__('Tijdstip van controle', 'yard-page-guard')) ?></label>
+					<input type="text" inputmode="numeric" maxlength="5" pattern="\d{2}:\d{2}" placeholder="00:00" autocomplete="off" data-ypg-time id="ypg_cron_send_time" name="ypg_cron_send_time" class="ypg-time-input" value="<?= esc_attr(get_option('ypg_cron_send_time', '06:00')); ?>" />
 				</div>
 			</div>
 		</section>
+
+
 
 		<section class="ypg-settings-card">
 			<header class="ypg-settings-card__header">
@@ -120,7 +149,7 @@ foreach ($this->getUnitOptions() as $key => $label) {
 			</div>
 			<div class="ypg-field ypg-field--full">
 				<label for="ypg_review_email_content"><?= esc_html(__('Inhoud', 'yard-page-guard')) ?></label>
-				<?php $renderLexical('ypg_review_email_content', (string) get_option('ypg_review_email_content', ''), 'name,item_list'); ?>
+				<?php $renderEditor('ypg_review_email_content', (string) get_option('ypg_review_email_content', ''), 'name,item_list'); ?>
 			</div>
 		</section>
 
@@ -142,19 +171,18 @@ foreach ($this->getUnitOptions() as $key => $label) {
 			</div>
 			<div class="ypg-field ypg-field--full">
 				<label for="ypg_reminder_email_content"><?= esc_html(__('Inhoud', 'yard-page-guard')) ?></label>
-				<?php $renderLexical('ypg_reminder_email_content', (string) get_option('ypg_reminder_email_content', ''), 'name,item_list'); ?>
+				<?php $renderEditor('ypg_reminder_email_content', (string) get_option('ypg_reminder_email_content', ''), 'name,item_list'); ?>
 			</div>
 		</section>
 
 		<section class="ypg-settings-card">
 			<header class="ypg-settings-card__header">
 				<h2><?= esc_html(__('Controleer venster', 'yard-page-guard')) ?></h2>
-				<p class="ypg-settings-card__hint"><?= esc_html(__('Inhoud onderaan het venster dat verschijnt wanneer een externe eigenaar een pagina controleert.', 'yard-page-guard')) ?></p>
+				<p class="ypg-settings-card__hint"><?= esc_html(__('Wordt getoond aan inhoudseigenaren tijdens de controle van hun pagina\'s.', 'yard-page-guard')) ?></p>
 			</header>
 			<div class="ypg-field ypg-field--full">
 				<label for="ypg_modal_footer_content"><?= esc_html(__('Footer inhoud', 'yard-page-guard')) ?></label>
-				<?php $renderLexical('ypg_modal_footer_content', (string) get_option('ypg_modal_footer_content', ''), '', 6, 'button'); ?>
-				<p class="ypg-help"><?= esc_html(__('Gebruik de “▢ Knop” actie in de toolbar om een knop in te voegen.', 'yard-page-guard')) ?></p>
+				<?php $renderEditor('ypg_modal_footer_content', (string) get_option('ypg_modal_footer_content', ''), '', 6, 'button'); ?>
 			</div>
 		</section>
 

@@ -49,7 +49,7 @@ Most behavior is configurable from **Inhoudseigenarenmodule → Instellingen** (
 
 - **Email afzender** — from name, from address, optional BCC for reminders.
 - **Periodes** — review period + unit (`days` / `weeks` / `months`), reminder period + unit, and the daily send time.
-- **Herzieningsmail** + **Herinneringsmail** — subject and body. Bodies are edited in a [Lexical](https://lexical.dev/)-backed rich editor with `{name}` (owner salutation) and `{item_list}` (item list) placeholder chips in the toolbar.
+- **Herzieningsmail** + **Herinneringsmail** — subject and body. Bodies are edited in a [Tiptap](https://tiptap.dev/)-backed rich editor with `{name}` (owner salutation) and `{item_list}` (item list) placeholder chips in the toolbar.
 - **Controleer venster** — modal footer shown on the verify-page modal. The footer editor also exposes a **▢ Knop** toolbar action that wraps selected text in `<a class="ypg-button">…</a>` for the styled call-to-action.
 - **Toegang** — `Show internal data on review`: when enabled, an unauthenticated reviewer is briefly logged in as a dedicated `ypg_review_user` so internal-only blocks render during the review.
 
@@ -63,7 +63,7 @@ Entries older than 60 days are purged on the daily cron. Tune the window with th
 
 ## Security
 
-- Plugin admin pages (Inhoudseigenarenmodule, Email log, Instellingen) require the `yard_manage_page_guard` capability. The capability is granted dynamically via the `user_has_cap` filter to anyone whose roles intersect `yard::page-guard/admin-roles` — so the filter remains the single source of truth and there's no role storage to migrate when it changes.
+- Plugin admin pages (Inhoudseigenarenmodule, Email log, Instellingen) require the `yard_manage_page_guard` capability. The cap is added to the configured roles (`yard::page-guard/admin-roles`, default `administrator`) on plugin activation and stripped again on deactivation; installs that were already active are topped up once via a guarded migration. The gate's cap name is swappable to an existing cap via `yard::page-guard/admin-capability` (e.g. `edit_others_pages`) — when changed away from the default, the plugin leaves role grants untouched since the site already owns that cap.
 - Metaboxes are visible to anyone with `edit_pages` while no owner is assigned. Once an owner is in place, only the post author, the assigned WP-user owner, and any holder of `yard_manage_page_guard` can edit the page-guard fields. External owners can never edit via `/wp-admin` — they only verify via the public review link.
 - Review links are signed with HMAC-SHA256 over `post_id|owner_email|review_date`, base64url-encoded. The HMAC key is `YPG_AUTH_SALT` (env). PDC/Pub cross-site setups must share the same `YPG_AUTH_SALT`.
 - All `$_GET`/`$_POST` reads pass through `sanitize_text_field`, `isset` guards, and explicit type checks (see [Traits/Token.php](src/PageGuard/Traits/Token.php) and [Metabox/MetaboxAccess.php](src/PageGuard/Metabox/MetaboxAccess.php)).
@@ -77,9 +77,13 @@ apply_filters('yard::page-guard/post-types-to-use', ['page']);
 // Post statuses scanned by the daily cron when looking for owners to notify.
 apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']);
 
-// Roles whose users automatically receive the `yard_manage_page_guard` cap and
-// bypass the owner/author metabox check.
-apply_filters('yard::page-guard/admin-roles', ['administrator', 'yard_superuser', 'super-user', 'superuser']);
+// Roles that receive the `yard_manage_page_guard` cap on activation. Cap holders
+// reach the admin pages and bypass the owner/author metabox check.
+apply_filters('yard::page-guard/admin-roles', ['administrator', 'superuser', 'yard_superuser', 'super-user']);
+
+// Point the admin gate at a different (existing) capability. When changed away
+// from the default, the plugin leaves role grants untouched — the site owns it.
+apply_filters('yard::page-guard/admin-capability', 'yard_manage_page_guard');
 
 // Days to keep email-log entries. Return 0 to disable purging.
 apply_filters('yard::page-guard/email-log-retention-days', 60);
@@ -107,9 +111,9 @@ src/PageGuard/
 └── WPJson/           REST endpoints: verify-post and modal-info
 ```
 
-Service providers are registered in [config/core.php](config/core.php). [Foundation\Plugin](src/PageGuard/Foundation/Plugin.php) boots them on `after_setup_theme` and registers the [AdminCapability](src/PageGuard/Foundation/AdminCapability.php) `user_has_cap` filter before any provider runs.
+Service providers are registered in [config/core.php](config/core.php). [Foundation\Plugin](src/PageGuard/Foundation/Plugin.php) boots them on `after_setup_theme`. The [AdminCapability](src/PageGuard/Foundation/AdminCapability.php) cap is added to roles on activation and removed on deactivation, so admin access lives in the database rather than being recomputed per request.
 
-The settings page editors are a thin Vite-bundled Lexical setup in [resources/js/lexical-editor.js](resources/js/lexical-editor.js) + [resources/js/button-node.js](resources/js/button-node.js); PHP renders a hidden `<textarea>` carrying the option value, JS mounts a contenteditable surface that syncs back to it on every change so the standard WP form submit path is untouched.
+The settings page editors are a thin Vite-bundled Tiptap setup in [resources/js/tiptap-editor.js](resources/js/tiptap-editor.js) + [resources/js/button-mark.js](resources/js/button-mark.js); PHP renders a hidden `<textarea>` carrying the option value, JS mounts a Tiptap surface that syncs back to it on every change so the standard WP form submit path is untouched.
 
 ## Testing
 
@@ -124,7 +128,7 @@ composer test
 Tests live under [tests/](tests/) and mirror the source tree:
 
 - `tests/Enums/` — value validation for `ContentOwnerType` and `DateUnit`.
-- `tests/Foundation/` — `AdminCapability` dynamic-grant logic.
+- `tests/Foundation/` — `AdminCapability` role-grant logic.
 - `tests/Models/` — `ContentOwner` invariants and the `fromString` / `fromPostMeta` factories.
 - `tests/Traits/` — `Date`, `Text`, and `Token` traits, including the date-recalculation rules and review-token HMAC.
 - `tests/Metabox/` — the `MetaboxAccess` save/auth gate.

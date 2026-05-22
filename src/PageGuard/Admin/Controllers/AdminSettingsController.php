@@ -21,8 +21,8 @@ class AdminSettingsController
 	{
 		add_options_page(
 			__('Inhoudseigenarenmodule Instellingen', 'yard-page-guard'),
-			__('Inhoudseigenarenmodule', 'yard-page-guard'),
-			AdminCapability::NAME,
+			__('Inhoudseigenaren', 'yard-page-guard'),
+			AdminCapability::name(),
 			'page-guard-settings',
 			[$this, 'renderSettingsPage']
 		);
@@ -50,7 +50,7 @@ class AdminSettingsController
 			'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
 		]);
 
-		add_filter('option_page_capability_ypg_settings', fn () => AdminCapability::NAME);
+		add_filter('option_page_capability_ypg_settings', fn () => AdminCapability::name());
 	}
 
 	public function renderSettingsPage(): void

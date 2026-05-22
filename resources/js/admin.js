@@ -1,5 +1,5 @@
 import '../css/admin.css';
-import { mountAllLexical } from './lexical-editor.js';
+import { mountAllEditors } from './tiptap-editor.js';
 
 /**
  * Functionality for bulk actions on plugin overview page
@@ -115,9 +115,86 @@ function initReminderRadioToggle() {
 	});
 }
 
+/**
+ * Locale-independent 24-hour time field. The native <input type="time"> renders
+ * a 12-hour AM/PM clock in some browsers/locales; masking a plain text input
+ * keeps the field reading and writing HH:MM in 24-hour form everywhere.
+ */
+function initTimeFields() {
+	const pad = (value, max) =>
+		String(Math.min(parseInt(value, 10) || 0, max)).padStart(2, '0');
+
+	document.querySelectorAll('input[data-ypg-time]').forEach((field) => {
+		// Keep only digits and re-insert the colon after the hours.
+		field.addEventListener('input', () => {
+			const digits = field.value.replace(/\D/g, '').slice(0, 4);
+			field.value =
+				digits.length > 2
+					? `${digits.slice(0, 2)}:${digits.slice(2)}`
+					: digits;
+		});
+
+		// Normalise to a zero-padded, in-range HH:MM when leaving the field.
+		field.addEventListener('blur', () => {
+			if (!field.value) return;
+			const [hours = '', minutes = ''] = field.value.split(':');
+			field.value = `${pad(hours, 23)}:${pad(minutes, 59)}`;
+		});
+	});
+}
+
+/**
+ * Live "next run" countdown on the settings page. WP-Cron fires on site
+ * traffic, so a target already in the past is shown as due on the next visit
+ * rather than as a negative timer.
+ */
+function initCronCountdown() {
+	const el = document.querySelector('[data-ypg-cron-countdown]');
+	if (!el) return;
+
+	const target = parseInt(el.dataset.ypgCronCountdown, 10) * 1000;
+	if (!target) return;
+
+	const pad = (value) => String(value).padStart(2, '0');
+
+	const render = () => {
+		const remaining = target - Date.now();
+
+		if (remaining <= 0) {
+			el.textContent = 'wordt uitgevoerd bij het volgende paginabezoek';
+			return false;
+		}
+
+		const totalSeconds = Math.floor(remaining / 1000);
+		const days = Math.floor(totalSeconds / 86400);
+		const clock = [
+			Math.floor((totalSeconds % 86400) / 3600),
+			Math.floor((totalSeconds % 3600) / 60),
+			totalSeconds % 60,
+		]
+			.map(pad)
+			.join(':');
+
+		el.textContent =
+			'over ' +
+			(days > 0 ? `${days} ${days === 1 ? 'dag' : 'dagen'} ` : '') +
+			clock;
+
+		return true;
+	};
+
+	if (render()) {
+		const timer = setInterval(() => {
+			if (!render()) clearInterval(timer);
+		}, 1000);
+	}
+}
+
 wp.domReady(() => {
 	initBulkActions();
 	initInlineEditOverride();
 	initReminderRadioToggle();
-	mountAllLexical();
+	initTimeFields();
+	initCronCountdown();
+	mountAllEditors();
 });

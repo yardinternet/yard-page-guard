@@ -41,7 +41,7 @@ class AdminOverviewController
 		add_menu_page(
 			__('Houdbaarheids Overzicht', 'yard-page-guard'),
 			__('Houdbaarheids Overzicht', 'yard-page-guard'),
-			AdminCapability::NAME,
+			AdminCapability::name(),
 			'ypg-overview',
 			[$this, 'renderOverviewPage'],
 			'dashicons-visibility',
@@ -55,7 +55,7 @@ class AdminOverviewController
 			'ypg-overview',
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
-			AdminCapability::NAME,
+			AdminCapability::name(),
 			'edit-tags.php?taxonomy=ypg_external_content_owner',
 		);
 
@@ -63,7 +63,7 @@ class AdminOverviewController
 			'ypg-overview',
 			__('Email log', 'yard-page-guard'),
 			__('Email log', 'yard-page-guard'),
-			AdminCapability::NAME,
+			AdminCapability::name(),
 			'edit.php?post_type=' . EmailLog::POST_TYPE,
 		);
 
@@ -71,7 +71,7 @@ class AdminOverviewController
 			'ypg-overview',
 			__('Instellingen', 'yard-page-guard'),
 			__('Instellingen', 'yard-page-guard'),
-			AdminCapability::NAME,
+			AdminCapability::name(),
 			'options-general.php?page=page-guard-settings',
 		);
 	}

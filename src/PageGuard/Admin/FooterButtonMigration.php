@@ -6,8 +6,8 @@ namespace Yard\PageGuard\Admin;
 
 /**
  * One-off migration: rewrite the legacy "bold link" button pattern in the
- * modal footer to the explicit `<a class="ypg-button">` form used by the new
- * Lexical-based button feature.
+ * modal footer to the explicit `<a class="ypg-button">` form used by the
+ * rich-editor button feature.
  *
  * Old: `<a href="…"><strong>Label</strong></a>` (and the reverse nesting).
  * New: `<a class="ypg-button" href="…">Label</a>`.

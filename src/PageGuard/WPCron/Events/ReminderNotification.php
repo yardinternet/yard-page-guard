@@ -114,13 +114,17 @@ class ReminderNotification extends Event
 
 	private function updateModuleMeta(ReviewItem $item): void
 	{
-		$currentReminderDate = $item->reminderDate() ?: date('Y-m-d');
+		$currentReminderDate = $item->reminderDate('Y-m-d');
+		if (! $this->isValidDate($currentReminderDate)) {
+			$currentReminderDate = date('Y-m-d');
+		}
+
 		$overrideDateUnit = get_post_meta($item->ID(), 'ypg_reminder_time_unit', true);
 		$overrideDatePeriod = (int) get_post_meta($item->ID(), 'ypg_reminder_time_period', true);
 		$finalDateUnit = $this->resolveUnit(! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit'));
 		$finalDatePeriod = ! empty($overrideDatePeriod) ? $overrideDatePeriod : (int) get_option('ypg_reminder_time_period', 1);
 
 		update_post_meta($item->ID(), 'ypg_last_reminder_date', date('Y-m-d'));
-		update_post_meta($item->ID(), 'ypg_reminder_date', $this->addPeriodToBase($currentReminderDate, $finalDatePeriod, $finalDateUnit));
+		update_post_meta($item->ID(), 'ypg_reminder_date', $this->advanceToFuture($currentReminderDate, $finalDatePeriod, $finalDateUnit));
 	}
 }

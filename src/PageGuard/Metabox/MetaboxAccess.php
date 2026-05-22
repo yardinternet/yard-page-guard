@@ -85,7 +85,7 @@ final class MetaboxAccess
 
 		if (
 			0 === strlen($post->post_name)
-			|| current_user_can(AdminCapability::NAME)
+			|| current_user_can(AdminCapability::name())
 			|| '' === $contentOwnerId
 			|| $currentUser->ID === $post->post_author
 		) {

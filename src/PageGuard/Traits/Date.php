@@ -42,6 +42,31 @@ trait Date
 		return $date->format('Y-m-d');
 	}
 
+	/**
+	 * Step a Y-m-d date forward in whole $period/$unit jumps until it lands
+	 * strictly after today, returning the new Y-m-d.
+	 *
+	 * Used to roll a recurring reminder onto its next slot: it collapses any
+	 * missed periods into a single jump (one nudge instead of a backlog) and,
+	 * because the result is always in the future, leaves callers that select on
+	 * `<= today` idempotent — repeated (manual) cron runs the same day can't
+	 * advance the date again or resend.
+	 */
+	public function advanceToFuture(string $base, int $period, string $unit): string
+	{
+		// A non-positive period would never clear today; clamp so the loop always
+		// makes forward progress (the UI enforces a minimum of 1 anyway).
+		$period = max(1, $period);
+		$today = date('Y-m-d');
+
+		$next = $base;
+		while ($next <= $today) {
+			$next = $this->addPeriodToBase($next, $period, $unit);
+		}
+
+		return $next;
+	}
+
 	public function isValidDate(string $date): bool
 	{
 		$parsed = DateTime::createFromFormat('Y-m-d', $date);

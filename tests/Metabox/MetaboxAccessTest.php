@@ -21,6 +21,17 @@ final class MetaboxAccessTest extends TestCase
 
 		$_POST = [];
 		$_REQUEST = [];
+
+		AdminCapability::reset();
+		WP_Mock::userFunction('apply_filters')
+			->with(AdminCapability::FILTER, AdminCapability::DEFAULT)
+			->andReturn(AdminCapability::DEFAULT);
+	}
+
+	protected function tearDown(): void
+	{
+		AdminCapability::reset();
+		parent::tearDown();
 	}
 
 	public function testCurrentUserHasAccessIsTrueForAdmin(): void
@@ -38,7 +49,7 @@ final class MetaboxAccessTest extends TestCase
 			->andReturn(ContentOwnerType::USER);
 		WP_Mock::userFunction('wp_get_current_user')->andReturn($user);
 		WP_Mock::userFunction('current_user_can')
-			->with(AdminCapability::NAME)
+			->with(AdminCapability::DEFAULT)
 			->andReturn(true);
 
 		$this->assertTrue($this->access->currentUserHasAccess($postId));
@@ -59,7 +70,7 @@ final class MetaboxAccessTest extends TestCase
 			->andReturn(ContentOwnerType::USER);
 		WP_Mock::userFunction('wp_get_current_user')->andReturn($user);
 		WP_Mock::userFunction('current_user_can')
-			->with(AdminCapability::NAME)
+			->with(AdminCapability::DEFAULT)
 			->andReturn(false);
 
 		$this->assertTrue($this->access->currentUserHasAccess($postId));
@@ -80,7 +91,7 @@ final class MetaboxAccessTest extends TestCase
 			->andReturn(ContentOwnerType::USER);
 		WP_Mock::userFunction('wp_get_current_user')->andReturn($user);
 		WP_Mock::userFunction('current_user_can')
-			->with(AdminCapability::NAME)
+			->with(AdminCapability::DEFAULT)
 			->andReturn(false);
 
 		$this->assertTrue($this->access->currentUserHasAccess($postId));
@@ -101,7 +112,7 @@ final class MetaboxAccessTest extends TestCase
 			->andReturn(ContentOwnerType::EXTERNAL);
 		WP_Mock::userFunction('wp_get_current_user')->andReturn($user);
 		WP_Mock::userFunction('current_user_can')
-			->with(AdminCapability::NAME)
+			->with(AdminCapability::DEFAULT)
 			->andReturn(false);
 
 		$this->assertFalse($this->access->currentUserHasAccess($postId));
@@ -140,7 +151,7 @@ final class MetaboxAccessTest extends TestCase
 			->andReturn('');
 		WP_Mock::userFunction('wp_get_current_user')->andReturn($user);
 		WP_Mock::userFunction('current_user_can')
-			->with(AdminCapability::NAME)
+			->with(AdminCapability::DEFAULT)
 			->andReturn(false);
 
 		$this->assertTrue($this->access->currentUserHasAccess($postId));
@@ -180,7 +191,7 @@ final class MetaboxAccessTest extends TestCase
 			->with('edit_pages', 1)
 			->andReturn(true);
 		WP_Mock::userFunction('current_user_can')
-			->with(AdminCapability::NAME)
+			->with(AdminCapability::DEFAULT)
 			->andReturn(true);
 
 		// currentUserHasAccess path: admin cap short-circuits to true.

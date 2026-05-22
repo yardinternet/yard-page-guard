@@ -190,6 +190,7 @@ body.taxonomy-ypg_external_content_owner {
 	font-size: 0.95rem;
 	font-weight: 500;
 	letter-spacing: 0.01em;
+	line-height: 1;
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 	transition:
 		background-color 0.15s,
@@ -277,21 +278,19 @@ body.taxonomy-ypg_external_content_owner {
 .ypg-field input[type='text'],
 .ypg-field input[type='email'],
 .ypg-field input[type='number'],
-.ypg-field input[type='time'],
 .ypg-field select {
 	padding: 0.5rem 0.75rem;
 	border: 1px solid #dcdcde;
 	border-radius: 6px;
 	background: #fff;
 	box-shadow: none;
+	/* Pin line-height so WP core's per-type defaults don't make the text time
+	   field render taller than the adjacent number/select controls. */
+	line-height: 1.5;
 	transition:
 		border-color 0.15s,
 		box-shadow 0.15s;
 	min-height: 0;
-}
-
-.ypg-field input[type='time'] {
-	max-width: 140px;
 }
 
 .ypg-field input:focus,
@@ -312,6 +311,38 @@ body.taxonomy-ypg_external_content_owner {
 
 .ypg-input-group select {
 	flex: 1;
+}
+
+.ypg-time-input {
+	max-width: 110px;
+	font-variant-numeric: tabular-nums;
+}
+
+.ypg-cron-stat {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
+.ypg-cron-stat__label {
+	font-weight: 600;
+	color: #1d2327;
+	font-size: 0.9rem;
+}
+
+.ypg-cron-stat__value {
+	color: #1d2327;
+	font-variant-numeric: tabular-nums;
+}
+
+.ypg-cron-stat__countdown {
+	color: #646970;
+	font-size: 0.85rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.ypg-cron-stat__countdown:empty {
+	display: none;
 }
 
 .ypg-editor {
@@ -370,9 +401,9 @@ body.taxonomy-ypg_external_content_owner {
 	margin: 0;
 }
 
-/* --- Lexical editor --- */
+/* --- Rich text editor (Tiptap) --- */
 
-.ypg-lex-wrapper {
+.ypg-rte {
 	border: 1px solid #dcdcde;
 	border-radius: 6px;
 	overflow: hidden;
@@ -382,12 +413,12 @@ body.taxonomy-ypg_external_content_owner {
 		box-shadow 0.15s;
 }
 
-.ypg-lex-wrapper:has(.ypg-lex-editable:focus) {
+.ypg-rte:has(.ypg-rte-content:focus) {
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #2271b1);
 }
 
-.ypg-lex-toolbar {
+.ypg-rte-toolbar {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;
@@ -396,7 +427,7 @@ body.taxonomy-ypg_external_content_owner {
 	border-bottom: 1px solid #dcdcde;
 }
 
-.ypg-lex-btn {
+.ypg-rte-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -416,30 +447,31 @@ body.taxonomy-ypg_external_content_owner {
 		color 0.12s;
 }
 
-.ypg-lex-btn:hover {
+.ypg-rte-btn:hover,
+.ypg-rte-btn.is-active {
 	background: var(--wp-admin-theme-color, #2271b1);
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	color: #fff;
 }
 
-.ypg-lex-btn:focus-visible {
+.ypg-rte-btn:focus-visible {
 	outline: 2px solid var(--wp-admin-theme-color, #2271b1);
 	outline-offset: 1px;
 }
 
-.ypg-lex-btn strong,
-.ypg-lex-btn em,
-.ypg-lex-btn u {
+.ypg-rte-btn strong,
+.ypg-rte-btn em,
+.ypg-rte-btn u {
 	font-size: 1em;
 }
 
-.ypg-lex-sep {
+.ypg-rte-sep {
 	width: 1px;
 	background: #dcdcde;
 	margin: 2px 4px;
 }
 
-.ypg-lex-link-popover {
+.ypg-rte-link-popover {
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -448,11 +480,11 @@ body.taxonomy-ypg_external_content_owner {
 	border-bottom: 1px solid #dcdcde;
 }
 
-.ypg-lex-link-popover[hidden] {
+.ypg-rte-link-popover[hidden] {
 	display: none;
 }
 
-.ypg-lex-link-input {
+.ypg-rte-link-input {
 	flex: 1;
 	min-width: 0;
 	height: 30px;
@@ -463,24 +495,24 @@ body.taxonomy-ypg_external_content_owner {
 	color: #1d2327;
 }
 
-.ypg-lex-link-input:focus {
+.ypg-rte-link-input:focus {
 	outline: 0;
 	border-color: var(--wp-admin-theme-color, #2271b1);
 	box-shadow: 0 0 0 1px var(--wp-admin-theme-color, #2271b1);
 }
 
-.ypg-lex-btn--ghost {
+.ypg-rte-btn--ghost {
 	background: transparent;
 	color: #50575e;
 }
 
-.ypg-lex-btn--ghost:hover {
+.ypg-rte-btn--ghost:hover {
 	background: #f0f0f1;
 	border-color: #dcdcde;
 	color: #1d2327;
 }
 
-.ypg-lex-editable {
+.ypg-rte-content {
 	min-height: 180px;
 	max-height: 480px;
 	padding: 0.9rem 1rem;
@@ -491,32 +523,32 @@ body.taxonomy-ypg_external_content_owner {
 	outline: none;
 }
 
-.ypg-lex-p {
+.ypg-rte-content p {
 	margin: 0 0 0.6rem;
 }
 
-.ypg-lex-p:last-child {
+.ypg-rte-content p:last-child {
 	margin-bottom: 0;
 }
 
-.ypg-lex-bold {
+.ypg-rte-content strong {
 	font-weight: 700;
 }
 
-.ypg-lex-italic {
+.ypg-rte-content em {
 	font-style: italic;
 }
 
-.ypg-lex-underline {
+.ypg-rte-content u {
 	text-decoration: underline;
 }
 
-.ypg-lex-link {
+.ypg-rte-content a:not(.ypg-button) {
 	color: var(--wp-admin-theme-color, #2271b1);
 	text-decoration: underline;
 }
 
-.ypg-lex-editable a.ypg-button {
+.ypg-rte-content a.ypg-button {
 	display: inline-block;
 	padding: 8px 20px;
 	border-radius: 8px;
@@ -547,9 +579,11 @@ body.taxonomy-ypg_external_content_owner {
 	color: #a31515;
 }
 
-.ypg-email-log-items {
+.ypg-email-log-items,
+.ypg-email-log-preview ul {
 	margin: 0 0 1rem;
 	padding-left: 1.25rem;
+	list-style: disc;
 }
 
 .ypg-email-log-items li {
@@ -570,18 +604,32 @@ body.taxonomy-ypg_external_content_owner {
 	border-radius: 6px;
 }
 
-.ypg-lex-ul,
-.ypg-lex-ol {
+.ypg-email-log-preview .content > :first-child {
+	margin-top: 0;
+}
+
+.ypg-rte-content ul,
+.ypg-rte-content ol {
 	margin: 0 0 0.6rem;
 	padding-left: 1.5rem;
 }
 
-.ypg-lex-li {
+/* wp-admin resets lists to `list-style: none`; restore default markers so
+   bulleted/numbered lists are visible inside the editor. */
+.ypg-rte-content ul {
+	list-style: disc;
+}
+
+.ypg-rte-content ol {
+	list-style: decimal;
+}
+
+.ypg-rte-content li {
 	margin: 0.15rem 0;
 }
 
 /* Fallback if JS doesn't mount: textarea stays visible inside the editor frame */
-.ypg-lex-wrapper textarea:not([hidden]) {
+.ypg-rte textarea:not([hidden]) {
 	width: 100%;
 	min-height: 180px;
 	padding: 0.75rem;

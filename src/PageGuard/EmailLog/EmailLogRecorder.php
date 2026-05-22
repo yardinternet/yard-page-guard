@@ -37,10 +37,22 @@ final class EmailLogRecorder
 			$meta[EmailLog::META_ITEMS] = $context['items'];
 		}
 
+		// Title the entry by recipient + send date rather than the (largely
+		// uniform) mail subject, so the overview reads as "who, when".
+		$user = get_user_by('email', $to);
+		$fullName = $user instanceof \WP_User
+			? trim(sprintf('%s %s', $user->first_name, $user->last_name))
+			: '';
+		$recipient = '' !== $fullName ? $fullName : $to;
+
+		if ('' === trim($recipient)) {
+			$recipient = __('(geen ontvanger)', 'yard-page-guard');
+		}
+
 		wp_insert_post([
 			'post_type' => EmailLog::POST_TYPE,
 			'post_status' => 'publish',
-			'post_title' => '' !== $subject ? $subject : __('(geen onderwerp)', 'yard-page-guard'),
+			'post_title' => sprintf('%s - %s', $recipient, current_time('d-m-Y')),
 			'post_content' => $message,
 			'meta_input' => $meta,
 		], true);

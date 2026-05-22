@@ -29,7 +29,7 @@ final class MetaboxRenderer
 	{
 		add_meta_box(
 			'yard_page_guard_metaboxes',
-			__('Houdbaarsheidsmodule', 'yard-page-guard'),
+			__('Inhoudseigenarenmodule', 'yard-page-guard'),
 			[$this, 'displayMetaboxes'],
 			apply_filters('yard::page-guard/post-types-to-use', ['page']),
 			'side',

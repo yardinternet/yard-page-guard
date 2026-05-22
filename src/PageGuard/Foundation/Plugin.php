@@ -24,8 +24,6 @@ class Plugin
 
 	public function boot(): bool
 	{
-		AdminCapability::register();
-
 		// Set up service providers
 		$this->callServiceProviders('register');
 
