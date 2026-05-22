@@ -21,6 +21,13 @@
 		"vite": "^8.0.12"
 	},
 	"dependencies": {
-		"htmx.org": "^2.0.10"
+		"@lexical/html": "^0.44.0",
+		"@lexical/link": "^0.44.0",
+		"@lexical/list": "^0.44.0",
+		"@lexical/rich-text": "^0.44.0",
+		"@lexical/selection": "^0.44.0",
+		"@lexical/utils": "^0.44.0",
+		"htmx.org": "^2.0.10",
+		"lexical": "^0.44.0"
 	}
 }

@@ -1,4 +1,5 @@
 import '../css/admin.css';
+import { mountAllLexical } from './lexical-editor.js';
 
 /**
  * Functionality for bulk actions on plugin overview page
@@ -118,4 +119,5 @@ wp.domReady(() => {
 	initBulkActions();
 	initInlineEditOverride();
 	initReminderRadioToggle();
+	mountAllLexical();
 });
