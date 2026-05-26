@@ -18,7 +18,7 @@ class AdminOverviewService
 
 	public function handleBulkEdit(): void
 	{
-		if (! current_user_can('delete_others_pages')) {
+		if (! current_user_can(apply_filters('yard::page-guard/capability/admin', 'edit_pages'))) {
 			wp_die(__('U heeft geen toegang tot deze actie.', 'yard-page-guard'));
 		}
 
@@ -242,7 +242,7 @@ class AdminOverviewService
 
 	public function buildUserList(?string $filterValue = null)
 	{
-		$wpUsers = get_users(['capability' => 'edit_pages']);
+		$wpUsers = get_users(['capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages')]);
 		$externalUsers = get_terms(['taxonomy' => 'ypg_external_content_owner', 'hide_empty' => false]);
 
 		if (is_wp_error($externalUsers)) {

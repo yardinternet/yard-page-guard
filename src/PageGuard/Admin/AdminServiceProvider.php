@@ -143,7 +143,7 @@ class AdminServiceProvider extends ServiceProvider
 		switch ($columnName) {
 			case 'ypg_post_content_owner': {
 				$wpUsers = get_users([
-					'capability' => 'edit_pages',
+					'capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
 				]);
 
 				$externalUsers = get_terms([

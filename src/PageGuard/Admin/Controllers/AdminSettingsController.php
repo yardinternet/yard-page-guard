@@ -21,7 +21,7 @@ class AdminSettingsController
 		add_options_page(
 			__('Houdbaarheidsmodule Instellingen', 'yard-page-guard'),
 			__('Houdbaarheidsmodule', 'yard-page-guard'),
-			'list_users',
+			apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
 			'page-guard-settings',
 			[$this, 'renderSettingsPage']
 		);
@@ -45,7 +45,7 @@ class AdminSettingsController
 			'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
 		]);
 
-		add_filter('option_page_capability_ypg_settings', fn () => 'list_users');
+		add_filter('option_page_capability_ypg_settings', fn () => apply_filters('yard::page-guard/capability/admin', 'edit_pages'));
 	}
 
 	public function renderSettingsPage(): void

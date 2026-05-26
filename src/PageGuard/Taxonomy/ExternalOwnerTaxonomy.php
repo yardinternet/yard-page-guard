@@ -35,10 +35,10 @@ class ExternalOwnerTaxonomy
 				'with_front' => false,
 			],
 			'capabilities' => [
-				'manage_terms' => 'manage_categories',
-				'edit_terms' => 'manage_categories',
-				'delete_terms' => 'manage_categories',
-				'assign_terms' => 'edit_pages',
+				'manage_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+				'edit_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+				'delete_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+				'assign_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
 			],
 		]);
 	}

@@ -56,7 +56,7 @@ class Metabox
 		$contentOwnerType = get_post_meta($postId, 'ypg_post_content_owner_type', true);
 
 		$wpUsers = get_users([
-			'capability' => 'edit_pages',
+			'capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
 		]);
 
 		$externalUsers = get_terms([
@@ -321,7 +321,7 @@ class Metabox
 			return false;
 		}
 
-		if (! current_user_can('edit_pages', $postId)) {
+		if (! current_user_can(apply_filters('yard::page-guard/capability/admin', 'edit_pages'), $postId)) {
 			return false;
 		}
 
