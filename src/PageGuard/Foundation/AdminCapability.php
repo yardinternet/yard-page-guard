@@ -52,8 +52,7 @@ final class AdminCapability
 	}
 
 	/**
-	 * Grant the capability to the configured roles. Called on activation and
-	 * once on existing installs (see {@see AdminCapabilityMigration}).
+	 * Grant the capability to the configured roles. Called on plugin activation.
 	 *
 	 * No-op when the cap name has been filtered away from the default: a site
 	 * pointing the gate at an existing cap owns that cap and we must not touch

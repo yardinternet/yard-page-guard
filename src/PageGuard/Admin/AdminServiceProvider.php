@@ -33,7 +33,6 @@ class AdminServiceProvider extends ServiceProvider
 
 		(new EmailPlaceholderMigration())->register();
 		(new FooterButtonMigration())->register();
-		(new AdminCapabilityMigration())->register();
 
 		add_action('enqueue_block_editor_assets', [$this, 'enqueueAdminAssets']);
 
