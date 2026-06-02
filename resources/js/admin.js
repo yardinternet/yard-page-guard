@@ -155,13 +155,17 @@ function initCronCountdown() {
 	const target = parseInt(el.dataset.ypgCronCountdown, 10) * 1000;
 	if (!target) return;
 
+	const { __, _n, sprintf } = wp.i18n;
 	const pad = (value) => String(value).padStart(2, '0');
 
 	const render = () => {
 		const remaining = target - Date.now();
 
 		if (remaining <= 0) {
-			el.textContent = 'wordt uitgevoerd bij het volgende paginabezoek';
+			el.textContent = __(
+				'wordt uitgevoerd bij het volgende paginabezoek',
+				'yard-page-guard'
+			);
 			return false;
 		}
 
@@ -175,10 +179,20 @@ function initCronCountdown() {
 			.map(pad)
 			.join(':');
 
-		el.textContent =
-			'over ' +
-			(days > 0 ? `${days} ${days === 1 ? 'dag' : 'dagen'} ` : '') +
-			clock;
+		const daysText =
+			days > 0
+				? sprintf(
+						// translators: %d: number of days remaining.
+						_n('%d dag', '%d dagen', days, 'yard-page-guard'),
+						days
+					) + ' '
+				: '';
+
+		el.textContent = sprintf(
+			// translators: %s: remaining time, e.g. "2 dagen 12:34:56".
+			__('over %s', 'yard-page-guard'),
+			daysText + clock
+		);
 
 		return true;
 	};

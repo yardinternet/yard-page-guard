@@ -3,7 +3,7 @@
 declare(strict_types=1);
 /**
  * Plugin Name:     Yard | Page Guard
- * Description:     Assign content owners to posts, allowing them to mark posts as 'verified' and receive automated review reminders emails based on user-defined dates and intervals.
+ * Description:     Wijs inhoudseigenaren toe aan pagina's, zodat zij deze als 'gecontroleerd' kunnen markeren en automatische herinneringsmails ontvangen op basis van zelf ingestelde datums en intervallen.
  * Author:          Yard | Digital Agency
  * Author URI:      http://www.yard.nl
  * Text Domain:     yard-page-guard

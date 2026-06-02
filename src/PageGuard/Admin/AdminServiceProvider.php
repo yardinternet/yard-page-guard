@@ -43,6 +43,13 @@ class AdminServiceProvider extends ServiceProvider
 		add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssetsPerHook']);
 
 		/**
+		 * Translation JSON is generated from the source path (resources/js/admin.js) the
+		 * strings are scanned from, but the bundled file (build/admin.js) is what gets
+		 * enqueued. Remap so WordPress looks up the JSON by the source path's hash.
+		 */
+		add_filter('load_script_textdomain_relative_path', [$this, 'mapScriptTranslationPath'], 10, 2);
+
+		/**
 		 * Add post type overview columns
 		 */
 		foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
@@ -95,9 +102,30 @@ class AdminServiceProvider extends ServiceProvider
 		wp_enqueue_script(
 			'ypg-editor-scripts',
 			$this->plugin->resourceUrl('admin.js'),
-			['wp-dom-ready'],
+			['wp-dom-ready', 'wp-i18n'],
 			filemtime($this->plugin->resourcePath('admin.js')),
 		);
+
+		wp_set_script_translations('ypg-editor-scripts', 'yard-page-guard', $this->plugin->rootPath . '/languages');
+	}
+
+	/**
+	 * Point our bundled scripts at the translation JSON generated from their source path.
+	 *
+	 * Scripts are built from resources/js/<name>.js into build/<name>.js, but the JSON is
+	 * named after the scanned source path, so map the served path back to the source.
+	 *
+	 * @param string|false $relative The relative path of the script, or false if unknown.
+	 *
+	 * @return string|false
+	 */
+	public function mapScriptTranslationPath($relative, string $src)
+	{
+		if (is_string($relative) && false !== strpos($src, '/' . $this->plugin->getName() . '/build/') && preg_match('#^build/(.+)\.js$#', $relative, $matches)) {
+			return 'resources/js/' . $matches[1] . '.js';
+		}
+
+		return $relative;
 	}
 
 	public function enqueueAdminAssetsPerHook(string $hook): void

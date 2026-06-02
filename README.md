@@ -156,4 +156,4 @@ The event will then fire every 5 seconds. Make sure your dev environment interce
 
 ### Frontend assets
 
-Editor JS/CSS lives under [resources/](resources/) and is bundled by Vite to [build/](build/). After touching either, run `npm run build` (or `npm run lint:fix` for prettier/eslint).
+Editor JS/CSS lives under [resources/](resources/) and is bundled by Vite to [build/](build/). After touching either, run `pnpm run build` (or `pnpm run lint:fix` for prettier/eslint).

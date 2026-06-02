@@ -7,6 +7,14 @@
 		"issues": "https://github.com/yardinternet/yard-page-guard/issues",
 		"source": "https://github.com/yardinternet/yard-page-guard"
 	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true
+		},
+		"platform": {
+			"php": "7.4"
+		}
+	},
 	"require": {
 		"php": ">=7.4"
 	},
@@ -30,18 +38,10 @@
 		"test": "phpunit --testdox --colors=always --bootstrap='./tests/bootstrap.php' tests ",
 		"format": "vendor/bin/php-cs-fixer fix",
 		"translate": [
-			"vendor/bin/wp i18n make-pot ./src ./languages/yard-page-guard.pot --domain='yard-page-guard'",
+			"vendor/bin/wp i18n make-pot . ./languages/yard-page-guard.pot --domain='yard-page-guard' --exclude='vendor,node_modules,build,tests,config'",
 			"bash -c 'for file in ./languages/*.po; do vendor/bin/wp i18n update-po ./languages/yard-page-guard.pot \"$file\"; done'",
 			"vendor/bin/wp i18n make-mo ./languages/ ./languages/",
 			"vendor/bin/wp i18n make-json ./languages/ --pretty-print"
 		]
-	},
-	"config": {
-		"allow-plugins": {
-			"composer/installers": true
-		},
-		"platform": {
-			"php": "7.4.33"
-		}
 	}
 }
