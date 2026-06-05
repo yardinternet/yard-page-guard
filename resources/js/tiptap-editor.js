@@ -1,5 +1,6 @@
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
+import { TextSelection } from '@tiptap/pm/state';
 import { ButtonMark } from './button-mark.js';
 
 function makeButton(label, title, onClick, { extraClass = '', isActive } = {}) {
@@ -24,18 +25,30 @@ function buildUrlPopover(editor) {
 	input.type = 'url';
 	input.className = 'ypg-rte-link-input';
 
-	let savedRange = null;
 	let mode = 'link';
 
 	const close = () => {
 		popover.hidden = true;
 		input.value = '';
-		savedRange = null;
 	};
 
-	const applyLink = (from, to, url) => {
-		if (from === to) {
-			// Cursor sits inside an existing link — retarget it in place.
+	// Insert fresh text that already carries the mark, so an empty selection
+	// still produces a reachable link/button without computing positions.
+	const insertMarkedText = (text, markName, href) =>
+		editor
+			.chain()
+			.focus()
+			.insertContent({
+				type: 'text',
+				text,
+				marks: [{ type: markName, attrs: { href } }],
+			})
+			.run();
+
+	const applyLink = (url) => {
+		if (editor.state.selection.empty) {
+			// Cursor inside a link → retarget it; otherwise drop the URL in as
+			// its own linked text.
 			if (editor.isActive('link')) {
 				editor
 					.chain()
@@ -43,36 +56,25 @@ function buildUrlPopover(editor) {
 					.extendMarkRange('link')
 					.setLink({ href: url })
 					.run();
-				return;
+			} else {
+				insertMarkedText(url, 'link', url);
 			}
-
-			// Nothing was selected — drop the URL in as its own linked text,
-			// otherwise an empty link is unreachable in the output.
-			editor
-				.chain()
-				.focus()
-				.insertContentAt(from, url)
-				.setTextSelection({ from, to: from + url.length })
-				.unsetMark('ypgButton')
-				.setLink({ href: url })
-				.run();
 			return;
 		}
 
 		editor
 			.chain()
 			.focus()
-			.setTextSelection({ from, to })
 			.unsetMark('ypgButton')
 			.extendMarkRange('link')
 			.setLink({ href: url })
 			.run();
 	};
 
-	const applyButton = (from, to, url) => {
-		if (from === to) {
-			// Cursor sits inside an existing button — update its URL in place
-			// instead of inserting a second button next to it.
+	const applyButton = (url) => {
+		if (editor.state.selection.empty) {
+			// Cursor inside a button → update its URL in place; otherwise insert
+			// a labelled button at the cursor.
 			if (editor.isActive('ypgButton')) {
 				editor
 					.chain()
@@ -80,39 +82,25 @@ function buildUrlPopover(editor) {
 					.extendMarkRange('ypgButton')
 					.setButton({ href: url })
 					.run();
-				return;
+			} else {
+				insertMarkedText('Knop', 'ypgButton', url);
 			}
-
-			const label = 'Knop';
-			editor
-				.chain()
-				.focus()
-				.insertContentAt(from, label)
-				.setTextSelection({ from, to: from + label.length })
-				.setButton({ href: url })
-				.run();
 			return;
 		}
 
-		editor
-			.chain()
-			.focus()
-			.setTextSelection({ from, to })
-			.setButton({ href: url })
-			.run();
+		editor.chain().focus().setButton({ href: url }).run();
 	};
 
 	const submit = () => {
 		const url = input.value.trim();
-		const range = savedRange;
 		const submitMode = mode;
 		close();
-		if (!url || !range) return;
+		if (!url) return;
 
 		if (submitMode === 'button') {
-			applyButton(range.from, range.to, url);
+			applyButton(url);
 		} else {
-			applyLink(range.from, range.to, url);
+			applyLink(url);
 		}
 	};
 
@@ -137,13 +125,12 @@ function buildUrlPopover(editor) {
 		element: popover,
 		open(nextMode) {
 			mode = nextMode;
-			// ProseMirror keeps the selection when focus moves to the input, but
-			// capture the range so the command can restore it explicitly.
-			const { from, to } = editor.state.selection;
-			savedRange = { from, to };
+			// Commands read the live editor selection at submit time. ProseMirror
+			// keeps that selection valid even while focus sits in this input, so
+			// there is no position to capture or restore by hand.
+			const markName = nextMode === 'button' ? 'ypgButton' : 'link';
 			// Seed the field with the current target so an existing button/link
 			// shows its URL and can be edited in place instead of duplicated.
-			const markName = nextMode === 'button' ? 'ypgButton' : 'link';
 			input.value = editor.getAttributes(markName).href || '';
 			popover.setAttribute(
 				'aria-label',
@@ -247,26 +234,59 @@ export function mountTiptap(wrapper) {
 	wrapper.dataset.ypgEditorMounted = 'true';
 
 	const initialHtml = textarea.value;
-	const variables = (wrapper.dataset.variables || '')
-		.split(',')
-		.map((v) => v.trim())
-		.filter(Boolean);
-	const features = (wrapper.dataset.features || '')
-		.split(',')
-		.map((v) => v.trim())
-		.filter(Boolean);
+	const parseList = (value) =>
+		(value || '')
+			.split(',')
+			.map((item) => item.trim())
+			.filter(Boolean);
+	const variables = parseList(wrapper.dataset.variables);
+	const features = parseList(wrapper.dataset.features);
 
 	const editable = document.createElement('div');
 	editable.className = 'ypg-rte-editor';
+
+	// Attach the editor node to the document *before* constructing the editor.
+	// ProseMirror tracks its selection against the mount node; building the view
+	// on a detached node and reparenting it afterwards desyncs that tracking, and
+	// the next keypress throws "Position N out of range" while the editor freezes.
+	textarea.hidden = true;
+	wrapper.insertBefore(editable, textarea);
 
 	const editor = new Editor({
 		element: editable,
 		content: initialHtml,
 		editorProps: {
 			attributes: {
-				class: 'ypg-rte-content',
+				class: 'ypg-rte-content notranslate',
 				role: 'textbox',
 				'aria-multiline': 'true',
+				// Opt out of tools that rewrite the contenteditable DOM behind
+				// ProseMirror's back — Grammarly, Google Translate, autofill. Their
+				// edits desync the rendered DOM from the editor state, leaving the
+				// stored selection pointing past the end of the document; the next
+				// keypress then throws "Position N out of range" and freezes.
+				translate: 'no',
+				autocomplete: 'off',
+				autocorrect: 'off',
+				autocapitalize: 'off',
+				'data-gramm': 'false',
+				'data-gramm_editor': 'false',
+				'data-enable-grammarly': 'false',
+			},
+			// Safety net: should the selection still drift out of range, clamp it
+			// back into the document before the keypress runs a command, turning a
+			// fatal RangeError into a harmless no-op. In a healthy editor the
+			// guard never fires.
+			handleKeyDown: (view) => {
+				const { selection, doc } = view.state;
+				const size = doc.content.size;
+				if (selection.from > size || selection.to > size) {
+					const $pos = doc.resolve(Math.min(selection.from, size));
+					view.dispatch(
+						view.state.tr.setSelection(TextSelection.near($pos))
+					);
+				}
+				return false;
 			},
 		},
 		extensions: [
@@ -299,10 +319,10 @@ export function mountTiptap(wrapper) {
 	const urlPopover = buildUrlPopover(editor);
 	const toolbar = buildToolbar(editor, variables, features, urlPopover);
 
-	textarea.hidden = true;
-	wrapper.insertBefore(toolbar, textarea);
-	wrapper.insertBefore(urlPopover.element, textarea);
-	wrapper.insertBefore(editable, textarea);
+	// Keep the visual order toolbar → popover → editor by inserting both above
+	// the already-mounted editable element.
+	wrapper.insertBefore(toolbar, editable);
+	wrapper.insertBefore(urlPopover.element, editable);
 
 	// Seed the textarea so a submit without edits still saves normalised markup.
 	textarea.value = editor.isEmpty ? '' : editor.getHTML();
