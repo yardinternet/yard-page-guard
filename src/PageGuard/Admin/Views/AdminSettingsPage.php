@@ -14,6 +14,7 @@ $renderEditor = static function (string $name, string $value, string $variables 
 	$html = wpautop($value);
 
 	$dataAttrs = '';
+
 	if ('' !== $variables) {
 		$dataAttrs .= ' data-variables="' . esc_attr($variables) . '"';
 	}

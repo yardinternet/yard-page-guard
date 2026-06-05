@@ -43,7 +43,6 @@ export const ButtonMark = Mark.create({
 			'a',
 			mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
 				class: BUTTON_CLASS,
-				// A CTA button always opens in a new tab so the email/page stays put.
 				target: '_blank',
 				rel: 'noopener noreferrer',
 			}),
