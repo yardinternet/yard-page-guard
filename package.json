@@ -3,7 +3,7 @@
 	"version": "2.1.5",
 	"description": "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.",
 	"author": "Yard | Digital Agency",
-	"license": "MIT License",
+	"license": "EUPL-1.2",
 	"type": "module",
 	"scripts": {
 		"build": "vite build",
@@ -12,16 +12,16 @@
 		"prepare": "lefthook install"
 	},
 	"devDependencies": {
-		"@yardinternet/eslint-config": "^1.2.6",
+		"@yardinternet/eslint-config": "^1.2.9",
 		"@yardinternet/prettier-config": "^1.1.3",
-		"@yardinternet/stylelint-config": "^1.1.4",
+		"@yardinternet/stylelint-config": "^1.1.7",
 		"eslint": "^9.39.4",
-		"lefthook": "^2.1.5",
-		"prettier": "^3.8.2",
+		"lefthook": "^2.1.9",
+		"prettier": "^3.8.3",
 		"stylelint": "^16.26.1",
-		"vite": "^8.0.8"
+		"vite": "^8.0.16"
 	},
 	"dependencies": {
-		"htmx.org": "^2.0.8"
+		"htmx.org": "^2.0.10"
 	}
 }

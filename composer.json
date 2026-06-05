@@ -3,7 +3,7 @@
 	"description": "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.",
 	"type": "wordpress-plugin",
 	"homepage": "https://www.yard.nl",
-	"license": "MIT",
+	"license": "EUPL-1.2",
 	"support": {
 		"issues": "https://github.com/yardinternet/yard-page-guard",
 		"source": "https://github.com/yardinternet/yard-page-guard"

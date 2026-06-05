@@ -73,3 +73,7 @@ wp_schedule_event(time(), 'five_seconds', 'ypg_site_cron');
 
 The event will be executed every 5 seconds. Make sure your local development environment intercepts the sent emails.
 Don't forget to configure a post so that a notification is sent to the configured content owner.
+
+## About us
+
+[![banner](https://raw.githubusercontent.com/yardinternet/.github/refs/heads/main/profile/assets/small-banner-github.svg)](https://www.yard.nl/werken-bij/)
