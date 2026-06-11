@@ -27,8 +27,8 @@ trait Token
 	private function generateKeyedHash(string $data): string
 	{
 		$salt = defined('YPG_AUTH_SALT') ? YPG_AUTH_SALT
-			: (defined('AUTH_SALT') ? AUTH_SALT
-			: ($_ENV['YPG_AUTH_SALT'] ?? $_ENV['AUTH_SALT'] ?? ''));
+			: ($_ENV['YPG_AUTH_SALT'] ?? (defined('AUTH_SALT') ? AUTH_SALT
+			: ($_ENV['AUTH_SALT'] ?? '')));
 
 		return hash_hmac('sha256', $data, $salt, true);
 	}
