@@ -13,10 +13,24 @@ trait Token
 		}
 
 		$data = strtolower(trim("$postId|$contentOwnerEmail|$reviewDate"));
-		$salt = $_ENV['YPG_AUTH_SALT'] ?? $_ENV['AUTH_SALT']; # For a PDC/Pub connection, YPG_AUTH_SALT is required and needs to be the same across sites.
-		$rawHash = hash_hmac('sha256', $data, $salt, true);
+		$rawHash = $this->generateKeyedHash($data);
 
 		return rtrim(strtr(base64_encode($rawHash), '+/', '-_'), '='); // URL safe
+	}
+
+	/**
+	 * Generates a keyed hash using HMAC with SHA-256.
+	 * The key is derived from a salt defined in wp-config.php or environment variables.
+	 *
+	 * For a cross-site PDC/Pub connection, YPG_AUTH_SALT must be the same on all connected sites.
+	 */
+	private function generateKeyedHash(string $data): string
+	{
+		$salt = defined('YPG_AUTH_SALT') ? YPG_AUTH_SALT
+			: (defined('AUTH_SALT') ? AUTH_SALT
+			: ($_ENV['YPG_AUTH_SALT'] ?? $_ENV['AUTH_SALT'] ?? ''));
+
+		return hash_hmac('sha256', $data, $salt, true);
 	}
 
 	public function verifyReviewToken(int $postId, string $contentOwnerEmail, string $reviewDate, string $tokenToCheck): bool
@@ -46,7 +60,7 @@ trait Token
 			return null;
 		}
 
-		if (! $this->verifyReviewToken(get_the_ID(), $contentOwnerEmail, $reviewDate, sanitize_text_field($_GET['ypg_review_token']))) {
+		if (! $this->verifyReviewToken(get_the_ID(), $contentOwnerEmail, $reviewDate, sanitize_text_field((string) ($_GET['ypg_review_token'] ?? '')))) {
 			return null;
 		}
 
@@ -65,17 +79,23 @@ trait Token
 	 */
 	private function handleExternalToken(): ?array
 	{
-		if (! in_array($_GET['external'], ['pdc', 'pub']) || ! is_numeric($_GET['post_id'])) {
+		$external = strtolower(sanitize_text_field((string) ($_GET['external'] ?? '')));
+		$postId = absint($_GET['post_id'] ?? 0);
+
+		if (! in_array($external, ['pdc', 'pub']) || 0 === $postId) {
 			return null;
 		}
 
-		$endpointVariable = strtoupper('OPEN' . $_GET['external'] . '_ENDPOINT');
+		$endpointVariable = sprintf('OPEN%s_ENDPOINT', strtoupper($external)); // e.g. OPENPDC_ENDPOINT or OPENPUB_ENDPOINT
 
-		if (! is_string($_ENV[$endpointVariable] ?? null)) {
+		// define('OPENPDC_ENDPOINT', '...') or define('OPENPUB_ENDPOINT', '...') in wp-config.php takes precedence over $_ENV.
+		$endpointValue = defined($endpointVariable) ? constant($endpointVariable) : ($_ENV[$endpointVariable] ?? null);
+
+		if (! is_string($endpointValue) || ! wp_http_validate_url($endpointValue)) {
 			return null;
 		}
 
-		$endpointUrl = trailingslashit($_ENV[$endpointVariable]) . 'wp-json/yard-page-guard/v1/modal-info';
+		$endpointUrl = trailingslashit($endpointValue) . 'wp-json/yard-page-guard/v1/modal-info';
 
 		$endpointArgs = [
 			'method' => 'POST',
@@ -85,8 +105,8 @@ trait Token
 				'Content-Type' => 'application/json',
 			],
 			'body' => wp_json_encode([
-				'post_id' => $_GET['post_id'],
-				'ypg_review_token' => sanitize_text_field($_GET['ypg_review_token']),
+				'post_id' => $postId,
+				'ypg_review_token' => sanitize_text_field((string) ($_GET['ypg_review_token'] ?? '')),
 			]),
 		];
 
