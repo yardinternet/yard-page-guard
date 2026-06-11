@@ -366,7 +366,7 @@ class Metabox
 			return;
 		}
 
-		$internalDataSyncEnabled = (bool) apply_filters('yard::page-guard/enable-internal-data-sync', true);
+		$internalDataSyncEnabled = (bool) apply_filters('yard::page-guard/enable-internal-data-sync', $this->owcInternalDataPluginsActive());
 
 		if (! $internalDataSyncEnabled) {
 			return;
@@ -381,6 +381,21 @@ class Metabox
 		}
 
 		$this->addInternalData($postId);
+	}
+
+	private function owcInternalDataPluginsActive(): bool
+	{
+		if (is_plugin_active('pdc-internal-products/pdc-internal-products.php') || is_plugin_active('openpub-internal-data/pub-internal-products.php')) {
+			return true;
+		}
+
+		foreach (get_declared_classes() as $class) {
+			if (strpos($class, 'Yard\\OWC\\') === 0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function addInternalData(int $postId): void
