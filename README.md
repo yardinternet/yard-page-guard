@@ -23,6 +23,31 @@ composer require plugin/yard-page-guard
 
 Access to the metaboxes is granted to all users with the `edit_pages` capability initially. Once an author and content owner are connected to a post object, only these two entities will have access. Besides that, admin roles (see item #3 under the Hooks paragraph) also have access to the metaboxes. As well as the admin overview
 
+## Configuration
+
+Add the following constants to `wp-config.php` as needed. All constants fall back to `$_ENV` equivalents.
+
+### Authentication salt
+
+Used to sign review tokens. For a cross-site PDC/Pub connection this value must be identical on all connected sites.
+
+```php
+define('YPG_AUTH_SALT', 'your-secret-salt');
+```
+
+Falls back to `define('AUTH_SALT', ...)` (WordPress core) and then `$_ENV['YPG_AUTH_SALT']` / `$_ENV['AUTH_SALT']`.
+
+### External endpoint URLs (Fusion PDC / OpenPub)
+
+Required when this site connects to an external Fusion PDC or OpenPub installation.
+
+```php
+define('OPENPDC_ENDPOINT', 'https://pdc.example.com/');
+define('OPENPUB_ENDPOINT', 'https://pub.example.com/');
+```
+
+Falls back to `$_ENV['OPENPDC_ENDPOINT']` / `$_ENV['OPENPUB_ENDPOINT']`.
+
 ## Hooks
 
 1. Post types which will have the page guard metaboxes registered:
@@ -41,6 +66,30 @@ apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'fu
 
 ```php
 apply_filters('yard::page-guard/admin-roles', ['administrator', 'yard_superuser', 'super-user', 'superuser']);
+```
+
+4. Override the login name of the dummy WordPress user whose admin bar is hidden on the review modal:
+
+```php
+apply_filters('yard::page-guard/review-user-login', 'ypg_review_user');
+```
+
+5. Disable writing content owner information to internal data fields (Fusion Portal, Fusion PDC, Brave/ACF):
+
+```php
+apply_filters('yard::page-guard/enable-internal-data-sync', true);
+```
+
+6. Fires after content owner information has been written to internal data fields:
+
+```php
+do_action('yard::page-guard/after-internal-data-synced', int $postId, string $ownerLink, string $title);
+```
+
+7. Fires after content owner information has been removed from internal data fields:
+
+```php
+do_action('yard::page-guard/after-internal-data-removed', int $postId);
 ```
 
 ## Local Development
