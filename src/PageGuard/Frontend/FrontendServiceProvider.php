@@ -54,7 +54,7 @@ class FrontendServiceProvider extends ServiceProvider
 		if (is_user_logged_in()) {
 			$user = wp_get_current_user();
 
-			if ($user && 'ypg_review_user' === $user->user_login) {
+			if ($user && apply_filters('yard::page-guard/review-user-login', 'ypg_review_user') === $user->user_login) {
 				return false;
 			}
 		}
