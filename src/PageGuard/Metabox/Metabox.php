@@ -366,7 +366,15 @@ class Metabox
 			return;
 		}
 
-		if (empty(get_post_meta($postId, 'ypg_post_content_owner_name', true))) {
+		$internalDataSyncEnabled = (bool) apply_filters('yard::page-guard/enable-internal-data-sync', true);
+
+		if (! $internalDataSyncEnabled) {
+			return;
+		}
+
+		$contentOwnerName = trim((string) (get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: ''));
+
+		if ('' === $contentOwnerName) {
 			$this->removeInternalData($postId);
 
 			return;
@@ -482,6 +490,8 @@ class Metabox
 		}
 
 		update_field('internal_information', $rows, $postId);
+
+		do_action('yard::page-guard/after-internal-data-synced', $postId, $ownerLink, $title);
 	}
 
 	private function removeInternalData(int $postId): void
@@ -541,6 +551,8 @@ class Metabox
 				update_field('internal_information', $acfRows, $postId);
 			}
 		}
+
+		do_action('yard::page-guard/after-internal-data-removed', $postId);
 	}
 
 	private function formatPhoneForTel(string $phone): ?string
