@@ -35,7 +35,7 @@ Used to sign review tokens. For a cross-site PDC/Pub connection this value must 
 define('YPG_AUTH_SALT', 'your-secret-salt');
 ```
 
-Falls back to `$_ENV['YPG_AUTH_SALT']`, then `define('AUTH_SALT', ...)` (WordPress core), and then `$_ENV['AUTH_SALT']`.
+Falls back to `$_ENV['YPG_AUTH_SALT']`, then the WordPress core `AUTH_SALT` constant, and then `$_ENV['AUTH_SALT']`.
 
 ### External endpoint URLs (Fusion PDC / OpenPub)
 
@@ -53,43 +53,55 @@ Falls back to `$_ENV['OPENPDC_ENDPOINT']` / `$_ENV['OPENPUB_ENDPOINT']`.
 1. Post types which will have the page guard metaboxes registered:
 
 ```php
-apply_filters('yard::page-guard/post-types-to-use', ['page']);
+add_filter('yard::page-guard/post-types-to-use', function (array $postTypes): array {
+  return array_merge($postTypes, ['custom_post_type']);
+});
 ```
 
-2. Post statuses that will be used to find posts and the associated content owners who need to receive a notification.:
+2. Post statuses that will be used to find posts and the associated content owners who need to receive a notification:
 
 ```php
-apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']);
+add_filter('yard::page-guard/post-statusses-to-use', function (array $statuses): array {
+  return array_merge($statuses, ['private']);
+});
 ```
 
 3. Roles that are allowed to bypass (in addition to the post author and content owner):
 
 ```php
-apply_filters('yard::page-guard/admin-roles', ['administrator', 'yard_superuser', 'super-user', 'superuser']);
+add_filter('yard::page-guard/admin-roles', function (array $roles): array {
+  return array_merge($roles, ['editor']);
+});
 ```
 
 4. Override the login name of the dummy WordPress user whose admin bar is hidden on the review modal:
 
 ```php
-apply_filters('yard::page-guard/review-user-login', 'ypg_review_user');
+add_filter('yard::page-guard/review-user-login', function (string $login): string {
+  return 'ypg_review_user';
+});
 ```
 
 5. Disable writing content owner information to internal data fields (Fusion Portal, Fusion PDC, Brave/ACF):
 
 ```php
-apply_filters('yard::page-guard/enable-internal-data-sync', '__return_false');
+add_filter('yard::page-guard/enable-internal-data-sync', '__return_false');
 ```
 
 6. Fires after content owner information has been written to internal data fields:
 
 ```php
-do_action('yard::page-guard/after-internal-data-synced', int $postId, string $ownerLink, string $title);
+add_action('yard::page-guard/after-internal-data-synced', function (int $postId, string $ownerLink, string $title): void {
+  // your code here
+}, 10, 3);
 ```
 
 7. Fires after content owner information has been removed from internal data fields:
 
 ```php
-do_action('yard::page-guard/after-internal-data-removed', int $postId);
+add_action('yard::page-guard/after-internal-data-removed', function (int $postId): void {
+  // your code here
+});
 ```
 
 ## Local Development

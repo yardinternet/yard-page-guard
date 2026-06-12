@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-28T14:56:14+00:00\n"
-"PO-Revision-Date: 2026-04-24 09:50+0200\n"
 "Last-Translator: \n"
 "Language-Team: English (United Kingdom) <LL@li.org>\n"
-"Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-10-28T14:56:14+00:00\n"
+"PO-Revision-Date: 2026-06-12T08:30:21+00:00\n"
+"Language: en_GB\n"
 "X-Generator: Poedit 3.8\n"
 "X-Domain: yard-page-guard\n"
 
@@ -24,7 +24,8 @@ msgid "Telefoonnummer"
 msgstr "Phone number"
 
 #: PageGuard/Admin/AdminServiceProvider.php:161
-#: PageGuard/Metabox/Metabox.php:109 PageGuard/Metabox/Metabox.php:381
+#: PageGuard/Metabox/Metabox.php:111
+#: PageGuard/Metabox/Metabox.php:420
 msgid "Inhoudseigenaar"
 msgstr "Content owner"
 
@@ -32,63 +33,64 @@ msgstr "Content owner"
 msgid "Selecteer een eigenaar"
 msgstr "Select an owner"
 
-#: PageGuard/Admin/AdminServiceProvider.php:188
-#: PageGuard/Admin/AdminServiceProvider.php:239
-#: PageGuard/Admin/Services/AdminOverviewService.php:248
-#: PageGuard/Metabox/Metabox.php:104
+#: PageGuard/Admin/AdminServiceProvider.php:190
+#: PageGuard/Admin/AdminServiceProvider.php:241
+#: PageGuard/Admin/Services/AdminOverviewService.php:267
+#: PageGuard/Metabox/Metabox.php:106
 msgid "Extern"
 msgstr "External"
 
-#: PageGuard/Admin/AdminServiceProvider.php:202
+#: PageGuard/Admin/AdminServiceProvider.php:204
 #: PageGuard/Admin/Views/AdminOverviewPage.php:102
-#: PageGuard/Metabox/Metabox.php:127
+#: PageGuard/Metabox/Metabox.php:129
 msgid "Gecontroleerd?"
 msgstr "Checked?"
 
-#: PageGuard/Admin/AdminServiceProvider.php:212
-#: PageGuard/Metabox/Metabox.php:148
+#: PageGuard/Admin/AdminServiceProvider.php:214
+#: PageGuard/Metabox/Metabox.php:150
 msgid "Herzieningsdatum"
 msgstr "Review date"
 
-#: PageGuard/Admin/AdminServiceProvider.php:224
+#: PageGuard/Admin/AdminServiceProvider.php:226
 #: PageGuard/Admin/Views/AdminOverviewPage.php:67
 #: PageGuard/Admin/Views/AdminOverviewPage.php:92
 msgid "Eigenaar"
 msgstr "Owner"
 
-#: PageGuard/Admin/AdminServiceProvider.php:225
+#: PageGuard/Admin/AdminServiceProvider.php:227
 #: PageGuard/Admin/Views/AdminOverviewPage.php:47
 #: PageGuard/Admin/Views/AdminOverviewPage.php:71
 msgid "Status"
 msgstr "Status"
 
-#: PageGuard/Admin/AdminServiceProvider.php:226
+#: PageGuard/Admin/AdminServiceProvider.php:228
 #: PageGuard/Admin/Views/AdminOverviewPage.php:70
-#: PageGuard/Metabox/Metabox.php:147
+#: PageGuard/Metabox/Metabox.php:149
 msgid "Volgende herzieningsdatum"
 msgstr "Next review date"
 
-#: PageGuard/Admin/AdminServiceProvider.php:237
-#: PageGuard/Admin/AdminServiceProvider.php:251
-#: PageGuard/Models/ReviewItem.php:76 PageGuard/Models/ReviewItem.php:89
+#: PageGuard/Admin/AdminServiceProvider.php:239
+#: PageGuard/Admin/AdminServiceProvider.php:253
+#: PageGuard/Models/ReviewItem.php:83
+#: PageGuard/Models/ReviewItem.php:96
 msgid "Niet ingesteld"
 msgstr "Not set"
 
-#: PageGuard/Admin/AdminServiceProvider.php:247
-#: PageGuard/Admin/Services/AdminOverviewService.php:195
+#: PageGuard/Admin/AdminServiceProvider.php:249
+#: PageGuard/Admin/Services/AdminOverviewService.php:213
 #: PageGuard/Admin/Views/AdminOverviewPage.php:50
 msgid "Gecontroleerd"
 msgstr "Reviewed"
 
-#: PageGuard/Admin/AdminServiceProvider.php:247
-#: PageGuard/Admin/Services/AdminOverviewService.php:206
+#: PageGuard/Admin/AdminServiceProvider.php:249
+#: PageGuard/Admin/Services/AdminOverviewService.php:224
 #: PageGuard/Admin/Views/AdminOverviewPage.php:51
 msgid "Achterstallig"
 msgstr "Overdue"
 
-#: PageGuard/Admin/AdminServiceProvider.php:247
-#: PageGuard/Admin/Services/AdminOverviewService.php:193
-#: PageGuard/Admin/Services/AdminOverviewService.php:194
+#: PageGuard/Admin/AdminServiceProvider.php:249
+#: PageGuard/Admin/Services/AdminOverviewService.php:211
+#: PageGuard/Admin/Services/AdminOverviewService.php:212
 msgid "N.v.t."
 msgstr "N/A"
 
@@ -111,7 +113,8 @@ msgid "Houdbaarheidsmodule Instellingen"
 msgstr "Content Review Module Settings"
 
 #: PageGuard/Admin/Controllers/AdminSettingsController.php:23
-#: PageGuard/Metabox/Metabox.php:380 PageGuard/Metabox/Metabox.php:477
+#: PageGuard/Metabox/Metabox.php:419
+#: PageGuard/Metabox/Metabox.php:524
 msgid "Houdbaarheidsmodule"
 msgstr "Content Review Module"
 
@@ -273,20 +276,20 @@ msgid "Externe eigenaren kunnen interne data inzien"
 msgstr "External owners can see internal data"
 
 #. translators: %s will be replaced with page title
-#: PageGuard/Frontend/ReviewModal.php:68
+#: PageGuard/Frontend/ReviewModal.php:80
 #, php-format
 msgid "Je bent momenteel de pagina \"%s\" aan het controleren op houdbaarheid."
 msgstr "You’re currently reviewing the page “%s” for outdated content."
 
-#: PageGuard/Frontend/ReviewModal.php:71
+#: PageGuard/Frontend/ReviewModal.php:83
 msgid "Sluit venster"
 msgstr "Close window"
 
-#: PageGuard/Frontend/ReviewModal.php:74
+#: PageGuard/Frontend/ReviewModal.php:86
 msgid "Houdbaarheidscontrole"
 msgstr "Content Review"
 
-#: PageGuard/Frontend/ReviewModal.php:78
+#: PageGuard/Frontend/ReviewModal.php:90
 msgid "Gecontroleerd en akkoord"
 msgstr "Checked and approved"
 
@@ -295,7 +298,7 @@ msgid "Houdbaarsheidsmodule"
 msgstr "Content Review Module"
 
 #: PageGuard/Metabox/Metabox.php:39
-msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
+msgid "Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren."
 msgstr ""
 
 #: PageGuard/Metabox/Metabox.php:47
@@ -306,23 +309,23 @@ msgstr "You do not have permission to edit the content review module."
 msgid "Maak een keuze"
 msgstr "Select an option"
 
-#: PageGuard/Metabox/Metabox.php:151
+#: PageGuard/Metabox/Metabox.php:153
 msgid "Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar."
 msgstr "The checkbox will be reset on the date above for a new review. An email will also be sent to the owner."
 
-#: PageGuard/Metabox/Metabox.php:152
+#: PageGuard/Metabox/Metabox.php:154
 msgid "De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum."
 msgstr "The review notification will be (or has already been) sent by email on the set date."
 
-#: PageGuard/Metabox/Metabox.php:183
+#: PageGuard/Metabox/Metabox.php:185
 msgid "Standaard"
 msgstr "Default"
 
-#: PageGuard/Metabox/Metabox.php:183
+#: PageGuard/Metabox/Metabox.php:185
 msgid "Aangepast"
 msgstr "Custom"
 
-#: PageGuard/Metabox/Metabox.php:197
+#: PageGuard/Metabox/Metabox.php:199
 msgid "Herinnering periode"
 msgstr "Reminder period"
 
@@ -417,6 +420,10 @@ msgstr "The page has been successfully reviewed!"
 msgid "Er is iets misgegaan."
 msgstr "Something went wrong."
 
-#: PageGuard/WPJson/WPJsonServiceProvider.php:58
+#: PageGuard/WPJson/WPJsonServiceProvider.php:59
 msgid "Ongeldige post ID"
 msgstr "Invalid post ID"
+
+#: PageGuard/WPJson/WPJsonServiceProvider.php:83
+msgid "Review token verification is not configured correctly."
+msgstr "Review token verification is not configured correctly."
