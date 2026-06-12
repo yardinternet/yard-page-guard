@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Traits;
 
+use RuntimeException;
+
 trait Token
 {
 	public function generateReviewToken(int $postId, string $contentOwnerEmail, string $reviewDate): string
@@ -26,9 +28,13 @@ trait Token
 	 */
 	private function generateKeyedHash(string $data): string
 	{
-		$salt = defined('YPG_AUTH_SALT') ? YPG_AUTH_SALT
-			: ($_ENV['YPG_AUTH_SALT'] ?? (defined('AUTH_SALT') ? AUTH_SALT
+		$salt = defined('YPG_AUTH_SALT') ? (string) YPG_AUTH_SALT
+			: ($_ENV['YPG_AUTH_SALT'] ?? (defined('AUTH_SALT') ? (string) AUTH_SALT
 			: ($_ENV['AUTH_SALT'] ?? '')));
+
+		if ('' === $salt) {
+ 			throw new RuntimeException('Missing authentication salt for review token generation');
+ 		}
 
 		return hash_hmac('sha256', $data, $salt, true);
 	}
