@@ -34,7 +34,7 @@ class ReviewModal
 
 	private function loginReviewUser(): void
 	{
-		$username = 'ypg_review_user';
+		$username = apply_filters('yard::page-guard/review-user-login', 'ypg_review_user') ;
 
 		$user = get_user_by('login', $username);
 
