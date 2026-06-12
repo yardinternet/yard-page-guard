@@ -33,8 +33,8 @@ trait Token
 			: ($_ENV['AUTH_SALT'] ?? '')));
 
 		if ('' === $salt) {
- 			throw new RuntimeException('Missing authentication salt for review token generation');
- 		}
+			throw new RuntimeException('Missing authentication salt for review token generation');
+		}
 
 		return hash_hmac('sha256', $data, $salt, true);
 	}
