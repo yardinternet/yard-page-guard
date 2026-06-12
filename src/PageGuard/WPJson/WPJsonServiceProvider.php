@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\WPJson;
 
+use RuntimeException;
 use WP_Error;
 use WP_REST_Request;
 use Yard\PageGuard\Foundation\ServiceProvider;
@@ -65,16 +66,23 @@ class WPJsonServiceProvider extends ServiceProvider
 			'ypg_review_token' => [
 				'required' => true,
 				'type' => 'string',
-				'validate_callback' => function (string $reviewToken, WP_REST_Request $request): bool {
+				'validate_callback' => function (string $reviewToken, WP_REST_Request $request, string $param) {
 					$postId = (int) $request->get_param('post_id');
 					$contentOwnerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
 					$reviewDate = get_post_meta($postId, 'ypg_review_date', true) ?: '';
-
 					if ('' === $contentOwnerEmail || '' === $reviewDate) {
 						return false;
 					}
 
-					return $this->verifyReviewToken($postId, $contentOwnerEmail, $reviewDate, $reviewToken);
+					try {
+						return $this->verifyReviewToken($postId, $contentOwnerEmail, $reviewDate, $reviewToken);
+					} catch (RuntimeException $e) {
+						return new WP_Error(
+							'review_token_verification_error',
+							__('Review token verification is not configured correctly.', 'yard-page-guard'),
+							['status' => 500]
+						);
+					}
 				},
 			],
 		];

@@ -3,10 +3,12 @@
 namespace Yard\PageGuard\Frontend;
 
 use WP_User;
+use Yard\PageGuard\Traits\ReviewUser;
 use Yard\PageGuard\Traits\Token;
 
 class ReviewModal
 {
+	use ReviewUser;
 	use Token;
 
 	private ?array $displayInfo = null;
@@ -34,7 +36,11 @@ class ReviewModal
 
 	private function loginReviewUser(): void
 	{
-		$username = apply_filters('yard::page-guard/review-user-login', 'ypg_review_user') ;
+		$username = $this->resolveReviewUserLogin();
+
+		if ('' === $username) {
+			return;
+		}
 
 		$user = get_user_by('login', $username);
 
@@ -51,6 +57,12 @@ class ReviewModal
 
 			$user = new WP_User($user_id);
 			$user->set_role('subscriber');
+		}
+
+		// Refuse to log in as any user that can edit/administer content, this prevents a
+		// misconfigured filter from escalating visitors to a privileged account.
+		if (user_can($user, 'edit_posts') || user_can($user, 'edit_pages') || user_can($user, 'manage_options') || user_can($user, 'promote_users')) {
+			return;
 		}
 
 		wp_set_current_user($user->ID);

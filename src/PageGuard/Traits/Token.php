@@ -11,7 +11,7 @@ trait Token
 	public function generateReviewToken(int $postId, string $contentOwnerEmail, string $reviewDate): string
 	{
 		if ('' === $contentOwnerEmail || '' === $reviewDate) {
-			throw new \RuntimeException('Missing review token parameter');
+			throw new RuntimeException('Missing review token parameter');
 		}
 
 		$data = strtolower(trim("$postId|$contentOwnerEmail|$reviewDate"));
@@ -28,9 +28,15 @@ trait Token
 	 */
 	private function generateKeyedHash(string $data): string
 	{
-		$salt = defined('YPG_AUTH_SALT') ? (string) YPG_AUTH_SALT
-			: ($_ENV['YPG_AUTH_SALT'] ?? (defined('AUTH_SALT') ? (string) AUTH_SALT
-			: ($_ENV['AUTH_SALT'] ?? '')));
+		if (defined('YPG_AUTH_SALT')) {
+			$salt = (string) YPG_AUTH_SALT;
+		} elseif (isset($_ENV['YPG_AUTH_SALT'])) {
+			$salt = (string) $_ENV['YPG_AUTH_SALT'];
+		} elseif (defined('AUTH_SALT')) {
+			$salt = (string) AUTH_SALT;
+		} else {
+			$salt = (string) ($_ENV['AUTH_SALT'] ?? '');
+		}
 
 		if ('' === $salt) {
 			throw new RuntimeException('Missing authentication salt for review token generation');
@@ -66,7 +72,11 @@ trait Token
 			return null;
 		}
 
-		if (! $this->verifyReviewToken(get_the_ID(), $contentOwnerEmail, $reviewDate, sanitize_text_field((string) ($_GET['ypg_review_token'] ?? '')))) {
+		try {
+			if (! $this->verifyReviewToken(get_the_ID(), $contentOwnerEmail, $reviewDate, sanitize_text_field(($_GET['ypg_review_token'] ?? '')))) {
+				return null;
+			}
+		} catch (RuntimeException $e) {
 			return null;
 		}
 
@@ -85,10 +95,11 @@ trait Token
 	 */
 	private function handleExternalToken(): ?array
 	{
-		$external = strtolower(sanitize_text_field((string) ($_GET['external'] ?? '')));
-		$postId = absint($_GET['post_id'] ?? 0);
+		$external = strtolower(sanitize_text_field($_GET['external'] ?? ''));
+		$postIdRaw = $_GET['post_id'] ?? 0;
+		$postId = is_scalar($postIdRaw) ? absint($postIdRaw) : 0;
 
-		if (! in_array($external, ['pdc', 'pub']) || 0 === $postId) {
+		if (! in_array($external, ['pdc', 'pub'], true) || 0 === $postId) {
 			return null;
 		}
 
@@ -112,11 +123,12 @@ trait Token
 			],
 			'body' => wp_json_encode([
 				'post_id' => $postId,
-				'ypg_review_token' => sanitize_text_field((string) ($_GET['ypg_review_token'] ?? '')),
+				'ypg_review_token' => sanitize_text_field(($_GET['ypg_review_token'] ?? '')),
 			]),
 		];
 
 		$endpointResponse = wp_remote_post($endpointUrl, $endpointArgs);
+
 		if (is_wp_error($endpointResponse)) {
 			return null;
 		}

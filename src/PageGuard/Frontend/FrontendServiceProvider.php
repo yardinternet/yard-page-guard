@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Frontend;
 
+use WP_User;
 use Yard\PageGuard\Foundation\ServiceProvider;
+use Yard\PageGuard\Traits\ReviewUser;
 use Yard\PageGuard\Traits\Token;
 
 class FrontendServiceProvider extends ServiceProvider
 {
+	use ReviewUser;
 	use Token;
 
 	public function register(): void
@@ -51,12 +54,20 @@ class FrontendServiceProvider extends ServiceProvider
 
 	public function disableAdminBarForReviewUsers(bool $showAdminBar): bool
 	{
-		if (is_user_logged_in()) {
-			$user = wp_get_current_user();
+		if (! is_user_logged_in()) {
+			return $showAdminBar;
+		}
 
-			if ($user && apply_filters('yard::page-guard/review-user-login', 'ypg_review_user') === $user->user_login) {
-				return false;
-			}
+		$user = wp_get_current_user();
+
+		if (! $user instanceof WP_User) {
+			return $showAdminBar;
+		}
+
+		$reviewLogin = $this->resolveReviewUserLogin();
+
+		if ('' !== $reviewLogin && $reviewLogin === $user->user_login) {
+			return false;
 		}
 
 		return $showAdminBar;

@@ -366,12 +366,6 @@ class Metabox
 			return;
 		}
 
-		$internalDataSyncEnabled = (bool) apply_filters('yard::page-guard/enable-internal-data-sync', $this->owcInternalDataPluginsActive());
-
-		if (! $internalDataSyncEnabled) {
-			return;
-		}
-
 		$contentOwnerName = trim((string) (get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: ''));
 
 		if ('' === $contentOwnerName) {
@@ -380,28 +374,40 @@ class Metabox
 			return;
 		}
 
+		$internalDataSyncEnabled = (bool) apply_filters('yard::page-guard/enable-internal-data-sync', $this->owcInternalDataPluginsActive());
+
+		if (! $internalDataSyncEnabled) {
+			return;
+		}
+
 		$this->addInternalData($postId);
 	}
 
 	private function owcInternalDataPluginsActive(): bool
 	{
+		static $cached = null;
+
+		if (null !== $cached) {
+			return $cached;
+		}
+
 		if (! function_exists('is_plugin_active') && defined('ABSPATH')) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
 		if (function_exists('is_plugin_active')) {
 			if (is_plugin_active('pdc-internal-products/pdc-internal-products.php') || is_plugin_active('openpub-internal-data/pub-internal-products.php')) {
-				return true;
+				return $cached = true;
 			}
 		}
 
 		foreach (get_declared_classes() as $class) {
 			if (strpos($class, 'Yard\\OWC\\') === 0) {
-				return true;
+				return $cached = true;
 			}
 		}
 
-		return false;
+		return $cached = false;
 	}
 
 	private function addInternalData(int $postId): void
@@ -486,31 +492,29 @@ class Metabox
 		/**
 		 * Brave internal information
 		 */
-		if (! function_exists('get_field') || ! function_exists('update_field')) {
-			return; // Early return if ACF not active
-		}
+		if (function_exists('get_field') && function_exists('update_field')) {
+			$rows = get_field('internal_information', $postId);
+			$rows = is_array($rows) ? $rows : [];
 
-		$rows = get_field('internal_information', $postId);
-		$rows = is_array($rows) ? $rows : [];
+			$updated = false;
+			foreach ($rows as $i => $row) {
+				if (($row['internal_information_title'] ?? '') === $title) {
+					$rows[$i]['internal_information_content'] = $ownerLink;
+					$updated = true;
 
-		$updated = false;
-		foreach ($rows as $i => $row) {
-			if (($row['internal_information_title'] ?? '') === $title) {
-				$rows[$i]['internal_information_content'] = $ownerLink;
-				$updated = true;
-
-				break;
+					break;
+				}
 			}
-		}
 
-		if (! $updated) {
-			$rows[] = [
-				'internal_information_title' => $title,
-				'internal_information_content' => $ownerLink,
-			];
-		}
+			if (! $updated) {
+				$rows[] = [
+					'internal_information_title' => $title,
+					'internal_information_content' => $ownerLink,
+				];
+			}
 
-		update_field('internal_information', $rows, $postId);
+			update_field('internal_information', $rows, $postId);
+		}
 
 		do_action('yard::page-guard/after-internal-data-synced', $postId, $ownerLink, $title);
 	}
