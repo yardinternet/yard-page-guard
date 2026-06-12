@@ -35,7 +35,7 @@ Used to sign review tokens. For a cross-site PDC/Pub connection this value must 
 define('YPG_AUTH_SALT', 'your-secret-salt');
 ```
 
-Falls back to `define('AUTH_SALT', ...)` (WordPress core) and then `$_ENV['YPG_AUTH_SALT']` / `$_ENV['AUTH_SALT']`.
+Falls back to `$_ENV['YPG_AUTH_SALT']`, then `define('AUTH_SALT', ...)` (WordPress core), and then `$_ENV['AUTH_SALT']`.
 
 ### External endpoint URLs (Fusion PDC / OpenPub)
 
@@ -77,7 +77,7 @@ apply_filters('yard::page-guard/review-user-login', 'ypg_review_user');
 5. Disable writing content owner information to internal data fields (Fusion Portal, Fusion PDC, Brave/ACF):
 
 ```php
-apply_filters('yard::page-guard/enable-internal-data-sync', true);
+apply_filters('yard::page-guard/enable-internal-data-sync', '__return_false');
 ```
 
 6. Fires after content owner information has been written to internal data fields:
