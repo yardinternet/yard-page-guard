@@ -6,6 +6,7 @@ namespace Yard\PageGuard\Models;
 
 use DateTime;
 use DateTimeZone;
+use RuntimeException;
 use WP_Post;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Token;
@@ -53,7 +54,13 @@ class ReviewItem
 		$ownerEmail = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true) ?? '';
 		$reviewDate = get_post_meta($this->ID(), 'ypg_review_date', true) ?? '';
 
-		$permalink = add_query_arg('ypg_review_token', $this->generateReviewToken($this->ID(), $ownerEmail, $reviewDate), $permalink);
+		try {
+			$token = $this->generateReviewToken($this->ID(), $ownerEmail, $reviewDate);
+		} catch (RuntimeException $e) {
+			return $permalink;
+		}
+
+		$permalink = add_query_arg('ypg_review_token', $token, $permalink);
 
 		$home = home_url();
 
