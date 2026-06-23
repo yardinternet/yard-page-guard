@@ -44,7 +44,7 @@ class ReviewItem
 
 	public function reviewLink(): string
 	{
-		$permalink = get_permalink($this->ID());
+		$permalink = apply_filters('yard::page-guard/review-permalink', get_permalink($this->ID()), $this->ID());
 
 		if (false === $permalink) {
 			return '';
