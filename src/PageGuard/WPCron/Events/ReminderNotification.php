@@ -76,9 +76,10 @@ class ReminderNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina\'s', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
-				$headers
+				$headers,
+				['items' => $this->itemsForLog($ownerItems)]
 			)) {
 				trigger_error('[yard-page-guard] Failed to send reminder notification email to ' . $owner->email(), E_USER_WARNING);
 
@@ -102,8 +103,8 @@ class ReminderNotification extends Event
 		$itemList = $this->buildItemListHtml($items, true);
 
 		$values = [
-			$owner->salutation(),
-			$itemList,
+			'name' => $owner->salutation(),
+			'item_list' => $itemList,
 		];
 
 		$contentHtml = $this->replacePlaceholders($content, $values);
@@ -113,13 +114,17 @@ class ReminderNotification extends Event
 
 	private function updateModuleMeta(ReviewItem $item): void
 	{
-		$currentReminderDate = $item->reminderDate() ?: date('Y-m-d');
+		$currentReminderDate = $item->reminderDate('Y-m-d');
+		if (! $this->isValidDate($currentReminderDate)) {
+			$currentReminderDate = date('Y-m-d');
+		}
+
 		$overrideDateUnit = get_post_meta($item->ID(), 'ypg_reminder_time_unit', true);
 		$overrideDatePeriod = (int) get_post_meta($item->ID(), 'ypg_reminder_time_period', true);
-		$finalDateUnit = ! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit', 'weeks');
+		$finalDateUnit = $this->resolveUnit(! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit'));
 		$finalDatePeriod = ! empty($overrideDatePeriod) ? $overrideDatePeriod : (int) get_option('ypg_reminder_time_period', 1);
 
 		update_post_meta($item->ID(), 'ypg_last_reminder_date', date('Y-m-d'));
-		update_post_meta($item->ID(), 'ypg_reminder_date', $this->addPeriodToBase($currentReminderDate, $finalDatePeriod, $finalDateUnit));
+		update_post_meta($item->ID(), 'ypg_reminder_date', $this->advanceToFuture($currentReminderDate, $finalDatePeriod, $finalDateUnit));
 	}
 }

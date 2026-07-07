@@ -1,4 +1,5 @@
 build/**
+languages/*.json
 composer.json
 composer.lock
 package.json

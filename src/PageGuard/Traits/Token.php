@@ -8,6 +8,14 @@ use RuntimeException;
 
 trait Token
 {
+	/**
+	 * @return string[]
+	 */
+	private static function externalTokenSources(): array
+	{
+		return ['pdc', 'pub'];
+	}
+
 	public function generateReviewToken(int $postId, string $contentOwnerEmail, string $reviewDate): string
 	{
 		if ('' === $contentOwnerEmail || '' === $reviewDate) {
@@ -57,6 +65,12 @@ trait Token
 	 */
 	private function handleInternalToken(): ?array
 	{
+		$reviewToken = $this->readReviewTokenFromQuery();
+
+		if (null === $reviewToken) {
+			return null;
+		}
+
 		if (! in_array(get_post_type(), apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
 			return null;
 		}
@@ -65,15 +79,20 @@ trait Token
 			return null;
 		}
 
-		$contentOwnerEmail = get_post_meta(get_the_ID(), 'ypg_post_content_owner_email', true) ?: '';
-		$reviewDate = get_post_meta(get_the_ID(), 'ypg_review_date', true) ?: '';
+		$postId = (int) get_the_ID();
+		if (0 >= $postId) {
+			return null;
+		}
+
+		$contentOwnerEmail = (string) (get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '');
+		$reviewDate = (string) (get_post_meta($postId, 'ypg_review_date', true) ?: '');
 
 		if ('' === $contentOwnerEmail || '' === $reviewDate) {
 			return null;
 		}
 
 		try {
-			if (! $this->verifyReviewToken(get_the_ID(), $contentOwnerEmail, $reviewDate, sanitize_text_field(($_GET['ypg_review_token'] ?? '')))) {
+			if (! $this->verifyReviewToken($postId, $contentOwnerEmail, $reviewDate, $reviewToken)) {
 				return null;
 			}
 		} catch (RuntimeException $e) {
@@ -83,7 +102,7 @@ trait Token
 		$footer = trim(strip_tags(get_option('ypg_modal_footer_content', ''))) !== '' ? wpautop(get_option('ypg_modal_footer_content', '')) : false;
 
 		return [
-			'id' => get_the_ID(),
+			'id' => $postId,
 			'title' => get_the_title(),
 			'footer' => $footer,
 			'endpoint' => '/wp-json/yard-page-guard/v1/verify-post',
@@ -95,15 +114,15 @@ trait Token
 	 */
 	private function handleExternalToken(): ?array
 	{
-		$external = strtolower(sanitize_text_field($_GET['external'] ?? ''));
-		$postIdRaw = $_GET['post_id'] ?? 0;
-		$postId = is_scalar($postIdRaw) ? absint($postIdRaw) : 0;
+		$reviewToken = $this->readReviewTokenFromQuery();
+		$source = $this->readExternalSourceFromQuery();
+		$postId = $this->readPostIdFromQuery();
 
-		if (! in_array($external, ['pdc', 'pub'], true) || 0 === $postId) {
+		if (null === $reviewToken || null === $source || null === $postId) {
 			return null;
 		}
 
-		$endpointVariable = sprintf('OPEN%s_ENDPOINT', strtoupper($external)); // e.g. OPENPDC_ENDPOINT or OPENPUB_ENDPOINT
+		$endpointVariable = strtoupper('OPEN' . $source . '_ENDPOINT'); // e.g. OPENPDC_ENDPOINT or OPENPUB_ENDPOINT
 
 		// define('OPENPDC_ENDPOINT', '...') or define('OPENPUB_ENDPOINT', '...') in wp-config.php takes precedence over $_ENV.
 		$endpointValue = defined($endpointVariable) ? constant($endpointVariable) : ($_ENV[$endpointVariable] ?? null);
@@ -123,7 +142,7 @@ trait Token
 			],
 			'body' => wp_json_encode([
 				'post_id' => $postId,
-				'ypg_review_token' => sanitize_text_field(($_GET['ypg_review_token'] ?? '')),
+				'ypg_review_token' => $reviewToken,
 			]),
 		];
 
@@ -140,5 +159,36 @@ trait Token
 		}
 
 		return $endpointBody;
+	}
+
+	private function readReviewTokenFromQuery(): ?string
+	{
+		if (! is_string($_GET['ypg_review_token'] ?? null)) {
+			return null;
+		}
+
+		$token = sanitize_text_field($_GET['ypg_review_token']);
+
+		return '' === $token ? null : $token;
+	}
+
+	private function readExternalSourceFromQuery(): ?string
+	{
+		if (! is_string($_GET['external'] ?? null)) {
+			return null;
+		}
+
+		return in_array($_GET['external'], self::externalTokenSources(), true) ? $_GET['external'] : null;
+	}
+
+	private function readPostIdFromQuery(): ?int
+	{
+		if (! isset($_GET['post_id']) || ! is_numeric($_GET['post_id'])) {
+			return null;
+		}
+
+		$postId = (int) $_GET['post_id'];
+
+		return 0 < $postId ? $postId : null;
 	}
 }

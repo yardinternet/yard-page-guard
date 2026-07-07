@@ -11,6 +11,7 @@ return [
 		Yard\PageGuard\WPJson\WPJsonServiceProvider::class,
 		Yard\PageGuard\Frontend\FrontendServiceProvider::class,
 		Yard\PageGuard\Taxonomy\TaxonomyServiceProvider::class,
+		Yard\PageGuard\EmailLog\EmailLogServiceProvider::class,
 
 		/** Providers specific to the admin */
 		'admin' => [
@@ -18,18 +19,4 @@ return [
 			Yard\PageGuard\Metabox\MetaboxServiceProvider::class,
 		],
 	],
-	/**
-	 * Dependencies upon which the plugin relies.
-	 *
-	 * Required: type, label
-	 * Optional: message
-	 *
-	 * Type: plugin
-	 * - Required: file
-	 * - Optional: version
-	 *
-	 * Type: class
-	 * - Required: name
-	 */
-	'dependencies' => [],
 ];

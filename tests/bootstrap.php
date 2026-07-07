@@ -20,10 +20,22 @@ $GLOBALS['yard-page-guard'] = [
 	'active_plugins' => ['yard-page-guard/yard-page-guard.php'],
 ];
 
-class WP_CLI
-{
-	public static function add_command()
+if (! class_exists('WP_CLI')) {
+	class WP_CLI
 	{
+		public static function add_command()
+		{
+		}
+	}
+}
+
+if (! class_exists('WP_User')) {
+	class WP_User
+	{
+		/** @var array<int,string> */
+		public array $roles = [];
+
+		public int $ID = 0;
 	}
 }
 

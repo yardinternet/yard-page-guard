@@ -52,6 +52,7 @@
 
 # track .github in the root (i.e. do NOT ignore it)
 !.github
+!.gitattributes
 
 # ignore all files that start with ~
 ~*
@@ -95,9 +96,6 @@ node_modules/
 bower_components
 
 code-coverage
-
-# no map files
-*.map
 
 vendor
 !/src/vendor
