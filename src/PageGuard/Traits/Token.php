@@ -135,7 +135,7 @@ trait Token
 
 	private function readReviewTokenFromQuery(): ?string
 	{
-		if (! isset($_GET['ypg_review_token']) || ! is_string($_GET['ypg_review_token'])) {
+		if (! is_string($_GET['ypg_review_token'] ?? null)) {
 			return null;
 		}
 
@@ -146,7 +146,7 @@ trait Token
 
 	private function readExternalSourceFromQuery(): ?string
 	{
-		if (! isset($_GET['external']) || ! is_string($_GET['external'])) {
+		if (! is_string($_GET['external'] ?? null)) {
 			return null;
 		}
 

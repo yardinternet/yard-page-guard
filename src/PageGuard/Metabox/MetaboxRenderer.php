@@ -83,7 +83,7 @@ final class MetaboxRenderer
 		);
 
 		foreach ($wpUsers as $user) {
-			$name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
+			$name = trim(implode(' ', array_filter([$user->first_name, $user->last_name]))) ?: $user->display_name;
 			$selected = ($contentOwnerId == $user->ID && ContentOwnerType::USER === $contentOwnerType) ? ' selected="selected"' : '';
 
 			$optionsHtml .= sprintf(

@@ -213,12 +213,17 @@ final class InternalDataSync
 
 	private function formatPhoneForTel(string $phone): ?string
 	{
+		// Strip formatting humans add for readability — whitespace, dashes,
+		// dots and parentheses — leaving only the dialable digits (and a
+		// possible leading `+`).
 		$cleaned = preg_replace('/[\s\-\.\(\)]/', '', $phone);
 
 		if (str_starts_with($cleaned, '0')) {
 			$cleaned = '+31' . substr($cleaned, 1);
 		}
 
+		// Accept only a valid E.164 number: a leading `+` followed by 7–15
+		// digits. Anything else (letters, extensions, junk) yields no tel: link.
 		if (preg_match('/^\+\d{7,15}$/', $cleaned)) {
 			return $cleaned;
 		}

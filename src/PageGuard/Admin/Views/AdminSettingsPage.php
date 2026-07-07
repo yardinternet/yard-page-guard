@@ -2,7 +2,7 @@
 /**
  * @uses Yard\PageGuard\Traits\Text
  */
-$host = $_SERVER['HTTP_HOST'] ?? '';
+$host = (string) wp_parse_url(home_url(), PHP_URL_HOST);
 $hostParts = explode('.', $host);
 $baseHost = count($hostParts) > 2 ? implode('.', array_slice($hostParts, -2)) : $host;
 $defaultFromAddress = 'houdbaarheid@' . $baseHost;

@@ -57,6 +57,10 @@ final class AdminCapabilityTest extends TestCase
 			->with(AdminCapability::DEFAULT_ROLES)
 			->reply(AdminCapability::DEFAULT_ROLES);
 
+		foreach (AdminCapability::DEFAULT_ROLES as $roleName) {
+			WP_Mock::userFunction('get_role')->with($roleName)->andReturn(Mockery::mock('WP_Role'));
+		}
+
 		$this->assertSame(AdminCapability::DEFAULT_ROLES, AdminCapability::roles());
 	}
 
@@ -66,7 +70,22 @@ final class AdminCapabilityTest extends TestCase
 			->with(AdminCapability::DEFAULT_ROLES)
 			->reply(['administrator', 'editor', 5]);
 
+		WP_Mock::userFunction('get_role')->with('administrator')->andReturn(Mockery::mock('WP_Role'));
+		WP_Mock::userFunction('get_role')->with('editor')->andReturn(Mockery::mock('WP_Role'));
+
 		$this->assertSame(['administrator', 'editor'], AdminCapability::roles());
+	}
+
+	public function testRolesDropsRolesThatDoNotExist(): void
+	{
+		WP_Mock::onFilter(AdminCapability::ROLES_FILTER)
+			->with(AdminCapability::DEFAULT_ROLES)
+			->reply(['administrator', 'ghost']);
+
+		WP_Mock::userFunction('get_role')->with('administrator')->andReturn(Mockery::mock('WP_Role'));
+		WP_Mock::userFunction('get_role')->with('ghost')->andReturn(null);
+
+		$this->assertSame(['administrator'], AdminCapability::roles());
 	}
 
 	public function testAddToRolesGrantsDefaultCapToConfiguredRoles(): void

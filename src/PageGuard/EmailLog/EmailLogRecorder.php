@@ -33,8 +33,10 @@ final class EmailLogRecorder
 			EmailLog::META_HEADERS => $headers,
 		];
 
-		if (! empty($context['items']) && is_array($context['items'])) {
-			$meta[EmailLog::META_ITEMS] = $context['items'];
+		$items = $context['items'] ?? [];
+
+		if (is_array($items) && 0 < count($items)) {
+			$meta[EmailLog::META_ITEMS] = $items;
 		}
 
 		// Title the entry by recipient + send date rather than the (largely
@@ -43,17 +45,20 @@ final class EmailLogRecorder
 		$fullName = $user instanceof \WP_User
 			? trim(sprintf('%s %s', $user->first_name, $user->last_name))
 			: '';
-		$recipient = '' !== $fullName ? $fullName : $to;
+		$recipient = trim('' !== $fullName ? $fullName : $to);
 
-		if ('' === trim($recipient)) {
+		if ('' === $recipient) {
 			$recipient = __('(geen ontvanger)', 'yard-page-guard');
 		}
+
+		// Drop the template's <style> block before storing.
+		$content = preg_replace('#<style\b[^>]*>.*?</style>#is', '', $message);
 
 		wp_insert_post([
 			'post_type' => EmailLog::POST_TYPE,
 			'post_status' => 'publish',
 			'post_title' => sprintf('%s - %s', $recipient, current_time('d-m-Y')),
-			'post_content' => $message,
+			'post_content' => (string) $content,
 			'meta_input' => $meta,
 		], true);
 	}

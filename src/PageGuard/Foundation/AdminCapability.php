@@ -48,7 +48,15 @@ final class AdminCapability
 	 */
 	public static function roles(): array
 	{
-		return array_values(array_filter((array) apply_filters(self::ROLES_FILTER, self::DEFAULT_ROLES), 'is_string'));
+		$roles = (array) apply_filters(self::ROLES_FILTER, self::DEFAULT_ROLES);
+
+		$roles = array_filter($roles, 'is_string');
+
+		// Drop names that don't resolve to a real role, so callers relying on
+		// roles() directly (not only addToRoles()) never act on unknown roles.
+		$roles = array_filter($roles, static fn (string $role): bool => get_role($role) instanceof WP_Role);
+
+		return array_values($roles);
 	}
 
 	/**

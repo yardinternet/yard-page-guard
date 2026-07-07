@@ -55,7 +55,7 @@ final class DateTest extends TestCase
 
 	public function testFormatDateUsesWordPressLocalisation(): void
 	{
-		WP_Mock::userFunction('date_i18n')
+		WP_Mock::userFunction('wp_date')
 			->andReturnUsing(static function (string $format, int $timestamp): string {
 				return date($format, $timestamp);
 			});
@@ -65,7 +65,7 @@ final class DateTest extends TestCase
 
 	public function testFormatDateReturnsEmptyStringOnInvalidInput(): void
 	{
-		// date_i18n should never be called when DateTime construction throws.
+		// wp_date should never be called when DateTime construction throws.
 		$this->assertSame('', $this->subject->formatDate('not-a-date'));
 	}
 

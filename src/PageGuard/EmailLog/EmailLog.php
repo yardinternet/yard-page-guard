@@ -109,18 +109,10 @@ final class EmailLog
 	{
 		if ('recipient' === $column) {
 			echo esc_html((string) get_post_meta($postId, self::META_RECIPIENT, true));
-
-			return;
-		}
-
-		if ('items' === $column) {
+		} elseif ('items' === $column) {
 			$items = get_post_meta($postId, self::META_ITEMS, true);
 			echo esc_html((string) (is_array($items) ? count($items) : 0));
-
-			return;
-		}
-
-		if ('status' === $column) {
+		} elseif ('status' === $column) {
 			echo $this->statusPillHtml((string) get_post_meta($postId, self::META_STATUS, true));
 		}
 	}
@@ -174,9 +166,9 @@ final class EmailLog
 			echo '<h4>' . esc_html(__('Items in deze mail', 'yard-page-guard')) . '</h4>';
 			echo '<ul class="ypg-email-log-items">';
 			foreach ($items as $item) {
-				$id = isset($item['id']) ? (int) $item['id'] : 0;
-				$title = isset($item['title']) ? (string) $item['title'] : '';
-				$reviewDate = isset($item['review_date']) ? (string) $item['review_date'] : '';
+				$id = (int) ($item['id'] ?? 0);
+				$title = (string) ($item['title'] ?? '');
+				$reviewDate = (string) ($item['review_date'] ?? '');
 				$editLink = 0 < $id ? get_edit_post_link($id) : '';
 
 				printf(
@@ -207,7 +199,7 @@ final class EmailLog
 			return;
 		}
 
-		$current = isset($_GET['ypg_status']) ? sanitize_key((string) $_GET['ypg_status']) : '';
+		$current = sanitize_key((string) ($_GET['ypg_status'] ?? ''));
 
 		$options = [
 			self::STATUS_SENT => __('Verstuurd', 'yard-page-guard'),
@@ -240,7 +232,7 @@ final class EmailLog
 			return;
 		}
 
-		$status = isset($_GET['ypg_status']) ? sanitize_key((string) $_GET['ypg_status']) : '';
+		$status = sanitize_key((string) ($_GET['ypg_status'] ?? ''));
 
 		if (! in_array($status, [self::STATUS_SENT, self::STATUS_FAILED], true)) {
 			return;
@@ -250,6 +242,7 @@ final class EmailLog
 			[
 				'key' => self::META_STATUS,
 				'value' => $status,
+				'compare' => '=',
 			],
 		]);
 	}

@@ -23,7 +23,7 @@ trait Date
 			return '';
 		}
 
-		return date_i18n($format, $dateTime->getTimestamp());
+		return wp_date($format, $dateTime->getTimestamp(), $this->siteTimezone());
 	}
 
 	/**
