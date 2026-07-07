@@ -7,40 +7,43 @@ namespace Yard\PageGuard\Traits;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use Yard\PageGuard\Enums\DateUnit;
 
 trait Date
 {
+	/**
+	 * Format a Y-m-d date string for display in the site timezone. Returns ''
+	 * when the input cannot be parsed.
+	 */
 	public function formatDate(string $date, string $format = 'd F Y'): string
 	{
 		try {
-			$date = new DateTime($date . ' 12:00:00', new DateTimeZone(wp_timezone_string()));
+			$dateTime = new DateTime($date . ' 12:00:00', $this->siteTimezone());
 		} catch (Exception $e) {
 			return '';
 		}
 
-		return date_i18n($format, $date->getTimestamp());
+		return wp_date($format, $dateTime->getTimestamp(), $this->siteTimezone());
 	}
 
 	/**
-	 * Adds a date period to a base date (provided as Y-m-d string)
+	 * Add a number of {@see DateUnit} periods to a Y-m-d base date and return
+	 * the resulting date as Y-m-d.
+	 *
+	 * @throws \InvalidArgumentException when $unit is not a recognised DateUnit.
 	 */
 	public function addPeriodToBase(string $base, int $period, string $unit): string
 	{
-		$date = new DateTime($base, new DateTimeZone(wp_timezone_string()));
+		$normalised = DateUnit::from($unit);
 
-		if ('weeks' === $unit) {
-			$date->modify("+{$period} weeks");
-		} elseif ('months' === $unit) {
-			$date->modify("+{$period} months");
-		} else {
-			$date->modify("+{$period} days");
-		}
+		$date = new DateTime($base, $this->siteTimezone());
+		$date->modify(sprintf('+%d %s', $period, $normalised));
 
 		return $date->format('Y-m-d');
 	}
 
 	/**
-	 * Steps a Y-m-d date forward in whole $period/$unit jumps until it lands
+	 * Step a Y-m-d date forward in whole $period/$unit jumps until it lands
 	 * strictly after today, returning the new Y-m-d.
 	 *
 	 * Used to roll a recurring reminder onto its next slot: it collapses any
@@ -64,116 +67,172 @@ trait Date
 		return $next;
 	}
 
+	public function isValidDate(string $date): bool
+	{
+		$parsed = DateTime::createFromFormat('Y-m-d', $date);
+
+		return $parsed && $parsed->format('Y-m-d') === $date;
+	}
+
 	/**
-	 * Computes the next date for a post's review / reminder meta
+	 * Compute the next stored value for a review/reminder date meta field.
 	 *
-	 * @param string $inputFieldName The POST field to check for manual changes
-	 * @param string|bool $baseValue The current value in the database for THIS field
-	 * @param bool $toBeVerified
-	 * @param bool $wasPreviouslyVerified
-	 * @param int $period The time period to add
-	 * @param string $unit The unit of time (days, weeks, months)
-	 * @param string $baseAdditionDate (Optional) An explicit date to add the period to (e.g., adding reminder period to review date)
+	 * Resolution order (first match wins):
+	 *   1. A manual change submitted in $_POST[$inputFieldName] that differs from $currentValue.
+	 *   2. Post staying unverified with a non-empty stored value → keep it as-is.
+	 *   3. Post just-verified (or no value stored yet) → add $period $unit to the
+	 *      first available of: $baseAdditionDate, the stored value, today.
+	 *   4. Otherwise (still verified, value stored) → keep the stored value.
+	 *
+	 * @param string|bool|null $currentValue Mixed accepted for back-compat with `get_post_meta(...)`
+	 *                                       which returns '' or false when no value is stored.
 	 */
 	public function computeDateMeta(
 		string $inputFieldName,
-		$baseValue,
+		$currentValue,
 		bool $toBeVerified,
 		bool $wasPreviouslyVerified,
 		int $period,
 		string $unit,
 		string $baseAdditionDate = ''
 	): string {
-		// #1 Manual change via metabox input (different from before)
-		if (
-			isset($_POST[$inputFieldName]) &&
-			'' !== $_POST[$inputFieldName] &&
-			sanitize_text_field($_POST[$inputFieldName]) !== $baseValue
-		) {
-			return sanitize_text_field($_POST[$inputFieldName]);
+		$current = $this->coerceDateString($currentValue);
+
+		$manualOverride = $this->readSubmittedDate($inputFieldName);
+		if (null !== $manualOverride && $manualOverride !== $current) {
+			return $manualOverride;
 		}
 
-		// #2 Keep current if not verified and current exists
-		if (! $toBeVerified && $baseValue) {
-			return (string) $baseValue;
+		$hasCurrent = '' !== $current;
+		$justVerified = $toBeVerified && ! $wasPreviouslyVerified;
+		$shouldRecompute = $justVerified || ! $hasCurrent;
+
+		if (! $toBeVerified && $hasCurrent) {
+			return $current;
 		}
 
-		$fallbackBaseDate = date('Y-m-d');
+		if ($shouldRecompute) {
+			$baseDate = '' !== $baseAdditionDate
+				? $baseAdditionDate
+				: ($hasCurrent ? $current : date('Y-m-d'));
 
-		// #3 Auto increase when post has just been verified or no current value is set
-		if ($toBeVerified && ! $wasPreviouslyVerified || ! $baseValue) {
-			// Prioritize the base addition date (like a review date) over the current meta value
-			$baseDate = $baseAdditionDate ?: ($baseValue ?: $fallbackBaseDate);
-
-			return $this->addPeriodToBase((string) $baseDate, $period, $unit);
+			return $this->addPeriodToBase($baseDate, $period, $unit);
 		}
 
-		// Fallback: return current meta
-		return (string) $baseValue;
+		return $current;
 	}
 
-	private function computeReviewDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
+	private function computeReviewDate(bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
 	{
-		$datePeriod = (int) get_option('ypg_review_time_period', 1);
-		$dateUnit = get_option('ypg_review_time_unit', 'weeks');
-
-		// The stored value is the comparison baseline, so a form echoing it back
-		// is not mistaken for a manual change. Recomputes run from today: a fresh
-		// verification restarts the review cycle at the moment of checking.
 		return $this->computeDateMeta(
 			'ypg_review_date',
-			get_post_meta($postId, 'ypg_review_date', true),
+			null,
 			$toBeVerified,
 			$wasPreviouslyVerified,
-			$datePeriod,
-			$dateUnit,
-			date('Y-m-d')
+			(int) get_option('ypg_review_time_period', 1),
+			$this->resolveUnit(get_option('ypg_review_time_unit', DateUnit::WEEKS))
 		);
 	}
 
-	private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false, string $reviewDate = ''): string
+	private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
 	{
-		// Get the current reminder date
-		$currentReminderDate = get_post_meta($postId, 'ypg_reminder_date', true);
-
-		// The review date this reminder must follow. Callers that compute a new
-		// review date in the same request pass it in; reading it from POST/meta
-		// here would race the not-yet-persisted value and base the reminder on a
-		// stale date.
-		if ('' === $reviewDate) {
-			$reviewDateInput = isset($_POST['ypg_review_date']) ? sanitize_text_field($_POST['ypg_review_date']) : '';
-			$reviewDate = '' !== $reviewDateInput ? $reviewDateInput : (string) get_post_meta($postId, 'ypg_review_date', true);
-		}
-
-		// A reminder is the follow-up nag after an unanswered review mail, so it
-		// must land after its review date. An earlier/equal stored value is
-		// corrupt state written by older versions — drop it so it gets
-		// recalculated from $reviewDate below.
-		if (! empty($currentReminderDate) && '' !== $reviewDate && $currentReminderDate <= $reviewDate) {
-			$currentReminderDate = '';
-		}
-
-		$dateUnitOverride = get_post_meta($postId, 'ypg_reminder_time_unit', true);
-		$datePeriodOverride = (int) get_post_meta($postId, 'ypg_reminder_time_period', true);
-
-		$finalPeriod = ! empty($datePeriodOverride) ? $datePeriodOverride : (int) get_option('ypg_reminder_time_period', 1);
-		$finalUnit = ! empty($dateUnitOverride) ? $dateUnitOverride : get_option('ypg_reminder_time_unit', 'weeks');
+		$reviewDate = $this->effectiveReviewDate($postId);
+		[$period, $unit] = $this->effectiveReminderPeriod($postId);
 
 		return $this->computeDateMeta(
 			'ypg_reminder_date',
-			$currentReminderDate,
+			$this->readMetaString($postId, 'ypg_reminder_date'),
 			$toBeVerified,
 			$wasPreviouslyVerified,
-			$finalPeriod,
-			$finalUnit,
+			$period,
+			$unit,
 			$reviewDate
 		);
 	}
 
-	public function isValidDate(string $date): bool
+	/**
+	 * The review date in effect for the post during the current request — a
+	 * fresh POST submission wins over the value stored in meta.
+	 */
+	private function effectiveReviewDate(int $postId): string
 	{
-		$d = DateTime::createFromFormat('Y-m-d', $date);
+		$submitted = $this->readSubmittedDate('ypg_review_date');
 
-		return $d && $d->format('Y-m-d') === $date;
+		if (null !== $submitted) {
+			return $submitted;
+		}
+
+		return $this->readMetaString($postId, 'ypg_review_date') ?? '';
+	}
+
+	/**
+	 * Post-level period/unit override beats the site option. An override of
+	 * 0/empty is treated as "no override".
+	 *
+	 * @return array{0:int,1:string}
+	 */
+	private function effectiveReminderPeriod(int $postId): array
+	{
+		$periodOverride = (int) get_post_meta($postId, 'ypg_reminder_time_period', true);
+		$unitOverride = $this->readMetaString($postId, 'ypg_reminder_time_unit');
+
+		$period = 0 < $periodOverride ? $periodOverride : (int) get_option('ypg_reminder_time_period', 1);
+		$unit = $this->resolveUnit($unitOverride ?? get_option('ypg_reminder_time_unit', DateUnit::WEEKS));
+
+		return [$period, $unit];
+	}
+
+	/**
+	 * Coerce a value coming from stored meta or a site option into a valid
+	 * {@see DateUnit}. Unknown/tampered values fall back to weeks, the default
+	 * the rest of the UI ships with.
+	 *
+	 * @param mixed $value
+	 */
+	private function resolveUnit($value): string
+	{
+		if (is_string($value)) {
+			$resolved = DateUnit::tryFrom($value);
+			if (null !== $resolved) {
+				return $resolved;
+			}
+		}
+
+		return DateUnit::WEEKS;
+	}
+
+	private function readSubmittedDate(string $inputFieldName): ?string
+	{
+		if (! isset($_POST[$inputFieldName])) {
+			return null;
+		}
+
+		$submitted = sanitize_text_field($_POST[$inputFieldName]);
+
+		return '' === $submitted ? null : $submitted;
+	}
+
+	private function readMetaString(int $postId, string $key): ?string
+	{
+		$value = get_post_meta($postId, $key, true);
+
+		return is_string($value) && '' !== $value ? $value : null;
+	}
+
+	/**
+	 * @param string|bool|int|null $value
+	 */
+	private function coerceDateString($value): string
+	{
+		if (is_string($value) && '' !== $value) {
+			return $value;
+		}
+
+		return '';
+	}
+
+	private function siteTimezone(): DateTimeZone
+	{
+		return new DateTimeZone(wp_timezone_string());
 	}
 }

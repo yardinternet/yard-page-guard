@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Traits;
 
+use Yard\PageGuard\Models\ContentOwner;
+
 trait Text
 {
 	/**
-	 * @param array<int, string> $values
+	 * @param array<string, string> $values
 	 */
 	private function replacePlaceholders(string $content, array $values): string
 	{
-		foreach ($values as $i => $value) {
-			$content = str_replace('{' . ($i + 1) . '}', $value, $content);
+		foreach ($values as $key => $value) {
+			$content = str_replace('{' . $key . '}', $value, $content);
 		}
 
 		return $content;
@@ -34,20 +36,8 @@ trait Text
 	/**
 	 * @throws \InvalidArgumentException
 	 */
-	private function parseContentOwnerData(string $contentOwner): array
+	private function parseContentOwnerData(string $contentOwner): ContentOwner
 	{
-		$ownerData = explode('|', $contentOwner);
-
-		if (count($ownerData) < 4) {
-			throw new \InvalidArgumentException('[yard-page-guard] Invalid content owner data format.');
-		}
-
-		return [
-			'id' => $ownerData[0] ?? '',
-			'name' => $ownerData[1] ?? '',
-			'email' => $ownerData[2] ?? '',
-			'type' => $ownerData[3] ?? '',
-			'phone_number' => $ownerData[4] ?? '',
-		];
+		return ContentOwner::fromString($contentOwner);
 	}
 }

@@ -2,138 +2,203 @@
 /**
  * @uses Yard\PageGuard\Traits\Text
  */
+$host = (string) wp_parse_url(home_url(), PHP_URL_HOST);
+$hostParts = explode('.', $host);
+$baseHost = count($hostParts) > 2 ? implode('.', array_slice($hostParts, -2)) : $host;
+$defaultFromAddress = 'houdbaarheid@' . $baseHost;
+
+$renderEditor = static function (string $name, string $value, string $variables = '', int $rows = 10, string $features = ''): void {
+	// wpautop normalises legacy plain-text content with bare newlines into the
+	// `<p>` / `<br>` HTML the editor can parse back into block nodes — without
+	// this stored options that pre-date the rich editor collapse onto one line.
+	$html = wpautop($value);
+
+	$dataAttrs = '';
+
+	if ('' !== $variables) {
+		$dataAttrs .= ' data-variables="' . esc_attr($variables) . '"';
+	}
+	if ('' !== $features) {
+		$dataAttrs .= ' data-features="' . esc_attr($features) . '"';
+	}
+
+	printf(
+		'<div class="ypg-rte" data-ypg-editor%s><textarea id="%s" name="%s" rows="%d">%s</textarea></div>',
+		$dataAttrs,
+		esc_attr($name),
+		esc_attr($name),
+		$rows,
+		esc_textarea($html)
+	);
+};
 ?>
 
-<div class="wrap">
-	<h1><?= __('Houdbaarheidsmodule Instellingen', 'yard-page-guard') ?></h1>
-	<form method="post" action="options.php">
+<div class="wrap ypg-settings-page">
+	<h1 class="ypg-settings-title"><?= esc_html(__('Inhoudseigenarenmodule Instellingen', 'yard-page-guard')) ?></h1>
+
+	<form method="post" action="options.php" class="ypg-settings-form">
 		<?php settings_fields('ypg_settings'); ?>
 		<?php do_settings_sections('ypg_settings'); ?>
-		<table class="form-table">
-			<tr valign="top">
-				<th scope="row"><?= __('Afzend naam', 'yard-page-guard') ?></th>
-				<td>
-					<input type="text" name="ypg_email_from_name" value="<?= esc_attr(get_option('ypg_email_from_name', get_bloginfo('name'))); ?>" />
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Afzend emailadres', 'yard-page-guard') ?></th>
-				<td>
-					<input type="email" name="ypg_email_from_address" value="<?= esc_attr(get_option('ypg_email_from_address', 'houdbaarheid@' . $_SERVER['HTTP_HOST'])); ?>" />
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Herinneringmail BCC emailadres', 'yard-page-guard') ?></th>
-				<td>
-					<input type="email" name="ypg_reminder_email_bcc" value="<?= esc_attr(get_option('ypg_reminder_email_bcc', '')); ?>" />
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Herzieningsperiode', 'yard-page-guard') ?></th>
-				<td class="d-flex">
-					<input type="number" name="ypg_review_time_period" value="<?= esc_attr(get_option('ypg_review_time_period', 2)); ?>" min="1" />
-					<select name="ypg_review_time_unit">
-						<?php
+
+		<?php
+			$cronLastRun = \Yard\PageGuard\WPCron\WPCronServiceProvider::lastRun();
+$cronNextRun = \Yard\PageGuard\WPCron\WPCronServiceProvider::nextRun();
+$cronDateTimeFormat = trim(get_option('date_format', 'd F Y') . ' ' . get_option('time_format', 'H:i'));
+?>
+
+		<section class="ypg-settings-card">
+			<header class="ypg-settings-card__header">
+				<h2><?= esc_html(__('Geplande controle', 'yard-page-guard')) ?></h2>
+				<p class="ypg-settings-card__hint"><?= esc_html(__('Status van de dagelijkse controle die de herzienings- en herinneringsmails verstuurt.', 'yard-page-guard')) ?></p>
+			</header>
+			<div class="ypg-settings-grid">
+				<div class="ypg-cron-stat">
+					<span class="ypg-cron-stat__label"><?= esc_html(__('Laatste controle', 'yard-page-guard')) ?></span>
+					<span class="ypg-cron-stat__value">
+						<?= null !== $cronLastRun
+					? esc_html(wp_date($cronDateTimeFormat, $cronLastRun))
+					: esc_html(__('Nog niet uitgevoerd', 'yard-page-guard')) ?>
+					</span>
+				</div>
+				<div class="ypg-cron-stat">
+					<span class="ypg-cron-stat__label"><?= esc_html(__('Volgende controle', 'yard-page-guard')) ?></span>
+					<span class="ypg-cron-stat__value"><?= esc_html(wp_date($cronDateTimeFormat, $cronNextRun)) ?></span>
+					<span class="ypg-cron-stat__countdown" data-ypg-cron-countdown="<?= esc_attr((string) $cronNextRun) ?>" aria-live="polite"></span>
+				</div>
+			</div>
+		</section>
+
+		<section class="ypg-settings-card">
+			<header class="ypg-settings-card__header">
+				<h2><?= esc_html(__('Email afzender', 'yard-page-guard')) ?></h2>
+				<p class="ypg-settings-card__hint"><?= esc_html(__('Hoe herzienings- en herinneringsmails worden verstuurd.', 'yard-page-guard')) ?></p>
+			</header>
+			<div class="ypg-settings-grid">
+				<div class="ypg-field">
+					<label for="ypg_email_from_name"><?= esc_html(__('Afzendnaam', 'yard-page-guard')) ?></label>
+					<input type="text" id="ypg_email_from_name" name="ypg_email_from_name" value="<?= esc_attr(get_option('ypg_email_from_name', get_bloginfo('name'))); ?>" />
+				</div>
+				<div class="ypg-field">
+					<label for="ypg_email_from_address"><?= esc_html(__('Afzend emailadres', 'yard-page-guard')) ?></label>
+					<input type="email" id="ypg_email_from_address" name="ypg_email_from_address" value="<?= esc_attr(get_option('ypg_email_from_address', $defaultFromAddress)); ?>" />
+				</div>
+				<div class="ypg-field">
+					<label for="ypg_reminder_email_bcc"><?= esc_html(__('BCC voor herinneringsmails', 'yard-page-guard')) ?></label>
+					<input type="email" id="ypg_reminder_email_bcc" name="ypg_reminder_email_bcc" value="<?= esc_attr(get_option('ypg_reminder_email_bcc', '')); ?>" />
+				</div>
+			</div>
+		</section>
+
+		<section class="ypg-settings-card">
+			<header class="ypg-settings-card__header">
+				<h2><?= esc_html(__('Periodes', 'yard-page-guard')) ?></h2>
+				<p class="ypg-settings-card__hint"><?= esc_html(__('De standaard herzienings- en herinneringsperiodes.', 'yard-page-guard')) ?></p>
+			</header>
+			<div class="ypg-settings-grid">
+				<div class="ypg-field">
+					<label for="ypg_review_time_period"><?= esc_html(__('Herzieningsperiode', 'yard-page-guard')) ?></label>
+					<div class="ypg-input-group">
+						<input type="number" id="ypg_review_time_period" name="ypg_review_time_period" value="<?= esc_attr(get_option('ypg_review_time_period', 2)); ?>" min="1" />
+						<select name="ypg_review_time_unit" aria-label="<?= esc_attr(__('Eenheid herzieningsperiode', 'yard-page-guard')) ?>">
+							<?php
 						$selected_unit = get_option('ypg_review_time_unit', 'weeks');
 foreach ($this->getUnitOptions() as $key => $label) {
 	echo '<option value="' . esc_attr($key) . '"' . selected($selected_unit, $key, false) . '>' . esc_html($label) . '</option>';
 }
 ?>
-					</select>
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Herinneringsperiode', 'yard-page-guard') ?></th>
-				<td class="d-flex">
-					<input type="number" name="ypg_reminder_time_period" value="<?= esc_attr(get_option('ypg_reminder_time_period', 1)); ?>" min="1" />
-					<select name="ypg_reminder_time_unit">
-						<?php
-$selected_unit = get_option('ypg_reminder_time_unit', 'weeks');
+						</select>
+					</div>
+				</div>
+				<div class="ypg-field">
+					<label for="ypg_reminder_time_period"><?= esc_html(__('Herinneringsperiode', 'yard-page-guard')) ?></label>
+					<div class="ypg-input-group">
+						<input type="number" id="ypg_reminder_time_period" name="ypg_reminder_time_period" value="<?= esc_attr(get_option('ypg_reminder_time_period', 1)); ?>" min="1" />
+						<select name="ypg_reminder_time_unit" aria-label="<?= esc_attr(__('Eenheid herinneringsperiode', 'yard-page-guard')) ?>">
+							<?php
+		$selected_unit = get_option('ypg_reminder_time_unit', 'weeks');
 foreach ($this->getUnitOptions() as $key => $label) {
 	echo '<option value="' . esc_attr($key) . '"' . selected($selected_unit, $key, false) . '>' . esc_html($label) . '</option>';
 }
 ?>
-					</select>
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Herzieningsmail onderwerp', 'yard-page-guard') ?></th>
-				<td>
-					<input type="text" name="ypg_review_email_subject" value="<?= esc_attr(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))); ?>" />
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Herzieningsmail inhoud', 'yard-page-guard') ?></th>
-				<td>
-					<?php
-					$notificationContent = get_option('ypg_review_email_content', '');
-wp_editor($notificationContent, 'ypg_review_email_content', [
-	'textarea_name' => 'ypg_review_email_content',
-	'textarea_rows' => 8,
-	'media_buttons' => false,
-	'teeny' => true,
-]);
-?>
-					<div class="description">
-						<p><?= __('De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):', 'yard-page-guard') ?></p>
-						<ol>
-							<li><?= __('Naam van inhoudseigenaar', 'yard-page-guard') ?></li>
-							<li><?= __('Lijst van items die gecontroleerd moeten worden', 'yard-page-guard') ?></li>
-						</ol>
+						</select>
 					</div>
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Herinneringsmail onderwerp', 'yard-page-guard') ?></th>
-				<td>
-					<input type="text" name="ypg_reminder_email_subject" value="<?= esc_attr(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))); ?>" />
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Herinneringsmail inhoud', 'yard-page-guard') ?></th>
-				<td>
-					<?php
-$reminderContent = get_option('ypg_reminder_email_content', '');
-wp_editor($reminderContent, 'ypg_reminder_email_content', [
-	'textarea_name' => 'ypg_reminder_email_content',
-	'textarea_rows' => 8,
-	'media_buttons' => false,
-	'teeny' => true,
-]);
-?>
-					<div class="description">
-						<p><?= __('De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):', 'yard-page-guard') ?></p>
-						<ol>
-							<li><?= __('Naam van inhoudseigenaar', 'yard-page-guard') ?></li>
-							<li><?= __('Lijst van achterlopende items', 'yard-page-guard') ?></li>
-						</ol>
-					</div>
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Controleer venster footer inhoud', 'yard-page-guard') ?></th>
-				<td>
-					<?php
-$modalFooterContent = get_option('ypg_modal_footer_content', '');
-wp_editor($modalFooterContent, 'ypg_modal_footer_content', [
-	'textarea_name' => 'ypg_modal_footer_content',
-	'textarea_rows' => 6,
-	'media_buttons' => false,
-	'teeny' => true,
-]);
-?>
-					<div class="description">
-						<p><?= __('Een knop kan aangemaakt worden door een link op een nieuwe regel toe te voegen en deze dikgedrukt te maken.', 'yard-page-guard') ?></p>
-					</div>
-				</td>
-			</tr>
-			<tr valign="top">
-				<th scope="row"><?= __('Externe eigenaren kunnen interne data inzien', 'yard-page-guard') ?></th>
-				<td>
+				</div>
+				<div class="ypg-field">
+					<label for="ypg_cron_send_time" title="<?= esc_html(__('Tijdstip waarop de dagelijkse controle voor herzienings- en herinneringsmails wordt uitgevoerd.', 'yard-page-guard')) ?>"><?= esc_html(__('Tijdstip van controle', 'yard-page-guard')) ?></label>
+					<input type="text" inputmode="numeric" maxlength="5" pattern="\d{2}:\d{2}" placeholder="00:00" autocomplete="off" data-ypg-time id="ypg_cron_send_time" name="ypg_cron_send_time" class="ypg-time-input" value="<?= esc_attr(get_option('ypg_cron_send_time', '06:00')); ?>" />
+				</div>
+			</div>
+		</section>
+
+
+
+		<section class="ypg-settings-card">
+			<header class="ypg-settings-card__header">
+				<h2><?= esc_html(__('Herzieningsmail', 'yard-page-guard')) ?></h2>
+				<p class="ypg-settings-card__hint">
+					<?= esc_html(__('Wordt verstuurd zodra een pagina toe is aan een herziening, met het verzoek aan de inhoudseigenaar om de inhoud te controleren.', 'yard-page-guard')) ?>
+				</p>
+				<p class="ypg-settings-card__hint">
+					<?= esc_html(__('Beschikbare variabelen:', 'yard-page-guard')) ?>
+					<code>{name}</code> <?= esc_html(__('naam inhoudseigenaar', 'yard-page-guard')) ?>,
+					<code>{item_list}</code> <?= esc_html(__('lijst te controleren items', 'yard-page-guard')) ?>
+				</p>
+			</header>
+			<div class="ypg-field">
+				<label for="ypg_review_email_subject"><?= esc_html(__('Onderwerp', 'yard-page-guard')) ?></label>
+				<input type="text" id="ypg_review_email_subject" name="ypg_review_email_subject" value="<?= esc_attr(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))); ?>" />
+			</div>
+			<div class="ypg-field ypg-field--full">
+				<label for="ypg_review_email_content"><?= esc_html(__('Inhoud', 'yard-page-guard')) ?></label>
+				<?php $renderEditor('ypg_review_email_content', (string) get_option('ypg_review_email_content', ''), 'name,item_list'); ?>
+			</div>
+		</section>
+
+		<section class="ypg-settings-card">
+			<header class="ypg-settings-card__header">
+				<h2><?= esc_html(__('Herinneringsmail', 'yard-page-guard')) ?></h2>
+				<p class="ypg-settings-card__hint">
+					<?= esc_html(__('Periodieke herinnering aan inhoudseigenaren met achterstallige items die nog gecontroleerd moeten worden. Wordt alleen verstuurd zolang er openstaande herzieningen zijn.', 'yard-page-guard')) ?>
+				</p>
+				<p class="ypg-settings-card__hint">
+					<?= esc_html(__('Beschikbare variabelen:', 'yard-page-guard')) ?>
+					<code>{name}</code> <?= esc_html(__('naam inhoudseigenaar', 'yard-page-guard')) ?>,
+					<code>{item_list}</code> <?= esc_html(__('lijst van achterlopende items', 'yard-page-guard')) ?>
+				</p>
+			</header>
+			<div class="ypg-field">
+				<label for="ypg_reminder_email_subject"><?= esc_html(__('Onderwerp', 'yard-page-guard')) ?></label>
+				<input type="text" id="ypg_reminder_email_subject" name="ypg_reminder_email_subject" value="<?= esc_attr(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))); ?>" />
+			</div>
+			<div class="ypg-field ypg-field--full">
+				<label for="ypg_reminder_email_content"><?= esc_html(__('Inhoud', 'yard-page-guard')) ?></label>
+				<?php $renderEditor('ypg_reminder_email_content', (string) get_option('ypg_reminder_email_content', ''), 'name,item_list'); ?>
+			</div>
+		</section>
+
+		<section class="ypg-settings-card">
+			<header class="ypg-settings-card__header">
+				<h2><?= esc_html(__('Controleer venster', 'yard-page-guard')) ?></h2>
+				<p class="ypg-settings-card__hint"><?= esc_html(__('Wordt getoond aan inhoudseigenaren tijdens de controle van hun pagina\'s.', 'yard-page-guard')) ?></p>
+			</header>
+			<div class="ypg-field ypg-field--full">
+				<label for="ypg_modal_footer_content"><?= esc_html(__('Footer inhoud', 'yard-page-guard')) ?></label>
+				<?php $renderEditor('ypg_modal_footer_content', (string) get_option('ypg_modal_footer_content', ''), '', 6, 'button'); ?>
+			</div>
+		</section>
+
+		<section class="ypg-settings-card">
+			<header class="ypg-settings-card__header">
+				<h2><?= esc_html(__('Toegang', 'yard-page-guard')) ?></h2>
+			</header>
+			<div class="ypg-field">
+				<label class="ypg-toggle">
 					<input type="checkbox" name="ypg_show_internal_data_on_review" <?= checked(get_option('ypg_show_internal_data_on_review', false)) ?> />
-				</td>
-			</tr>
-		</table>
+					<span><?= esc_html(__('Externe eigenaren kunnen interne data inzien', 'yard-page-guard')) ?></span>
+				</label>
+			</div>
+		</section>
+
 		<?php submit_button(); ?>
 	</form>
 </div>

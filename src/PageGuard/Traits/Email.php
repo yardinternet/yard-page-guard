@@ -119,7 +119,7 @@ trait Email
 		);
 	}
 
-	private function formatSubject(string $title = 'Houdbaarheidsmodule'): string
+	private function formatSubject(string $title = 'Inhoudseigenarenmodule'): string
 	{
 		return sprintf(
 			'%s - %s',
@@ -130,9 +130,47 @@ trait Email
 
 	/**
 	 * Send a generic HTML email.
+	 *
+	 * @param array<int,string>   $headers
+	 * @param array<string,mixed> $context Optional metadata about what this mail
+	 *                                     concerns (e.g. an `items` list for the
+	 *                                     review/reminder events). Surfaces in the
+	 *                                     `ypg_email_log` CPT entry so admins can
+	 *                                     see which pages a mail covered.
 	 */
-	private function sendEmail(string $to, string $subject, string $message, array $headers): bool
+	private function sendEmail(string $to, string $subject, string $message, array $headers, array $context = []): bool
 	{
-		return wp_mail($to, $subject, $message, $headers);
+		$sent = wp_mail($to, $subject, $message, $headers);
+
+		// EmailLogRecorder subscribes for admin-visible logging; ops can still
+		// rely on trigger_error below for stderr alerts on failures.
+		do_action('ypg/email_sent', $sent, $to, $subject, $message, $headers, $context);
+
+		if (! $sent) {
+			trigger_error(
+				sprintf('[yard-page-guard] Email failed to %s — subject: %s', $to, $subject),
+				E_USER_WARNING
+			);
+		}
+
+		return $sent;
+	}
+
+	/**
+	 * Flatten ReviewItems into the shape stored in the email log so the admin
+	 * overview can link back to each post the mail concerned.
+	 *
+	 * @param ReviewItem[] $items
+	 *
+	 * @return array<int,array{id:int,title:string,link:string,review_date:string}>
+	 */
+	private function itemsForLog(array $items): array
+	{
+		return array_map(static fn (ReviewItem $item) => [
+			'id' => $item->ID(),
+			'title' => $item->title(),
+			'link' => $item->reviewLink(),
+			'review_date' => $item->reviewDate(),
+		], $items);
 	}
 }

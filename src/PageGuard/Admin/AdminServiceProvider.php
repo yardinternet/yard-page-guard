@@ -5,6 +5,7 @@ namespace Yard\PageGuard\Admin;
 use WP_Query;
 use Yard\PageGuard\Admin\Controllers\AdminOverviewController;
 use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
+use Yard\PageGuard\EmailLog\EmailLog;
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
@@ -30,12 +31,22 @@ class AdminServiceProvider extends ServiceProvider
 		$this->adminSettingsController->init();
 		$this->adminOverviewController->init();
 
+		(new EmailPlaceholderMigration())->register();
+		(new FooterButtonMigration())->register();
+
 		add_action('enqueue_block_editor_assets', [$this, 'enqueueAdminAssets']);
 
 		/**
 		 * Enqueue admin scripts where necessary
 		 */
 		add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssetsPerHook']);
+
+		/**
+		 * Translation JSON is generated from the source path (resources/js/admin.js) the
+		 * strings are scanned from, but the bundled file (build/admin.js) is what gets
+		 * enqueued. Remap so WordPress looks up the JSON by the source path's hash.
+		 */
+		add_filter('load_script_textdomain_relative_path', [$this, 'mapScriptTranslationPath'], 10, 2);
 
 		/**
 		 * Add post type overview columns
@@ -87,12 +98,36 @@ class AdminServiceProvider extends ServiceProvider
 			filemtime($this->plugin->resourcePath('admin.css')),
 		);
 
+		// Load WordPress' bundled TinyMCE + the `wp.editor` API
+		wp_enqueue_editor();
+
 		wp_enqueue_script(
 			'ypg-editor-scripts',
 			$this->plugin->resourceUrl('admin.js'),
-			['wp-dom-ready'],
+			['wp-dom-ready', 'wp-i18n', 'editor'],
 			filemtime($this->plugin->resourcePath('admin.js')),
 		);
+
+		wp_set_script_translations('ypg-editor-scripts', 'yard-page-guard', $this->plugin->rootPath . '/languages');
+	}
+
+	/**
+	 * Point our bundled scripts at the translation JSON generated from their source path.
+	 *
+	 * Scripts are built from resources/js/<name>.js into build/<name>.js, but the JSON is
+	 * named after the scanned source path, so map the served path back to the source.
+	 *
+	 * @param string|false $relative The relative path of the script, or false if unknown.
+	 *
+	 * @return string|false
+	 */
+	public function mapScriptTranslationPath($relative, string $src)
+	{
+		if (is_string($relative) && false !== strpos($src, '/' . $this->plugin->getName() . '/build/') && preg_match('#^build/(?<name>.+)\.js$#', $relative, $matches)) {
+			return 'resources/js/' . $matches['name'] . '.js';
+		}
+
+		return $relative;
 	}
 
 	public function enqueueAdminAssetsPerHook(string $hook): void
@@ -112,6 +147,13 @@ class AdminServiceProvider extends ServiceProvider
 			if (in_array($_GET['post_type'], apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
 				$this->enqueueAdminAssets();
 			}
+		}
+
+		// Email log list & detail screens (styles the status pills, items list
+		// and mail preview).
+		$screen = get_current_screen();
+		if ($screen && EmailLog::POST_TYPE === $screen->post_type) {
+			$this->enqueueAdminAssets();
 		}
 	}
 
