@@ -40,6 +40,31 @@ trait Date
 	}
 
 	/**
+	 * Steps a Y-m-d date forward in whole $period/$unit jumps until it lands
+	 * strictly after today, returning the new Y-m-d.
+	 *
+	 * Used to roll a recurring reminder onto its next slot: it collapses any
+	 * missed periods into a single jump (one nudge instead of a backlog) and,
+	 * because the result is always in the future, leaves callers that select on
+	 * `<= today` idempotent — repeated (manual) cron runs the same day can't
+	 * advance the date again or resend.
+	 */
+	public function advanceToFuture(string $base, int $period, string $unit): string
+	{
+		// A non-positive period would never clear today; clamp so the loop always
+		// makes forward progress (the UI enforces a minimum of 1 anyway).
+		$period = max(1, $period);
+		$today = date('Y-m-d');
+
+		$next = $base;
+		while ($next <= $today) {
+			$next = $this->addPeriodToBase($next, $period, $unit);
+		}
+
+		return $next;
+	}
+
+	/**
 	 * Computes the next date for a post's review / reminder meta
 	 *
 	 * @param string $inputFieldName The POST field to check for manual changes
@@ -87,32 +112,44 @@ trait Date
 		return (string) $baseValue;
 	}
 
-	private function computeReviewDate(bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
+	private function computeReviewDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
 	{
 		$datePeriod = (int) get_option('ypg_review_time_period', 1);
 		$dateUnit = get_option('ypg_review_time_unit', 'weeks');
 
+		// The stored value is the comparison baseline, so a form echoing it back
+		// is not mistaken for a manual change. Recomputes run from today: a fresh
+		// verification restarts the review cycle at the moment of checking.
 		return $this->computeDateMeta(
 			'ypg_review_date',
-			false,
+			get_post_meta($postId, 'ypg_review_date', true),
 			$toBeVerified,
 			$wasPreviouslyVerified,
 			$datePeriod,
-			$dateUnit
+			$dateUnit,
+			date('Y-m-d')
 		);
 	}
 
-	private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
+	private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false, string $reviewDate = ''): string
 	{
 		// Get the current reminder date
 		$currentReminderDate = get_post_meta($postId, 'ypg_reminder_date', true);
 
-		// Get the review date (checking POST first for manual updates)
-		$reviewDateInput = isset($_POST['ypg_review_date']) ? sanitize_text_field($_POST['ypg_review_date']) : '';
-		$currentReviewDate = ! empty($reviewDateInput) ? $reviewDateInput : get_post_meta($postId, 'ypg_review_date', true);
+		// The review date this reminder must follow. Callers that compute a new
+		// review date in the same request pass it in; reading it from POST/meta
+		// here would race the not-yet-persisted value and base the reminder on a
+		// stale date.
+		if ('' === $reviewDate) {
+			$reviewDateInput = isset($_POST['ypg_review_date']) ? sanitize_text_field($_POST['ypg_review_date']) : '';
+			$reviewDate = '' !== $reviewDateInput ? $reviewDateInput : (string) get_post_meta($postId, 'ypg_review_date', true);
+		}
 
-		// Fix bugged posts with a reminder date before the review date
-		if (! empty($currentReminderDate) && ! empty($currentReviewDate) && $currentReminderDate <= $currentReviewDate) {
+		// A reminder is the follow-up nag after an unanswered review mail, so it
+		// must land after its review date. An earlier/equal stored value is
+		// corrupt state written by older versions — drop it so it gets
+		// recalculated from $reviewDate below.
+		if (! empty($currentReminderDate) && '' !== $reviewDate && $currentReminderDate <= $reviewDate) {
 			$currentReminderDate = '';
 		}
 
@@ -124,12 +161,12 @@ trait Date
 
 		return $this->computeDateMeta(
 			'ypg_reminder_date',
-			$currentReminderDate, // If it was bugged, this passes as '' and forces a recalculation
+			$currentReminderDate,
 			$toBeVerified,
 			$wasPreviouslyVerified,
 			$finalPeriod,
 			$finalUnit,
-			$currentReviewDate
+			$reviewDate
 		);
 	}
 
