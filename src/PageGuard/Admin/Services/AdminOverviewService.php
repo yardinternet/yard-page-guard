@@ -77,8 +77,8 @@ class AdminOverviewService
 				}
 
 				if ('none' === $reviewDate && $toBeVerified) {
-					$calculatedReviewDate = $this->computeReviewDate((bool) $toBeVerified, $previouslyVerified);
-					$calculatedReminderDate = $this->computeReminderDate($postId, (bool) $toBeVerified, $previouslyVerified);
+					$calculatedReviewDate = $this->computeReviewDate($postId, (bool) $toBeVerified, $previouslyVerified);
+					$calculatedReminderDate = $this->computeReminderDate($postId, (bool) $toBeVerified, $previouslyVerified, $calculatedReviewDate);
 
 					update_post_meta($postId, 'ypg_review_date', $calculatedReviewDate);
 					update_post_meta($postId, 'ypg_reminder_date', $calculatedReminderDate);
@@ -89,7 +89,7 @@ class AdminOverviewService
 				$isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
 
 				update_post_meta($postId, 'ypg_review_date', $reviewDate);
-				update_post_meta($postId, 'ypg_reminder_date', $this->computeReminderDate($postId, $isVerified, $previouslyVerified));
+				update_post_meta($postId, 'ypg_reminder_date', $this->computeReminderDate($postId, $isVerified, $previouslyVerified, $reviewDate));
 			}
 
 			if (null !== $parsedOwner) {

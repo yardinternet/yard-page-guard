@@ -222,6 +222,11 @@ final class DateTest extends TestCase
 
 	public function testComputeReviewDateUsesSiteOptions(): void
 	{
+		$postId = 42;
+
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_review_date', true)
+			->andReturn('');
 		WP_Mock::userFunction('get_option')
 			->with('ypg_review_time_period', 1)
 			->andReturn(2);
@@ -232,13 +237,18 @@ final class DateTest extends TestCase
 		$today = date('Y-m-d');
 		$expected = date('Y-m-d', strtotime('+2 months', strtotime($today)));
 
-		$result = $this->invokeMethod($this->subject, 'computeReviewDate', [true, false]);
+		$result = $this->invokeMethod($this->subject, 'computeReviewDate', [$postId, true, false]);
 
 		$this->assertSame($expected, $result);
 	}
 
 	public function testComputeReviewDateFallsBackToWeeksOnTamperedUnit(): void
 	{
+		$postId = 42;
+
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_review_date', true)
+			->andReturn('');
 		WP_Mock::userFunction('get_option')
 			->with('ypg_review_time_period', 1)
 			->andReturn(1);
@@ -249,9 +259,73 @@ final class DateTest extends TestCase
 		$today = date('Y-m-d');
 		$expected = date('Y-m-d', strtotime('+1 week', strtotime($today)));
 
-		$result = $this->invokeMethod($this->subject, 'computeReviewDate', [true, false]);
+		$result = $this->invokeMethod($this->subject, 'computeReviewDate', [$postId, true, false]);
 
 		$this->assertSame($expected, $result);
+	}
+
+	public function testComputeReviewDateRecomputesFromTodayWhenFormEchoesStoredValue(): void
+	{
+		$postId = 42;
+		$_POST = ['ypg_review_date' => '2024-06-01'];
+
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_review_date', true)
+			->andReturn('2024-06-01');
+		WP_Mock::userFunction('get_option')
+			->with('ypg_review_time_period', 1)
+			->andReturn(12);
+		WP_Mock::userFunction('get_option')
+			->with('ypg_review_time_unit', DateUnit::WEEKS)
+			->andReturn(DateUnit::MONTHS);
+
+		$expected = date('Y-m-d', strtotime('+12 months'));
+
+		// The editor form echoes the stored (stale) date back on save; that is
+		// not a manual change — verifying must restart the cycle from today.
+		$result = $this->invokeMethod($this->subject, 'computeReviewDate', [$postId, true, false]);
+
+		$this->assertSame($expected, $result);
+	}
+
+	public function testComputeReviewDateHonoursManualChangeWhenVerifying(): void
+	{
+		$postId = 42;
+		$_POST = ['ypg_review_date' => '2030-01-01'];
+
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_review_date', true)
+			->andReturn('2024-06-01');
+		WP_Mock::userFunction('get_option')
+			->with('ypg_review_time_period', 1)
+			->andReturn(1);
+		WP_Mock::userFunction('get_option')
+			->with('ypg_review_time_unit', DateUnit::WEEKS)
+			->andReturn(DateUnit::WEEKS);
+
+		$result = $this->invokeMethod($this->subject, 'computeReviewDate', [$postId, true, false]);
+
+		$this->assertSame('2030-01-01', $result);
+	}
+
+	public function testComputeReviewDateKeepsStoredValueWhenStayingUnverified(): void
+	{
+		$postId = 42;
+		$_POST = ['ypg_review_date' => '2026-11-01'];
+
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_review_date', true)
+			->andReturn('2026-11-01');
+		WP_Mock::userFunction('get_option')
+			->with('ypg_review_time_period', 1)
+			->andReturn(1);
+		WP_Mock::userFunction('get_option')
+			->with('ypg_review_time_unit', DateUnit::WEEKS)
+			->andReturn(DateUnit::WEEKS);
+
+		$result = $this->invokeMethod($this->subject, 'computeReviewDate', [$postId, false, false]);
+
+		$this->assertSame('2026-11-01', $result);
 	}
 
 	public function testComputeReminderDateUsesPerPostOverridesWhenSet(): void
@@ -326,5 +400,68 @@ final class DateTest extends TestCase
 		$result = $this->invokeMethod($this->subject, 'computeReminderDate', [$postId, true, false]);
 
 		$this->assertSame('2025-01-08', $result);
+	}
+
+	public function testComputeReminderDateUsesReviewDatePassedByCaller(): void
+	{
+		$postId = 42;
+
+		// No get_post_meta mock for ypg_review_date: when the caller passes the
+		// freshly computed review date, stored meta must not be consulted at all —
+		// reading it here is how reminders ended up based on a stale review date.
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_reminder_date', true)
+			->andReturn('');
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_reminder_time_period', true)
+			->andReturn('1');
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_reminder_time_unit', true)
+			->andReturn(DateUnit::WEEKS);
+
+		$result = $this->invokeMethod($this->subject, 'computeReminderDate', [$postId, true, false, '2025-06-01']);
+
+		$this->assertSame('2025-06-08', $result);
+	}
+
+	public function testComputeReminderDateDiscardsStoredReminderOnOrBeforeReviewDate(): void
+	{
+		$postId = 42;
+
+		// Corrupt state from pre-2.3.x versions: a reminder on/before its review
+		// date. Even on a save that does not verify, it must be recomputed from
+		// the review date instead of kept.
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_reminder_date', true)
+			->andReturn('2025-01-05');
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_reminder_time_period', true)
+			->andReturn('1');
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_reminder_time_unit', true)
+			->andReturn(DateUnit::WEEKS);
+
+		$result = $this->invokeMethod($this->subject, 'computeReminderDate', [$postId, false, false, '2025-06-01']);
+
+		$this->assertSame('2025-06-08', $result);
+	}
+
+	public function testComputeReminderDateKeepsStoredReminderAfterReviewDate(): void
+	{
+		$postId = 42;
+
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_reminder_date', true)
+			->andReturn('2025-06-08');
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_reminder_time_period', true)
+			->andReturn('1');
+		WP_Mock::userFunction('get_post_meta')
+			->with($postId, 'ypg_reminder_time_unit', true)
+			->andReturn(DateUnit::WEEKS);
+
+		$result = $this->invokeMethod($this->subject, 'computeReminderDate', [$postId, false, false, '2025-06-01']);
+
+		$this->assertSame('2025-06-08', $result);
 	}
 }

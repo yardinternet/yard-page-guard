@@ -23,10 +23,10 @@ class VerifyPostController
 	{
 		$postId = (int) $request->get_param('post_id');
 
-		$newReviewDate = $this->computeReviewDate();
+		$newReviewDate = $this->computeReviewDate($postId);
 		$updatedReviewDate = update_post_meta($postId, 'ypg_review_date', $newReviewDate);
 
-		$newReminderDate = $this->computeReminderDate($postId);
+		$newReminderDate = $this->computeReminderDate($postId, true, false, $newReviewDate);
 		$updatedReminderDate = update_post_meta($postId, 'ypg_reminder_date', $newReminderDate);
 
 		$updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', '1');

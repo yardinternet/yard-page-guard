@@ -122,26 +122,47 @@ trait Date
 		return $current;
 	}
 
-	private function computeReviewDate(bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
+	private function computeReviewDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
 	{
+		// The stored value is the comparison baseline, so a form echoing it back
+		// is not mistaken for a manual change. Recomputes run from today: a fresh
+		// verification restarts the review cycle at the moment of checking.
 		return $this->computeDateMeta(
 			'ypg_review_date',
-			null,
+			$this->readMetaString($postId, 'ypg_review_date'),
 			$toBeVerified,
 			$wasPreviouslyVerified,
 			(int) get_option('ypg_review_time_period', 1),
-			$this->resolveUnit(get_option('ypg_review_time_unit', DateUnit::WEEKS))
+			$this->resolveUnit(get_option('ypg_review_time_unit', DateUnit::WEEKS)),
+			date('Y-m-d')
 		);
 	}
 
-	private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
+	private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false, string $reviewDate = ''): string
 	{
-		$reviewDate = $this->effectiveReviewDate($postId);
+		// The review date this reminder must follow. Callers that compute a new
+		// review date in the same request pass it in; deriving it from POST/meta
+		// here would race the not-yet-persisted value and base the reminder on a
+		// stale date.
+		if ('' === $reviewDate) {
+			$reviewDate = $this->effectiveReviewDate($postId);
+		}
+
+		$current = $this->readMetaString($postId, 'ypg_reminder_date');
+
+		// A reminder is the follow-up nag after an unanswered review mail, so it
+		// must land after its review date. An earlier/equal stored value is
+		// corrupt state written by versions before 2.3.x — drop it so it gets
+		// recalculated from $reviewDate below.
+		if (null !== $current && '' !== $reviewDate && $current <= $reviewDate) {
+			$current = null;
+		}
+
 		[$period, $unit] = $this->effectiveReminderPeriod($postId);
 
 		return $this->computeDateMeta(
 			'ypg_reminder_date',
-			$this->readMetaString($postId, 'ypg_reminder_date'),
+			$current,
 			$toBeVerified,
 			$wasPreviouslyVerified,
 			$period,

@@ -66,8 +66,8 @@ final class MetaboxSaver
 			delete_post_meta($postId, 'ypg_reminder_time_unit');
 		}
 
-		$reviewDate = $this->computeReviewDate($toBeVerified, $wasPreviouslyVerified);
-		$reminderDate = $this->computeReminderDate($postId, $toBeVerified, $wasPreviouslyVerified);
+		$reviewDate = $this->computeReviewDate($postId, $toBeVerified, $wasPreviouslyVerified);
+		$reminderDate = $this->computeReminderDate($postId, $toBeVerified, $wasPreviouslyVerified, $reviewDate);
 
 		$this->updateVerificationMeta($postId, $toBeVerified, $reviewDate, $reminderDate);
 	}
