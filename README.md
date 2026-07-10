@@ -32,12 +32,14 @@ Two types of **content owners** can be assigned to a post:
 
 When you assign an owner and check **Gecontroleerd?** in the metabox, the plugin stores a **review date** (next time the page needs a check) and a **reminder date** that follows it. Both dates are computed from the site-wide period/unit settings, or per-post overrides for the reminder.
 
-A daily cron (`ypg_site_cron`, default 06:00 in the site timezone — configurable via the **Tijdstip van versturen** setting) does two things:
+A daily cron (`ypg_site_cron`, default 06:00 in the site timezone — configurable via the **Tijdstip van controle** setting) does two things:
 
 1. **Review notification** — for every post whose `ypg_review_date` is today or earlier and that has not yet been notified, email the owner a list of pages to review. Each link carries an HMAC-signed token (`ypg_review_token`) so the owner can confirm the page from the public side.
-2. **Reminder notification** — for every post whose `ypg_reminder_date` has passed, send a follow-up. Reminders use the per-post period/unit override if set, otherwise the site default.
+2. **Reminder notification** — for every post whose `ypg_reminder_date` has passed, send a follow-up. Reminders use the per-post period/unit override if set, otherwise the site default. Each reminder increments the post's `ypg_reminder_count`, which resets when the page is verified again.
 
-The same cron sweeps the email log (see below), purging entries older than the configured retention window.
+Every run is summarised in the controle log (see below). The same cron also sweeps the email log and controle log, purging entries older than the configured retention window.
+
+Outgoing mail can be paused entirely with the **Automatische e-mails versturen** toggle: while it is off, both notifications skip without touching any post meta, so due items simply wait and are picked up by the first run after re-enabling.
 
 When the owner clicks **Gecontroleerd en akkoord** on the review modal, the `verify-post` REST endpoint flips the post back to verified and rolls both dates forward.
 
@@ -47,13 +49,13 @@ The plugin also mirrors the assigned owner into a few third-party fields used by
 
 Most behavior is configurable from **Inhoudseigenarenmodule → Instellingen** (`/wp-admin/options-general.php?page=page-guard-settings`):
 
-- **Email afzender** — from name, from address, optional BCC for reminders.
+- **Email afzender** — the **Automatische e-mails versturen** kill-switch, from name, from address, optional BCC for reminders.
 - **Periodes** — review period + unit (`days` / `weeks` / `months`), reminder period + unit, and the daily send time.
 - **Herzieningsmail** + **Herinneringsmail** — subject and body. Bodies are edited in WordPress' bundled TinyMCE editor with `{name}` (owner salutation) and `{item_list}` (item list) placeholder chips in the toolbar.
 - **Controleer venster** — modal footer shown on the verify-page modal. The footer editor also exposes a **▢ Knop** toolbar action that wraps selected text in `<a class="ypg-button">…</a>` for the styled call-to-action.
 - **Toegang** — `Show internal data on review`: when enabled, an unauthenticated reviewer is briefly logged in as a dedicated `ypg_review_user` so internal-only blocks render during the review.
 
-The **Inhoudseigenarenmodule** menu (`/wp-admin/admin.php?page=ypg-overview`) groups four pages: the overview itself (every page with an assigned owner, with overdue flags and a bulk-edit form), the **Externe inhoudseigenaren** taxonomy, the **Email log**, and **Instellingen**.
+The **Inhoudseigenarenmodule** menu (`/wp-admin/admin.php?page=ypg-overview`) groups five pages: the overview itself (every page with an assigned owner, with overdue flags and a bulk-edit form), the **Externe inhoudseigenaren** taxonomy, the **Email log**, the **Controle log**, and **Instellingen**.
 
 ### wp-config.php constants
 
@@ -82,9 +84,15 @@ Every outgoing review/reminder mail is captured in the `ypg_email_log` custom po
 
 Entries older than 60 days are purged on the daily cron. Tune the window with the `yard::page-guard/email-log-retention-days` filter (return `0` to disable purging entirely).
 
+### Controle log
+
+Every `ypg_site_cron` run is captured in the `ypg_cron_log` custom post type and surfaced under **Inhoudseigenarenmodule → Controle log** (also linked from the **Geplande controle** card on the settings page). Each entry summarises the run: whether mail sending was enabled, how many mails were sent/failed, and two item lists — posts due for review and posts due for a reminder — each linking to the post with its scheduled date and the number of reminders it had received when the run started.
+
+The due-item snapshot is taken before the notifications go out and independently of the mail toggle, so runs while sending is disabled still log what _would_ have been mailed. The CPT is read-only with the same capability gating as the email log; entries older than 60 days are purged on the daily cron, tunable via the `yard::page-guard/cron-log-retention-days` filter (return `0` to disable purging entirely).
+
 ## Security
 
-- Plugin admin pages (Inhoudseigenarenmodule, Email log, Instellingen) require the `yard_manage_page_guard` capability. The cap is added to the configured roles (`yard::page-guard/admin-roles`, default `administrator`) on plugin activation and stripped again on deactivation; installs that were already active are topped up once via a guarded migration. The gate's cap name is swappable to an existing cap via `yard::page-guard/admin-capability` (e.g. `edit_others_pages`) — when changed away from the default, the plugin leaves role grants untouched since the site already owns that cap.
+- Plugin admin pages (Inhoudseigenarenmodule, Email log, Controle log, Instellingen) require the `yard_manage_page_guard` capability. The cap is added to the configured roles (`yard::page-guard/admin-roles`, default `administrator`) on plugin activation and stripped again on deactivation; installs that were already active are topped up once via a guarded migration. The gate's cap name is swappable to an existing cap via `yard::page-guard/admin-capability` (e.g. `edit_others_pages`) — when changed away from the default, the plugin leaves role grants untouched since the site already owns that cap.
 - Metaboxes are visible to anyone with `edit_pages` while no owner is assigned. Once an owner is in place, only the post author, the assigned WP-user owner, and any holder of `yard_manage_page_guard` can edit the page-guard fields. External owners can never edit via `/wp-admin` — they only verify via the public review link.
 - Review links are signed with HMAC-SHA256 over `post_id|owner_email|review_date`, base64url-encoded. The HMAC key comes from `YPG_AUTH_SALT` (see [wp-config.php constants](#wp-configphp-constants)); PDC/Pub cross-site setups must share the same value.
 - All `$_GET`/`$_POST` reads pass through `sanitize_text_field`, `isset` guards, and explicit type checks (see [Traits/Token.php](src/PageGuard/Traits/Token.php) and [Metabox/MetaboxAccess.php](src/PageGuard/Metabox/MetaboxAccess.php)).
@@ -118,6 +126,9 @@ apply_filters('yard::page-guard/enable-internal-data-sync', true);
 // Days to keep email-log entries. Return 0 to disable purging.
 apply_filters('yard::page-guard/email-log-retention-days', 60);
 
+// Days to keep controle-log (cron run) entries. Return 0 to disable purging.
+apply_filters('yard::page-guard/cron-log-retention-days', 60);
+
 // Fires after every plugin-sent email. EmailLogRecorder subscribes here to
 // persist the CPT entry; unhook it to disable admin-visible logging.
 do_action('ypg/email_sent', bool $sent, string $to, string $subject, string $message, array $headers, array $context);
@@ -132,6 +143,7 @@ do_action('yard::page-guard/after-internal-data-removed', int $postId);
 ```
 src/PageGuard/
 ├── Admin/            Settings + overview controllers, custom post columns, bulk edit, one-off migrations
+├── CronLog/          ypg_cron_log CPT ("Controle log"), per-run summary recorder, retention sweep
 ├── EmailLog/         ypg_email_log CPT, the `ypg/email_sent` recorder, retention sweep
 ├── Enums/            ContentOwnerType, DateUnit — closed sets of valid strings
 ├── Foundation/       Plugin bootstrapping, service-provider plumbing, AdminCapability
@@ -186,7 +198,7 @@ add_filter('cron_schedules', function ($schedules) {
 wp_schedule_event(time(), 'five_seconds', 'ypg_site_cron');
 ```
 
-The event will then fire every 5 seconds. Make sure your dev environment intercepts outgoing email (Mailpit, MailHog, or similar) and that at least one post has a content owner + review date assigned so a notification is actually generated. While iterating, the **Email log** submenu shows every send (recipient, items, status, body) so you don't need to dig through the SMTP catcher to see what was produced.
+The event will then fire every 5 seconds. Make sure your dev environment intercepts outgoing email (Mailpit, MailHog, or similar) and that at least one post has a content owner + review date assigned so a notification is actually generated. While iterating, the **Email log** submenu shows every send (recipient, items, status, body) and the **Controle log** shows what each run found due, so you don't need to dig through the SMTP catcher to see what was produced.
 
 ### Frontend assets
 

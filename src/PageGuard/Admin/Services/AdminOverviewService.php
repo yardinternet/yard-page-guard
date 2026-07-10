@@ -74,6 +74,7 @@ class AdminOverviewService
 
 					delete_post_meta($postId, 'ypg_review_mail_sent');
 					delete_post_meta($postId, 'ypg_last_reminder_date');
+					delete_post_meta($postId, 'ypg_reminder_count');
 				}
 
 				if ('none' === $reviewDate && $toBeVerified) {
@@ -211,7 +212,7 @@ class AdminOverviewService
 			$formattedNextReviewDate = $this->formatDate($nextReviewDate);
 			$lastReviewDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) : __('N.v.t.', 'yard-page-guard');
 			$lastReminderDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_reminder_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_reminder_date', true)) : __('N.v.t.', 'yard-page-guard');
-			$reviewStatus = __('Gecontroleerd', 'yard-page-guard');
+			$reviewStatus = __('Op schema', 'yard-page-guard');
 			$contentOwner = (ContentOwnerType::EXTERNAL === $contentOwnerType)
 				? get_term($contentOwnerId, 'ypg_external_content_owner')
 				: get_user_by('ID', $contentOwnerId);

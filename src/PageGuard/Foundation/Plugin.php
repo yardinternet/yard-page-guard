@@ -15,7 +15,6 @@ class Plugin
 	public function __construct(string $rootPath)
 	{
 		$this->rootPath = $rootPath;
-		\load_plugin_textdomain($this->getName(), false, sprintf('%s/languages/', $this->getName()));
 
 		$this->config = new Config($this->rootPath . '/config');
 		$this->config->setProtectedNodes(['core']);

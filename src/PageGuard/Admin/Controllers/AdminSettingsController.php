@@ -38,6 +38,9 @@ class AdminSettingsController
 			'sanitize_callback' => static fn ($value) => preg_match('/^\d{2}:\d{2}$/', (string) $value) ? $value : '06:00',
 			'default' => '06:00',
 		]);
+		register_setting('ypg_settings', 'ypg_emails_enabled', [
+			'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
+		]);
 		register_setting('ypg_settings', 'ypg_email_from_name');
 		register_setting('ypg_settings', 'ypg_email_from_address');
 		register_setting('ypg_settings', 'ypg_reminder_email_bcc');
