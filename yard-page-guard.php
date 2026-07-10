@@ -6,8 +6,6 @@ declare(strict_types=1);
  * Description:     Wijs inhoudseigenaren toe aan pagina's, zodat zij deze als 'gecontroleerd' kunnen markeren en automatische herinneringsmails ontvangen op basis van zelf ingestelde datums en intervallen.
  * Author:          Yard | Digital Agency
  * Author URI:      http://www.yard.nl
- * Text Domain:     yard-page-guard
- * Domain Path:     /languages
  * Version:         2.3.0
  *
  * @package         Yard_Page_Guard

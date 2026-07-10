@@ -12,6 +12,7 @@ return [
 		Yard\PageGuard\Frontend\FrontendServiceProvider::class,
 		Yard\PageGuard\Taxonomy\TaxonomyServiceProvider::class,
 		Yard\PageGuard\EmailLog\EmailLogServiceProvider::class,
+		Yard\PageGuard\CronLog\CronLogServiceProvider::class,
 		Yard\PageGuard\ContentOwner\OwnerSyncServiceProvider::class,
 
 		/** Providers specific to the admin */

@@ -42,13 +42,6 @@ class AdminServiceProvider extends ServiceProvider
 		add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssetsPerHook']);
 
 		/**
-		 * Translation JSON is generated from the source path (resources/js/admin.js) the
-		 * strings are scanned from, but the bundled file (build/admin.js) is what gets
-		 * enqueued. Remap so WordPress looks up the JSON by the source path's hash.
-		 */
-		add_filter('load_script_textdomain_relative_path', [$this, 'mapScriptTranslationPath'], 10, 2);
-
-		/**
 		 * Add post type overview columns
 		 */
 		foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
@@ -107,27 +100,6 @@ class AdminServiceProvider extends ServiceProvider
 			['wp-dom-ready', 'wp-i18n', 'editor'],
 			filemtime($this->plugin->resourcePath('admin.js')),
 		);
-
-		wp_set_script_translations('ypg-editor-scripts', 'yard-page-guard', $this->plugin->rootPath . '/languages');
-	}
-
-	/**
-	 * Point our bundled scripts at the translation JSON generated from their source path.
-	 *
-	 * Scripts are built from resources/js/<name>.js into build/<name>.js, but the JSON is
-	 * named after the scanned source path, so map the served path back to the source.
-	 *
-	 * @param string|false $relative The relative path of the script, or false if unknown.
-	 *
-	 * @return string|false
-	 */
-	public function mapScriptTranslationPath($relative, string $src)
-	{
-		if (is_string($relative) && false !== strpos($src, '/' . $this->plugin->getName() . '/build/') && preg_match('#^build/(?<name>.+)\.js$#', $relative, $matches)) {
-			return 'resources/js/' . $matches['name'] . '.js';
-		}
-
-		return $relative;
 	}
 
 	public function enqueueAdminAssetsPerHook(string $hook): void
@@ -149,10 +121,10 @@ class AdminServiceProvider extends ServiceProvider
 			}
 		}
 
-		// Email log list & detail screens (styles the status pills, items list
-		// and mail preview).
+		// Email & cron log list & detail screens (styles the status pills and
+		// item lists, plus the mail preview on the email log).
 		$screen = get_current_screen();
-		if ($screen && EmailLog::POST_TYPE === $screen->post_type) {
+		if ($screen && in_array($screen->post_type, [EmailLog::POST_TYPE, CronLog::POST_TYPE], true)) {
 			$this->enqueueAdminAssets();
 		}
 	}
@@ -288,7 +260,7 @@ class AdminServiceProvider extends ServiceProvider
 
 		if ('ypg_is_verified' === $column) {
 			$isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
-			echo $isVerified ? __('Gecontroleerd', 'yard-page-guard') : ($reviewDate && date('Y-m-d') > $reviewDate ? __('Achterstallig', 'yard-page-guard') : __('N.v.t.', 'yard-page-guard'));
+			echo $isVerified ? __('Op schema', 'yard-page-guard') : ($reviewDate && date('Y-m-d') > $reviewDate ? __('Achterstallig', 'yard-page-guard') : __('N.v.t.', 'yard-page-guard'));
 		}
 
 		if ('ypg_review_date' === $column) {

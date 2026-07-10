@@ -19,7 +19,11 @@ class ReviewNotification extends Event
 
 	protected function execute(): void
 	{
-		$items = $this->getItems();
+		if (! get_option('ypg_emails_enabled', true)) {
+			return;
+		}
+
+		$items = self::dueItems();
 
 		if ([] === $items) {
 			return;
@@ -29,9 +33,12 @@ class ReviewNotification extends Event
 	}
 
 	/**
+	 * Posts whose review date has passed and that haven't been mailed yet.
+	 * Public so the cron log can snapshot what a run found due.
+	 *
 	 * @return \WP_Post[]
 	 */
-	private function getItems(): array
+	public static function dueItems(): array
 	{
 		$args = [
 			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),

@@ -56,6 +56,7 @@ final class MetaboxSaver
 		if ($toBeVerified || ! $toBeVerified && $wasPreviouslyVerified) {
 			delete_post_meta($postId, 'ypg_review_mail_sent');
 			delete_post_meta($postId, 'ypg_last_reminder_date');
+			delete_post_meta($postId, 'ypg_reminder_count');
 		}
 
 		if ('custom' === ($_POST['ypg_reminder_type'] ?? 'standard')) {

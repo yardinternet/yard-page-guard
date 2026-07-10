@@ -49,7 +49,10 @@ $cronDateTimeFormat = trim(get_option('date_format', 'd F Y') . ' ' . get_option
 		<section class="ypg-settings-card">
 			<header class="ypg-settings-card__header">
 				<h2><?= esc_html(__('Geplande controle', 'yard-page-guard')) ?></h2>
-				<p class="ypg-settings-card__hint"><?= esc_html(__('Status van de dagelijkse controle die de herzienings- en herinneringsmails verstuurt.', 'yard-page-guard')) ?></p>
+				<p class="ypg-settings-card__hint">
+					<?= esc_html(__('Status van de dagelijkse controle die de herzienings- en herinneringsmails verstuurt.', 'yard-page-guard')) ?>
+					<a href="<?= esc_url(admin_url('edit.php?post_type=' . \Yard\PageGuard\CronLog\CronLog::POST_TYPE)) ?>"><?= esc_html(__('Bekijk het controle log', 'yard-page-guard')) ?></a>
+				</p>
 			</header>
 			<div class="ypg-settings-grid">
 				<div class="ypg-cron-stat">
@@ -71,8 +74,14 @@ $cronDateTimeFormat = trim(get_option('date_format', 'd F Y') . ' ' . get_option
 		<section class="ypg-settings-card">
 			<header class="ypg-settings-card__header">
 				<h2><?= esc_html(__('Email afzender', 'yard-page-guard')) ?></h2>
-				<p class="ypg-settings-card__hint"><?= esc_html(__('Hoe herzienings- en herinneringsmails worden verstuurd.', 'yard-page-guard')) ?></p>
+				<p class="ypg-settings-card__hint"><?= esc_html(__('Hoe herzienings- en herinneringsmails worden verstuurd. Staat versturen uit, dan blijven openstaande items wachten tot het weer aan staat.', 'yard-page-guard')) ?></p>
 			</header>
+			<div class="ypg-field">
+				<label class="ypg-toggle">
+					<input type="checkbox" name="ypg_emails_enabled" <?= checked(get_option('ypg_emails_enabled', true)) ?> />
+					<span><?= esc_html(__('Automatische e-mails versturen', 'yard-page-guard')) ?></span>
+				</label>
+			</div>
 			<div class="ypg-settings-grid">
 				<div class="ypg-field">
 					<label for="ypg_email_from_name"><?= esc_html(__('Afzendnaam', 'yard-page-guard')) ?></label>

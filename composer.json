@@ -22,7 +22,6 @@
 	"require-dev": {
 		"10up/wp_mock": "^0.5.0",
 		"php-stubs/acf-pro-stubs": "^6.5",
-		"wp-cli/i18n-command": "^2.6",
 		"yard/php-cs-fixer-rules": "^1.0"
 	},
 	"autoload": {
@@ -37,12 +36,6 @@
 	},
 	"scripts": {
 		"test": "phpunit --testdox --colors=always --bootstrap='./tests/bootstrap.php' tests ",
-		"format": "vendor/bin/php-cs-fixer fix",
-		"translate": [
-			"vendor/bin/wp i18n make-pot . ./languages/yard-page-guard.pot --domain='yard-page-guard' --exclude='vendor,node_modules,build,tests,config'",
-			"bash -c 'for file in ./languages/*.po; do vendor/bin/wp i18n update-po ./languages/yard-page-guard.pot \"$file\"; done'",
-			"vendor/bin/wp i18n make-mo ./languages/ ./languages/",
-			"vendor/bin/wp i18n make-json ./languages/ --pretty-print"
-		]
+		"format": "vendor/bin/php-cs-fixer fix"
 	}
 }

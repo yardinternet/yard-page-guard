@@ -47,7 +47,7 @@ $query = $service->handleOverviewQuery();
 		<label for="filter-status"><?= __('Status', 'yard-page-guard') ?>:</label>
 		<select name="ypg_filter_status" id="filter-status">
 			<option value="all" <?= selected('all', $query['filters']['status'], false) ?>><?= __('Alle', 'yard-page-guard') ?></option>
-			<option value="on_schedule" <?= selected('on_schedule', $query['filters']['status'], false) ?>><?= __('Gecontroleerd', 'yard-page-guard') ?></option>
+			<option value="on_schedule" <?= selected('on_schedule', $query['filters']['status'], false) ?>><?= __('Op schema', 'yard-page-guard') ?></option>
 			<option value="overdue" <?= selected('overdue', $query['filters']['status'], false) ?>><?= __('Achterstallig', 'yard-page-guard') ?></option>
 		</select>
 

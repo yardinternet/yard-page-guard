@@ -34,6 +34,7 @@ class VerifyPostController
 
 		delete_post_meta($postId, 'ypg_review_mail_sent');
 		delete_post_meta($postId, 'ypg_last_reminder_date');
+		delete_post_meta($postId, 'ypg_reminder_count');
 
 		header('Content-Type: text/html; charset=utf-8');
 		header('Access-Control-Allow-Origin: *');

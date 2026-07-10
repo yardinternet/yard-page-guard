@@ -19,7 +19,11 @@ class ReminderNotification extends Event
 
 	protected function execute(): void
 	{
-		$items = $this->getItems();
+		if (! get_option('ypg_emails_enabled', true)) {
+			return;
+		}
+
+		$items = self::dueItems();
 
 		if ([] === $items) {
 			return;
@@ -29,9 +33,12 @@ class ReminderNotification extends Event
 	}
 
 	/**
+	 * Posts whose reminder date has passed and whose review mail is still
+	 * unanswered. Public so the cron log can snapshot what a run found due.
+	 *
 	 * @return \WP_Post[]
 	 */
-	private function getItems(): array
+	public static function dueItems(): array
 	{
 		$args = [
 			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
@@ -134,5 +141,6 @@ class ReminderNotification extends Event
 
 		update_post_meta($item->ID(), 'ypg_last_reminder_date', date('Y-m-d'));
 		update_post_meta($item->ID(), 'ypg_reminder_date', $this->advanceToFuture($currentReminderDate, $finalDatePeriod, $finalDateUnit));
+		update_post_meta($item->ID(), 'ypg_reminder_count', (int) get_post_meta($item->ID(), 'ypg_reminder_count', true) + 1);
 	}
 }
