@@ -1,12 +1,12 @@
 {
 	"name": "yard-page-guard",
-	"version": "2.2.0",
+	"version": "2.3.0",
 	"description": "Assign content owners to WordPress pages, allowing them to mark pages as 'verified' and receive automated review reminders based on user-defined dates.",
 	"author": "Yard | Digital Agency",
 	"license": "EUPL-1.2",
 	"type": "module",
 	"scripts": {
-		"build": "vite build",
+		"build": "vite build --mode admin && vite build --mode frontend",
 		"lint": "prettier --check . && eslint .",
 		"lint:fix": "prettier --write --ignore-unknown . && eslint --fix",
 		"prepare": "lefthook install"

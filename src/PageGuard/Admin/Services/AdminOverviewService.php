@@ -34,8 +34,9 @@ class AdminOverviewService
 			exit;
 		}
 
+		$parsedOwner = null;
 		if ('none' !== $contentOwner && 'keep' !== $contentOwner) {
-			$contentOwner = $this->parseContentOwnerData($contentOwner);
+			$parsedOwner = $this->parseContentOwnerData($contentOwner);
 		}
 
 		foreach ($postIds as $postId) {
@@ -73,6 +74,7 @@ class AdminOverviewService
 
 					delete_post_meta($postId, 'ypg_review_mail_sent');
 					delete_post_meta($postId, 'ypg_last_reminder_date');
+					delete_post_meta($postId, 'ypg_reminder_count');
 				}
 
 				if ('none' === $reviewDate && $toBeVerified) {
@@ -91,12 +93,12 @@ class AdminOverviewService
 				update_post_meta($postId, 'ypg_reminder_date', $this->computeReminderDate($postId, $isVerified, $previouslyVerified, $reviewDate));
 			}
 
-			if (is_array($contentOwner)) {
-				update_post_meta($postId, 'ypg_post_content_owner_id', $contentOwner['id']);
-				update_post_meta($postId, 'ypg_post_content_owner_name', $contentOwner['name']);
-				update_post_meta($postId, 'ypg_post_content_owner_email', $contentOwner['email']);
-				update_post_meta($postId, 'ypg_post_content_owner_type', $contentOwner['type']);
-				update_post_meta($postId, 'ypg_post_content_owner_phone_number', $contentOwner['phone_number']);
+			if (null !== $parsedOwner) {
+				update_post_meta($postId, 'ypg_post_content_owner_id', $parsedOwner->id());
+				update_post_meta($postId, 'ypg_post_content_owner_name', $parsedOwner->name());
+				update_post_meta($postId, 'ypg_post_content_owner_email', $parsedOwner->email());
+				update_post_meta($postId, 'ypg_post_content_owner_type', $parsedOwner->type());
+				update_post_meta($postId, 'ypg_post_content_owner_phone_number', $parsedOwner->phoneNumber());
 			}
 		}
 
@@ -127,13 +129,13 @@ class AdminOverviewService
 
 			$metaQuery[] = [
 				'key' => 'ypg_post_content_owner_id',
-				'value' => $owner['id'],
+				'value' => $owner->id(),
 				'compare' => '=',
 			];
 
 			$metaQuery[] = [
 				'key' => 'ypg_post_content_owner_type',
-				'value' => $owner['type'],
+				'value' => $owner->type(),
 				'compare' => '=',
 			];
 		}
@@ -210,7 +212,7 @@ class AdminOverviewService
 			$formattedNextReviewDate = $this->formatDate($nextReviewDate);
 			$lastReviewDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) : __('N.v.t.', 'yard-page-guard');
 			$lastReminderDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_reminder_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_reminder_date', true)) : __('N.v.t.', 'yard-page-guard');
-			$reviewStatus = __('Gecontroleerd', 'yard-page-guard');
+			$reviewStatus = __('Op schema', 'yard-page-guard');
 			$contentOwner = (ContentOwnerType::EXTERNAL === $contentOwnerType)
 				? get_term($contentOwnerId, 'ypg_external_content_owner')
 				: get_user_by('ID', $contentOwnerId);

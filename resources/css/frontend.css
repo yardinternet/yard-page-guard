@@ -42,6 +42,7 @@
 			margin-bottom: 0;
 		}
 
+		a.ypg-button,
 		a > strong {
 			display: inline-block;
 			font-weight: 400;
@@ -50,6 +51,7 @@
 			border-radius: 10px;
 			background-color: #294587;
 			color: #fff;
+			text-decoration: none;
 			transition: transform 0.25s ease-in-out;
 
 			&:hover {

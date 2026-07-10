@@ -19,7 +19,11 @@ class ReminderNotification extends Event
 
 	protected function execute(): void
 	{
-		$items = $this->getItems();
+		if (! get_option('ypg_emails_enabled', true)) {
+			return;
+		}
+
+		$items = self::dueItems();
 
 		if ([] === $items) {
 			return;
@@ -29,9 +33,12 @@ class ReminderNotification extends Event
 	}
 
 	/**
+	 * Posts whose reminder date has passed and whose review mail is still
+	 * unanswered. Public so the cron log can snapshot what a run found due.
+	 *
 	 * @return \WP_Post[]
 	 */
-	private function getItems(): array
+	public static function dueItems(): array
 	{
 		$args = [
 			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
@@ -84,9 +91,10 @@ class ReminderNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina\'s', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
-				$headers
+				$headers,
+				['items' => $this->itemsForLog($ownerItems)]
 			)) {
 				trigger_error('[yard-page-guard] Failed to send reminder notification email to ' . $owner->email(), E_USER_WARNING);
 
@@ -110,8 +118,8 @@ class ReminderNotification extends Event
 		$itemList = $this->buildItemListHtml($items, true);
 
 		$values = [
-			$owner->salutation(),
-			$itemList,
+			'name' => $owner->salutation(),
+			'item_list' => $itemList,
 		];
 
 		$contentHtml = $this->replacePlaceholders($content, $values);
@@ -122,19 +130,17 @@ class ReminderNotification extends Event
 	private function updateModuleMeta(ReviewItem $item): void
 	{
 		$currentReminderDate = $item->reminderDate('Y-m-d');
-
 		if (! $this->isValidDate($currentReminderDate)) {
 			$currentReminderDate = date('Y-m-d');
 		}
 
 		$overrideDateUnit = get_post_meta($item->ID(), 'ypg_reminder_time_unit', true);
 		$overrideDatePeriod = (int) get_post_meta($item->ID(), 'ypg_reminder_time_period', true);
-		$finalDateUnit = ! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit', 'weeks');
+		$finalDateUnit = $this->resolveUnit(! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit'));
 		$finalDatePeriod = ! empty($overrideDatePeriod) ? $overrideDatePeriod : (int) get_option('ypg_reminder_time_period', 1);
 
 		update_post_meta($item->ID(), 'ypg_last_reminder_date', date('Y-m-d'));
-		// Advance in whole periods past today (not a single bump from a possibly
-		// stale date) so an overdue reminder can't re-mail on every cron run.
 		update_post_meta($item->ID(), 'ypg_reminder_date', $this->advanceToFuture($currentReminderDate, $finalDatePeriod, $finalDateUnit));
+		update_post_meta($item->ID(), 'ypg_reminder_count', (int) get_post_meta($item->ID(), 'ypg_reminder_count', true) + 1);
 	}
 }

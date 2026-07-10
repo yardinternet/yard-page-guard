@@ -19,7 +19,11 @@ class ReviewNotification extends Event
 
 	protected function execute(): void
 	{
-		$items = $this->getItems();
+		if (! get_option('ypg_emails_enabled', true)) {
+			return;
+		}
+
+		$items = self::dueItems();
 
 		if ([] === $items) {
 			return;
@@ -29,9 +33,12 @@ class ReviewNotification extends Event
 	}
 
 	/**
+	 * Posts whose review date has passed and that haven't been mailed yet.
+	 * Public so the cron log can snapshot what a run found due.
+	 *
 	 * @return \WP_Post[]
 	 */
-	private function getItems(): array
+	public static function dueItems(): array
 	{
 		$args = [
 			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
@@ -80,9 +87,10 @@ class ReviewNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option('ypg_review_email_subject', __('Controleer jouw webpagina\'s', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
-				$headers
+				$headers,
+				['items' => $this->itemsForLog($ownerItems)]
 			)) {
 				trigger_error('[yard-page-guard] Failed to send review notification email to ' . $owner->email(), E_USER_WARNING);
 
@@ -104,8 +112,8 @@ class ReviewNotification extends Event
 		$itemList = $this->buildItemListHtml($items);
 
 		$values = [
-			$owner->salutation(),
-			$itemList,
+			'name' => $owner->salutation(),
+			'item_list' => $itemList,
 		];
 
 		$contentHtml = $this->replacePlaceholders($content, $values);

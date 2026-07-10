@@ -3,9 +3,13 @@
 namespace Yard\PageGuard\Taxonomy;
 
 use WP_Term;
+use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Traits\CascadesOwner;
 
 class ExternalOwnerTaxonomy
 {
+	use CascadesOwner;
+
 	public function register(): void
 	{
 		register_taxonomy('ypg_external_content_owner', apply_filters('yard::page-guard/post-types-to-use', ['page']), [
@@ -166,12 +170,33 @@ class ExternalOwnerTaxonomy
 			return;
 		}
 
+		$previousEmail = (string) (get_term_meta($termId, 'ypg_external_content_owner_email', true) ?: '');
+		$previousPhoneNumber = (string) (get_term_meta($termId, 'ypg_external_content_owner_phone_number', true) ?: '');
+		$previousName = '';
+		$term = get_term($termId, 'ypg_external_content_owner');
+		if ($term && ! is_wp_error($term)) {
+			$previousName = $term->name;
+		}
+		$newName = sanitize_text_field($_POST['name'] ?? $previousName);
+
 		if ('' === $phoneNumber) {
 			delete_term_meta($termId, 'ypg_external_content_owner_phone_number');
 		}
 
 		update_term_meta($termId, 'ypg_external_content_owner_email', $email);
 		update_term_meta($termId, 'ypg_external_content_owner_phone_number', $phoneNumber);
+
+		$ownerChanged = $email !== $previousEmail
+			|| $phoneNumber !== $previousPhoneNumber
+			|| $newName !== $previousName;
+
+		if ($ownerChanged) {
+			$this->cascadeOwnerToPosts($termId, ContentOwnerType::EXTERNAL, [
+				'name' => $newName,
+				'email' => $email,
+				'phone_number' => $phoneNumber,
+			]);
+		}
 
 		// Force the slug to be based on the email address.
 		$slug = sanitize_title($email);

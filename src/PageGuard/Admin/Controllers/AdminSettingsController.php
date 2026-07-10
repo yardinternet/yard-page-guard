@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Admin\Controllers;
 
+use Yard\PageGuard\Foundation\AdminCapability;
 use Yard\PageGuard\Traits\Text;
 
 class AdminSettingsController
@@ -19,9 +20,9 @@ class AdminSettingsController
 	public function addSettingsPage(): void
 	{
 		add_options_page(
-			__('Houdbaarheidsmodule Instellingen', 'yard-page-guard'),
-			__('Houdbaarheidsmodule', 'yard-page-guard'),
-			apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+			__('Inhoudseigenarenmodule Instellingen', 'yard-page-guard'),
+			__('Inhoudseigenaren', 'yard-page-guard'),
+			AdminCapability::name(),
 			'page-guard-settings',
 			[$this, 'renderSettingsPage']
 		);
@@ -33,6 +34,13 @@ class AdminSettingsController
 		register_setting('ypg_settings', 'ypg_review_time_unit');
 		register_setting('ypg_settings', 'ypg_reminder_time_period');
 		register_setting('ypg_settings', 'ypg_reminder_time_unit');
+		register_setting('ypg_settings', 'ypg_cron_send_time', [
+			'sanitize_callback' => static fn ($value) => preg_match('/^\d{2}:\d{2}$/', (string) $value) ? $value : '06:00',
+			'default' => '06:00',
+		]);
+		register_setting('ypg_settings', 'ypg_emails_enabled', [
+			'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
+		]);
 		register_setting('ypg_settings', 'ypg_email_from_name');
 		register_setting('ypg_settings', 'ypg_email_from_address');
 		register_setting('ypg_settings', 'ypg_reminder_email_bcc');
@@ -45,7 +53,7 @@ class AdminSettingsController
 			'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
 		]);
 
-		add_filter('option_page_capability_ypg_settings', fn () => apply_filters('yard::page-guard/capability/admin', 'edit_pages'));
+		add_filter('option_page_capability_ypg_settings', fn () => AdminCapability::name());
 	}
 
 	public function renderSettingsPage(): void

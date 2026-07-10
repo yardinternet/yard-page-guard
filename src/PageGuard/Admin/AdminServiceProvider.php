@@ -5,6 +5,8 @@ namespace Yard\PageGuard\Admin;
 use WP_Query;
 use Yard\PageGuard\Admin\Controllers\AdminOverviewController;
 use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
+use Yard\PageGuard\CronLog\CronLog;
+use Yard\PageGuard\EmailLog\EmailLog;
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
@@ -29,6 +31,9 @@ class AdminServiceProvider extends ServiceProvider
 	{
 		$this->adminSettingsController->init();
 		$this->adminOverviewController->init();
+
+		(new EmailPlaceholderMigration())->register();
+		(new FooterButtonMigration())->register();
 
 		add_action('enqueue_block_editor_assets', [$this, 'enqueueAdminAssets']);
 
@@ -87,10 +92,13 @@ class AdminServiceProvider extends ServiceProvider
 			filemtime($this->plugin->resourcePath('admin.css')),
 		);
 
+		// Load WordPress' bundled TinyMCE + the `wp.editor` API
+		wp_enqueue_editor();
+
 		wp_enqueue_script(
 			'ypg-editor-scripts',
 			$this->plugin->resourceUrl('admin.js'),
-			['wp-dom-ready'],
+			['wp-dom-ready', 'wp-i18n', 'editor'],
 			filemtime($this->plugin->resourcePath('admin.js')),
 		);
 	}
@@ -112,6 +120,13 @@ class AdminServiceProvider extends ServiceProvider
 			if (in_array($_GET['post_type'], apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
 				$this->enqueueAdminAssets();
 			}
+		}
+
+		// Email & cron log list & detail screens (styles the status pills and
+		// item lists, plus the mail preview on the email log).
+		$screen = get_current_screen();
+		if ($screen && in_array($screen->post_type, [EmailLog::POST_TYPE, CronLog::POST_TYPE], true)) {
+			$this->enqueueAdminAssets();
 		}
 	}
 
@@ -246,7 +261,7 @@ class AdminServiceProvider extends ServiceProvider
 
 		if ('ypg_is_verified' === $column) {
 			$isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
-			echo $isVerified ? __('Gecontroleerd', 'yard-page-guard') : ($reviewDate && date('Y-m-d') > $reviewDate ? __('Achterstallig', 'yard-page-guard') : __('N.v.t.', 'yard-page-guard'));
+			echo $isVerified ? __('Op schema', 'yard-page-guard') : ($reviewDate && date('Y-m-d') > $reviewDate ? __('Achterstallig', 'yard-page-guard') : __('N.v.t.', 'yard-page-guard'));
 		}
 
 		if ('ypg_review_date' === $column) {
