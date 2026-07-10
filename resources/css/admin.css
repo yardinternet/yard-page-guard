@@ -176,6 +176,10 @@ body.taxonomy-ypg_external_content_owner {
 	border-radius: 2px;
 }
 
+.ypg-settings-form {
+	margin-top: 1.25rem;
+}
+
 .ypg-settings-form > .submit {
 	display: flex;
 	justify-content: flex-end;
@@ -345,44 +349,6 @@ body.taxonomy-ypg_external_content_owner {
 	display: none;
 }
 
-.ypg-editor {
-	border: 1px solid #dcdcde;
-	border-radius: 6px;
-	overflow: hidden;
-	background: #fff;
-}
-
-.ypg-editor .wp-editor-tools {
-	background: #f6f7f7;
-	border-bottom: 1px solid #dcdcde;
-	padding: 6px;
-	margin: 0;
-}
-
-.ypg-editor .wp-editor-container {
-	border: 0;
-}
-
-.ypg-editor .quicktags-toolbar {
-	border-bottom: 1px solid #dcdcde;
-	background: #f6f7f7;
-}
-
-.ypg-editor textarea.wp-editor-area {
-	border: 0;
-	font-family:
-		ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-	font-size: 0.875rem;
-	line-height: 1.55;
-	padding: 0.75rem;
-	background: #fff;
-}
-
-.ypg-editor textarea.wp-editor-area:focus {
-	outline: 0;
-	box-shadow: inset 0 0 0 1px var(--wp-admin-theme-color, #2271b1);
-}
-
 .ypg-help {
 	margin: 0.5rem 0 0;
 	color: #646970;
@@ -456,6 +422,11 @@ body.taxonomy-ypg_external_content_owner {
 
 .ypg-email-log-preview .content > :first-child {
 	margin-top: 0;
+}
+
+.ypg-rte .wp-editor-container {
+	border-radius: 6px;
+	overflow: hidden;
 }
 
 .ypg-rte-content ul,

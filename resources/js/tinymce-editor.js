@@ -148,7 +148,7 @@ export function mountEditor(wrapper) {
 
 	window.wp.editor.initialize(textarea.id, {
 		mediaButtons: false,
-		quicktags: { buttons: 'strong,em,link,ul,ol,li' },
+		quicktags: false,
 		tinymce: {
 			menubar: false,
 			statusbar: false,
