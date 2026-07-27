@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
+use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Traits\Date;
@@ -127,14 +128,14 @@ class ReminderNotification extends Event
 			$currentReminderDate = date('Y-m-d');
 		}
 
-		$overrideDateUnit = get_post_meta($item->ID(), 'ypg_reminder_time_unit', true);
-		$overrideDatePeriod = (int) get_post_meta($item->ID(), 'ypg_reminder_time_period', true);
+		$overrideDateUnit = get_post_meta($item->ID(), PostMeta::REMINDER_TIME_UNIT, true);
+		$overrideDatePeriod = (int) get_post_meta($item->ID(), PostMeta::REMINDER_TIME_PERIOD, true);
 		$finalDateUnit = ! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit', 'weeks');
 		$finalDatePeriod = ! empty($overrideDatePeriod) ? $overrideDatePeriod : (int) get_option('ypg_reminder_time_period', 1);
 
-		update_post_meta($item->ID(), 'ypg_last_reminder_date', date('Y-m-d'));
+		update_post_meta($item->ID(), PostMeta::LAST_REMINDER_DATE, date('Y-m-d'));
 		// Advance in whole periods past today (not a single bump from a possibly
 		// stale date) so an overdue reminder can't re-mail on every cron run.
-		update_post_meta($item->ID(), 'ypg_reminder_date', $this->advanceToFuture($currentReminderDate, $finalDatePeriod, $finalDateUnit));
+		update_post_meta($item->ID(), PostMeta::REMINDER_DATE, $this->advanceToFuture($currentReminderDate, $finalDatePeriod, $finalDateUnit));
 	}
 }

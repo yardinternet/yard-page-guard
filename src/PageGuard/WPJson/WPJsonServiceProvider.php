@@ -7,6 +7,7 @@ namespace Yard\PageGuard\WPJson;
 use RuntimeException;
 use WP_Error;
 use WP_REST_Request;
+use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Foundation\ServiceProvider;
 use Yard\PageGuard\Traits\Token;
 use Yard\PageGuard\WPJson\Controllers\ModalInfoController;
@@ -68,8 +69,8 @@ class WPJsonServiceProvider extends ServiceProvider
 				'type' => 'string',
 				'validate_callback' => function (string $reviewToken, WP_REST_Request $request, string $param) {
 					$postId = (int) $request->get_param('post_id');
-					$contentOwnerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
-					$reviewDate = get_post_meta($postId, 'ypg_review_date', true) ?: '';
+					$contentOwnerEmail = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_EMAIL, true) ?: '';
+					$reviewDate = get_post_meta($postId, PostMeta::REVIEW_DATE, true) ?: '';
 					if ('' === $contentOwnerEmail || '' === $reviewDate) {
 						return false;
 					}

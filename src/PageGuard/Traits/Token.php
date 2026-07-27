@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Traits;
 
 use RuntimeException;
+use Yard\PageGuard\Enums\PostMeta;
 
 trait Token
 {
@@ -65,8 +66,8 @@ trait Token
 			return null;
 		}
 
-		$contentOwnerEmail = get_post_meta(get_the_ID(), 'ypg_post_content_owner_email', true) ?: '';
-		$reviewDate = get_post_meta(get_the_ID(), 'ypg_review_date', true) ?: '';
+		$contentOwnerEmail = get_post_meta(get_the_ID(), PostMeta::POST_CONTENT_OWNER_EMAIL, true) ?: '';
+		$reviewDate = get_post_meta(get_the_ID(), PostMeta::REVIEW_DATE, true) ?: '';
 
 		if ('' === $contentOwnerEmail || '' === $reviewDate) {
 			return null;

@@ -7,6 +7,7 @@ namespace Yard\PageGuard\Traits;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use Yard\PageGuard\Enums\PostMeta;
 
 trait Date
 {
@@ -122,7 +123,7 @@ trait Date
 		// verification restarts the review cycle at the moment of checking.
 		return $this->computeDateMeta(
 			'ypg_review_date',
-			get_post_meta($postId, 'ypg_review_date', true),
+			get_post_meta($postId, PostMeta::REVIEW_DATE, true),
 			$toBeVerified,
 			$wasPreviouslyVerified,
 			$datePeriod,
@@ -134,7 +135,7 @@ trait Date
 	private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false, string $reviewDate = ''): string
 	{
 		// Get the current reminder date
-		$currentReminderDate = get_post_meta($postId, 'ypg_reminder_date', true);
+		$currentReminderDate = get_post_meta($postId, PostMeta::REMINDER_DATE, true);
 
 		// The review date this reminder must follow. Callers that compute a new
 		// review date in the same request pass it in; reading it from POST/meta
@@ -142,7 +143,7 @@ trait Date
 		// stale date.
 		if ('' === $reviewDate) {
 			$reviewDateInput = isset($_POST['ypg_review_date']) ? sanitize_text_field($_POST['ypg_review_date']) : '';
-			$reviewDate = '' !== $reviewDateInput ? $reviewDateInput : (string) get_post_meta($postId, 'ypg_review_date', true);
+			$reviewDate = '' !== $reviewDateInput ? $reviewDateInput : (string) get_post_meta($postId, PostMeta::REVIEW_DATE, true);
 		}
 
 		// A reminder is the follow-up nag after an unanswered review mail, so it
@@ -153,8 +154,8 @@ trait Date
 			$currentReminderDate = '';
 		}
 
-		$dateUnitOverride = get_post_meta($postId, 'ypg_reminder_time_unit', true);
-		$datePeriodOverride = (int) get_post_meta($postId, 'ypg_reminder_time_period', true);
+		$dateUnitOverride = get_post_meta($postId, PostMeta::REMINDER_TIME_UNIT, true);
+		$datePeriodOverride = (int) get_post_meta($postId, PostMeta::REMINDER_TIME_PERIOD, true);
 
 		$finalPeriod = ! empty($datePeriodOverride) ? $datePeriodOverride : (int) get_option('ypg_reminder_time_period', 1);
 		$finalUnit = ! empty($dateUnitOverride) ? $dateUnitOverride : get_option('ypg_reminder_time_unit', 'weeks');
