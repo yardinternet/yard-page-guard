@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
+use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Traits\Date;
@@ -40,17 +41,17 @@ class ReviewNotification extends Event
 			'meta_query' => [
 				'relation' => 'AND',
 				[
-					'key' => 'ypg_post_content_owner_email',
+					'key' => PostMeta::POST_CONTENT_OWNER_EMAIL,
 					'compare' => 'EXISTS',
 				],
 				[
-					'key' => 'ypg_review_date',
+					'key' => PostMeta::REVIEW_DATE,
 					'value' => date('Y-m-d'),
 					'compare' => '<=',
 					'type' => 'DATE',
 				],
 				[
-					'key' => 'ypg_review_mail_sent',
+					'key' => PostMeta::REVIEW_MAIL_SENT,
 					'compare' => 'NOT EXISTS',
 				],
 			],
@@ -115,7 +116,7 @@ class ReviewNotification extends Event
 
 	private function updateModuleMeta(ReviewItem $item): void
 	{
-		update_post_meta($item->ID(), 'ypg_is_verified', '0');
-		update_post_meta($item->ID(), 'ypg_review_mail_sent', '1');
+		update_post_meta($item->ID(), PostMeta::IS_VERIFIED, '0');
+		update_post_meta($item->ID(), PostMeta::REVIEW_MAIL_SENT, '1');
 	}
 }

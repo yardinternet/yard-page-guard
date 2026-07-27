@@ -119,7 +119,7 @@ class AdminOverviewService
 
 		$metaQuery = [
 			[
-				'key' => 'ypg_post_content_owner_email',
+				'key' => PostMeta::POST_CONTENT_OWNER_EMAIL,
 				'compare' => 'EXISTS',
 			],
 		];
@@ -128,13 +128,13 @@ class AdminOverviewService
 			$owner = $this->parseContentOwnerData($filterOwner);
 
 			$metaQuery[] = [
-				'key' => 'ypg_post_content_owner_id',
+				'key' => PostMeta::POST_CONTENT_OWNER_ID,
 				'value' => $owner['id'],
 				'compare' => '=',
 			];
 
 			$metaQuery[] = [
-				'key' => 'ypg_post_content_owner_type',
+				'key' => PostMeta::POST_CONTENT_OWNER_TYPE,
 				'value' => $owner['type'],
 				'compare' => '=',
 			];
@@ -144,14 +144,14 @@ class AdminOverviewService
 
 		if ('on_schedule' === $filterStatus) {
 			$metaQuery[] = [
-				'key' => 'ypg_review_date',
+				'key' => PostMeta::REVIEW_DATE,
 				'value' => $today,
 				'compare' => '>=',
 				'type' => 'DATE',
 			];
 		} elseif ('overdue' === $filterStatus) {
 			$metaQuery[] = [
-				'key' => 'ypg_review_date',
+				'key' => PostMeta::REVIEW_DATE,
 				'value' => $today,
 				'compare' => '<',
 				'type' => 'DATE',
