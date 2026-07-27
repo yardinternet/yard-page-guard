@@ -29,6 +29,7 @@ class ExternalOwnerTaxonomy
 			'show_ui' => true,
 			'show_in_quick_edit' => false,
 			'show_admin_column' => false,
+			'meta_box_cb' => false,
 			'show_in_menu' => false,
 			'hierarchical' => false,
 			'rewrite' => [
