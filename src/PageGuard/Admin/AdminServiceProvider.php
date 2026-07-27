@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Yard\PageGuard\Admin;
 
 use WP_Query;
@@ -47,12 +49,6 @@ class AdminServiceProvider extends ServiceProvider
 			add_action("manage_{$postType}_posts_custom_column", [$this, 'fillCustomColumns'], 10, 2);
 			add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
 		}
-
-		/**
-		 * Add post type quick/bulk edit functionality
-		 */
-		add_action('quick_edit_custom_box', [$this, 'manageQuickEditFields'], 10, 2);
-		add_action('bulk_edit_custom_box', [$this, 'manageQuickEditFields'], 10, 2);
 
 		/**
 		 * Replace description column with email for external_content_owner taxonomy
@@ -134,93 +130,6 @@ class AdminServiceProvider extends ServiceProvider
 		}
 
 		return $orderedColumns;
-	}
-
-	public function manageQuickEditFields(string $columnName, string $postType)
-	{
-		if (! in_array($postType, apply_filters('yard::page-guard/post-types-to-use', ['page']))) {
-			return;
-		}
-
-		switch ($columnName) {
-			case 'ypg_post_content_owner': {
-				$wpUsers = get_users([
-					'capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-				]);
-
-				$externalUsers = get_terms([
-					'taxonomy' => 'ypg_external_content_owner',
-					'hide_empty' => false,
-				]);
-
-				if (is_wp_error($externalUsers)) {
-					return;
-				}
-
-				?>
-					<fieldset class="inline-edit-col-right">
-					<div class="ypg-quick-edit-fields inline-edit-col">
-						<label for="ypg-post-content-owner"><?= __('Inhoudseigenaar', 'yard-page-guard') ?></label>
-						<select name="ypg_post_content_owner" id="ypg-post-content-owner">
-							<option value="none"><?= __('Selecteer een eigenaar', 'yard-page-guard') ?></option>
-							<?php
-								foreach ($wpUsers as $user) {
-									$name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
-
-									printf(
-										'<option value="%s|%s|%s|user">%s</option>',
-										esc_attr($user->ID),
-										esc_attr($name),
-										esc_attr($user->user_email),
-										esc_html($user->display_name)
-									);
-								}
-				?>
-
-							<?php
-					foreach ($externalUsers as $user) {
-						$email = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true) ?: '');
-						$phoneNumber = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true) ?: '');
-
-						printf(
-							'<option value="%s|%s|%s|external|%s">%s (%s)</option>',
-							esc_attr($user->term_id),
-							esc_attr($user->name),
-							esc_attr($email),
-							esc_attr($phoneNumber),
-							esc_html($user->name),
-							__('Extern', 'yard-page-guard')
-						);
-					}
-				?>
-						</select>
-					</div>
-					<?php
-				break;
-			}
-
-			case 'ypg_is_verified': {
-				?>
-					<div class="ypg-quick-edit-fields inline-edit-col">
-						<label>
-							<input type="checkbox" id="ypg-is-verified" name="ypg_is_verified"> <?= __('Gecontroleerd?', 'yard-page-guard') ?>
-						</label>
-					</div>
-				<?php
-				break;
-			}
-
-			case 'ypg_review_date': {
-				?>
-						<div class="ypg-quick-edit-fields inline-edit-col">
-							<label><?= __('Herzieningsdatum', 'yard-page-guard') ?></label>
-							<input type="date" id="ypg-review-date" name="ypg_review_date" min="<?= date('Y-m-d') ?>">
-						</div>
-					</fieldset>
-				<?php
-				break;
-			}
-		}
 	}
 
 	public function manageCustomColumns(array $columns): array

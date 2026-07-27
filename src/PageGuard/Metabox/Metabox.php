@@ -293,23 +293,6 @@ class Metabox
 			if (! wp_verify_nonce($_POST['ypg_metaboxes_nonce'], basename(__FILE__))) {
 				return false;
 			}
-		} elseif (isset($_POST['_inline_edit'])) {
-			if (! wp_verify_nonce($_POST['_inline_edit'], 'inlineeditnonce')) {
-				return false;
-			}
-		} elseif (isset($_REQUEST['_wpnonce'])) {
-			if (! wp_verify_nonce($_REQUEST['_wpnonce'], 'bulk-posts')) {
-				return false;
-			}
-
-			// Keys to copy from $_REQUEST (in case of bulk edit) to $_POST
-			$keys = ['ypg_post_content_owner', 'ypg_review_date', 'ypg_is_verified', 'post_type'];
-
-			foreach ($keys as $key) {
-				if (isset($_REQUEST[$key])) {
-					$_POST[$key] = $_REQUEST[$key];
-				}
-			}
 		} else {
 			return false;
 		}
