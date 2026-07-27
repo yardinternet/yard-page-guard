@@ -12,13 +12,15 @@ use Yard\PageGuard\WPCron\Events\ReviewNotification;
 
 class WPCronServiceProvider extends ServiceProvider
 {
+	public const CRON_HOOK = 'ypg_site_cron';
+
 	public function register(): void
 	{
-		add_action('ypg_site_cron', [ReviewNotification::class, 'init']);
-		add_action('ypg_site_cron', [ReminderNotification::class, 'init']);
+		add_action(self::CRON_HOOK, [ReviewNotification::class, 'init']);
+		add_action(self::CRON_HOOK, [ReminderNotification::class, 'init']);
 
-		if (! wp_next_scheduled('ypg_site_cron')) {
-			wp_schedule_event($this->timeToExecute(), 'daily', 'ypg_site_cron');
+		if (! wp_next_scheduled(self::CRON_HOOK)) {
+			wp_schedule_event($this->timeToExecute(), 'daily', self::CRON_HOOK);
 		}
 	}
 

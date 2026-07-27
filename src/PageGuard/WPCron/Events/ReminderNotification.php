@@ -41,11 +41,11 @@ class ReminderNotification extends Event
 			'meta_query' => [
 				'relation' => 'AND',
 				[
-					'key' => 'ypg_post_content_owner_email',
+					'key' => PostMeta::POST_CONTENT_OWNER_EMAIL,
 					'compare' => 'EXISTS',
 				],
 				[
-					'key' => 'ypg_reminder_date',
+					'key' => PostMeta::REMINDER_DATE,
 					'value' => date('Y-m-d'),
 					'compare' => '<=',
 					'type' => 'DATE',
@@ -55,7 +55,7 @@ class ReminderNotification extends Event
 				// This keeps a wrongly-early reminder date from mailing before the
 				// review mail.
 				[
-					'key' => 'ypg_review_mail_sent',
+					'key' => PostMeta::REVIEW_MAIL_SENT,
 					'compare' => 'EXISTS',
 				],
 			],
