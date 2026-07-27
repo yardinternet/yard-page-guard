@@ -6,6 +6,8 @@ use WP_Query;
 use Yard\PageGuard\Admin\Controllers\AdminOverviewController;
 use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Enums\PostMeta;
+use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
 use Yard\PageGuard\Traits\Date;
@@ -62,11 +64,11 @@ class AdminServiceProvider extends ServiceProvider
 		 */
 		add_filter('manage_ypg_external_content_owner_custom_column', function (string $content, string $columnName, int $termId) {
 			if ('email' === $columnName) {
-				$content = get_term_meta($termId, 'ypg_external_content_owner_email', true);
+				$content = get_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true);
 			}
 
 			if ('phone_number' === $columnName) {
-				$content = get_term_meta($termId, 'ypg_external_content_owner_phone_number', true);
+				$content = get_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true);
 			}
 
 			return $content;
@@ -177,8 +179,8 @@ class AdminServiceProvider extends ServiceProvider
 
 							<?php
 					foreach ($externalUsers as $user) {
-						$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
-						$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
+						$email = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true) ?: '');
+						$phoneNumber = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true) ?: '');
 
 						printf(
 							'<option value="%s|%s|%s|external|%s">%s (%s)</option>',
@@ -233,19 +235,19 @@ class AdminServiceProvider extends ServiceProvider
 	public function fillCustomColumns(string $column, int $postId): void
 	{
 		if ('ypg_post_content_owner' === $column) {
-			$contentOwner = get_post_meta($postId, 'ypg_post_content_owner_name', true);
+			$contentOwner = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_NAME, true);
 
 			if (false === $contentOwner || '' === $contentOwner) {
 				echo __('Niet ingesteld', 'yard-page-guard');
 			} else {
-				echo $contentOwner . (get_post_meta($postId, 'ypg_post_content_owner_type', true) === ContentOwnerType::EXTERNAL ? ' (' . __('Extern', 'yard-page-guard') . ')' : '');
+				echo $contentOwner . (get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_TYPE, true) === ContentOwnerType::EXTERNAL ? ' (' . __('Extern', 'yard-page-guard') . ')' : '');
 			}
 		}
 
-		$reviewDate = get_post_meta($postId, 'ypg_review_date', true);
+		$reviewDate = get_post_meta($postId, PostMeta::REVIEW_DATE, true);
 
 		if ('ypg_is_verified' === $column) {
-			$isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
+			$isVerified = (bool) get_post_meta($postId, PostMeta::IS_VERIFIED, true);
 			echo $isVerified ? __('Gecontroleerd', 'yard-page-guard') : ($reviewDate && date('Y-m-d') > $reviewDate ? __('Achterstallig', 'yard-page-guard') : __('N.v.t.', 'yard-page-guard'));
 		}
 
@@ -256,8 +258,8 @@ class AdminServiceProvider extends ServiceProvider
 
 	public function makeCustomColumnsSortable(array $columns): array
 	{
-		$columns['ypg_is_verified'] = 'ypg_is_verified';
-		$columns['ypg_review_date'] = 'ypg_review_date';
+		$columns['ypg_is_verified'] = PostMeta::IS_VERIFIED;
+		$columns['ypg_review_date'] = PostMeta::REVIEW_DATE;
 
 		return $columns;
 	}
@@ -275,11 +277,11 @@ class AdminServiceProvider extends ServiceProvider
 			$query->set('meta_query', [
 				'relation' => 'OR',
 				[
-					'key' => 'ypg_is_verified',
+					'key' => PostMeta::IS_VERIFIED,
 					'compare' => 'EXISTS',
 				],
 				[
-					'key' => 'ypg_is_verified',
+					'key' => PostMeta::IS_VERIFIED,
 					'compare' => 'NOT EXISTS',
 				],
 			]);
@@ -293,12 +295,12 @@ class AdminServiceProvider extends ServiceProvider
 			$query->set('meta_query', [
 				'relation' => 'OR',
 				[
-					'key' => 'ypg_review_date',
+					'key' => PostMeta::REVIEW_DATE,
 					'compare' => 'EXISTS',
 					'type' => 'DATE',
 				],
 				[
-					'key' => 'ypg_review_date',
+					'key' => PostMeta::REVIEW_DATE,
 					'compare' => 'NOT EXISTS',
 					'type' => 'DATE',
 				],

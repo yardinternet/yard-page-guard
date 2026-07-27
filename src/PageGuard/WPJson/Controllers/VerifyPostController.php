@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPJson\Controllers;
 
 use WP_REST_Request;
+use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Text;
 use Yard\PageGuard\Traits\Token;
@@ -24,16 +25,16 @@ class VerifyPostController
 		$postId = (int) $request->get_param('post_id');
 
 		$newReviewDate = $this->computeReviewDate($postId);
-		$updatedReviewDate = update_post_meta($postId, 'ypg_review_date', $newReviewDate);
+		$updatedReviewDate = update_post_meta($postId, PostMeta::REVIEW_DATE, $newReviewDate);
 
 		$newReminderDate = $this->computeReminderDate($postId, true, false, $newReviewDate);
-		$updatedReminderDate = update_post_meta($postId, 'ypg_reminder_date', $newReminderDate);
+		$updatedReminderDate = update_post_meta($postId, PostMeta::REMINDER_DATE, $newReminderDate);
 
-		$updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', '1');
-		$updatedLastReviewDate = update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
+		$updatedVerifiedStatus = update_post_meta($postId, PostMeta::IS_VERIFIED, '1');
+		$updatedLastReviewDate = update_post_meta($postId, PostMeta::LAST_REVIEW_DATE, date('Y-m-d'));
 
-		delete_post_meta($postId, 'ypg_review_mail_sent');
-		delete_post_meta($postId, 'ypg_last_reminder_date');
+		delete_post_meta($postId, PostMeta::REVIEW_MAIL_SENT);
+		delete_post_meta($postId, PostMeta::LAST_REMINDER_DATE);
 
 		header('Content-Type: text/html; charset=utf-8');
 		header('Access-Control-Allow-Origin: *');

@@ -3,6 +3,7 @@
 namespace Yard\PageGuard\Taxonomy;
 
 use WP_Term;
+use Yard\PageGuard\Enums\TermMeta;
 
 class ExternalOwnerTaxonomy
 {
@@ -67,7 +68,7 @@ class ExternalOwnerTaxonomy
 
 	public function addUpdateEmailFormField(WP_Term $user): void
 	{
-		$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
+		$email = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true) ?: '');
 		?>
         <tr class="form-field">
             <th scope="row">
@@ -88,7 +89,7 @@ class ExternalOwnerTaxonomy
 
 	public function addUpdatePhoneNumberFormField(WP_Term $user): void
 	{
-		$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
+		$phoneNumber = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true) ?: '');
 		?>
         <tr class="form-field">
             <th scope="row">
@@ -161,17 +162,17 @@ class ExternalOwnerTaxonomy
 		$phoneNumber = trim(sanitize_text_field($_POST['ypg_external_content_owner_phone_number'] ?? ''));
 
 		if ('' === $email || ! is_email($email)) {
-			delete_term_meta($termId, 'ypg_external_content_owner_email');
+			delete_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL);
 
 			return;
 		}
 
 		if ('' === $phoneNumber) {
-			delete_term_meta($termId, 'ypg_external_content_owner_phone_number');
+			delete_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER);
 		}
 
-		update_term_meta($termId, 'ypg_external_content_owner_email', $email);
-		update_term_meta($termId, 'ypg_external_content_owner_phone_number', $phoneNumber);
+		update_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, $email);
+		update_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, $phoneNumber);
 
 		// Force the slug to be based on the email address.
 		$slug = sanitize_title($email);
@@ -212,7 +213,7 @@ class ExternalOwnerTaxonomy
 		$existingTerms = get_terms([
 			'taxonomy' => 'ypg_external_content_owner',
 			'hide_empty' => false,
-			'meta_key' => 'ypg_external_content_owner_email',
+			'meta_key' => TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL,
 			'meta_value' => $email,
 			'fields' => 'ids',
 		]);

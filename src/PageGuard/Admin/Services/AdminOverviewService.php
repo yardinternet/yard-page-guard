@@ -6,6 +6,8 @@ namespace Yard\PageGuard\Admin\Services;
 
 use WP_Query;
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Enums\PostMeta;
+use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Meta;
 use Yard\PageGuard\Traits\Text;
@@ -49,54 +51,54 @@ class AdminOverviewService
 			}
 
 			if ('keep' === $contentOwner && 'keep' === $reviewStatus && 'none' === $reviewDate) {
-				$currentReviewDate = get_post_meta($postId, 'ypg_review_date', true);
+				$currentReviewDate = get_post_meta($postId, PostMeta::REVIEW_DATE, true);
 
 				if (empty($currentReviewDate)) {
 					continue;
 				}
 
-				$dateUnitOverride = get_post_meta($postId, 'ypg_reminder_time_unit', true);
-				$datePeriodOverride = (int) get_post_meta($postId, 'ypg_reminder_time_period', true);
+				$dateUnitOverride = get_post_meta($postId, PostMeta::REMINDER_TIME_UNIT, true);
+				$datePeriodOverride = (int) get_post_meta($postId, PostMeta::REMINDER_TIME_PERIOD, true);
 				$finalPeriod = ! empty($datePeriodOverride) ? $datePeriodOverride : (int) get_option('ypg_reminder_time_period', 1);
 				$finalUnit = ! empty($dateUnitOverride) ? $dateUnitOverride : get_option('ypg_reminder_time_unit', 'weeks');
 
-				update_post_meta($postId, 'ypg_reminder_date', $this->addPeriodToBase($currentReviewDate, $finalPeriod, $finalUnit));
+				update_post_meta($postId, PostMeta::REMINDER_DATE, $this->addPeriodToBase($currentReviewDate, $finalPeriod, $finalUnit));
 
 				continue;
 			}
 
 			if ('keep' !== $reviewStatus) {
-				update_post_meta($postId, 'ypg_is_verified', $toBeVerified);
+				update_post_meta($postId, PostMeta::IS_VERIFIED, $toBeVerified);
 
 				if ($toBeVerified) {
-					update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
+					update_post_meta($postId, PostMeta::LAST_REVIEW_DATE, date('Y-m-d'));
 
-					delete_post_meta($postId, 'ypg_review_mail_sent');
-					delete_post_meta($postId, 'ypg_last_reminder_date');
+					delete_post_meta($postId, PostMeta::REVIEW_MAIL_SENT);
+					delete_post_meta($postId, PostMeta::LAST_REMINDER_DATE);
 				}
 
 				if ('none' === $reviewDate && $toBeVerified) {
 					$calculatedReviewDate = $this->computeReviewDate($postId, (bool) $toBeVerified, $previouslyVerified);
 					$calculatedReminderDate = $this->computeReminderDate($postId, (bool) $toBeVerified, $previouslyVerified, $calculatedReviewDate);
 
-					update_post_meta($postId, 'ypg_review_date', $calculatedReviewDate);
-					update_post_meta($postId, 'ypg_reminder_date', $calculatedReminderDate);
+					update_post_meta($postId, PostMeta::REVIEW_DATE, $calculatedReviewDate);
+					update_post_meta($postId, PostMeta::REMINDER_DATE, $calculatedReminderDate);
 				}
 			}
 
 			if ('none' !== $reviewDate && $this->isValidDate($reviewDate)) {
-				$isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
+				$isVerified = (bool) get_post_meta($postId, PostMeta::IS_VERIFIED, true);
 
-				update_post_meta($postId, 'ypg_review_date', $reviewDate);
-				update_post_meta($postId, 'ypg_reminder_date', $this->computeReminderDate($postId, $isVerified, $previouslyVerified, $reviewDate));
+				update_post_meta($postId, PostMeta::REVIEW_DATE, $reviewDate);
+				update_post_meta($postId, PostMeta::REMINDER_DATE, $this->computeReminderDate($postId, $isVerified, $previouslyVerified, $reviewDate));
 			}
 
 			if (is_array($contentOwner)) {
-				update_post_meta($postId, 'ypg_post_content_owner_id', $contentOwner['id']);
-				update_post_meta($postId, 'ypg_post_content_owner_name', $contentOwner['name']);
-				update_post_meta($postId, 'ypg_post_content_owner_email', $contentOwner['email']);
-				update_post_meta($postId, 'ypg_post_content_owner_type', $contentOwner['type']);
-				update_post_meta($postId, 'ypg_post_content_owner_phone_number', $contentOwner['phone_number']);
+				update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_ID, $contentOwner['id']);
+				update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_NAME, $contentOwner['name']);
+				update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_EMAIL, $contentOwner['email']);
+				update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_TYPE, $contentOwner['type']);
+				update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_PHONE_NUMBER, $contentOwner['phone_number']);
 			}
 		}
 
@@ -161,7 +163,7 @@ class AdminOverviewService
 			'posts_per_page' => $itemsPerPage,
 			'paged' => $currentPage,
 			'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
-			'meta_key' => 'ypg_review_date',
+			'meta_key' => PostMeta::REVIEW_DATE,
 			'orderby' => 'meta_value',
 			'order' => 'ASC',
 			'meta_query' => $metaQuery,
@@ -204,12 +206,12 @@ class AdminOverviewService
 	public function buildTableRows(array $items)
 	{
 		foreach ($items as $reviewItem) {
-			$contentOwnerType = get_post_meta($reviewItem->ID, 'ypg_post_content_owner_type', true);
-			$contentOwnerId = get_post_meta($reviewItem->ID, 'ypg_post_content_owner_id', true);
-			$nextReviewDate = get_post_meta($reviewItem->ID, 'ypg_review_date', true);
+			$contentOwnerType = get_post_meta($reviewItem->ID, PostMeta::POST_CONTENT_OWNER_TYPE, true);
+			$contentOwnerId = get_post_meta($reviewItem->ID, PostMeta::POST_CONTENT_OWNER_ID, true);
+			$nextReviewDate = get_post_meta($reviewItem->ID, PostMeta::REVIEW_DATE, true);
 			$formattedNextReviewDate = $this->formatDate($nextReviewDate);
-			$lastReviewDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_review_date', true)) : __('N.v.t.', 'yard-page-guard');
-			$lastReminderDate = ! empty(get_post_meta($reviewItem->ID, 'ypg_last_reminder_date', true)) ? $this->formatDate(get_post_meta($reviewItem->ID, 'ypg_last_reminder_date', true)) : __('N.v.t.', 'yard-page-guard');
+			$lastReviewDate = ! empty(get_post_meta($reviewItem->ID, PostMeta::LAST_REVIEW_DATE, true)) ? $this->formatDate(get_post_meta($reviewItem->ID, PostMeta::LAST_REVIEW_DATE, true)) : __('N.v.t.', 'yard-page-guard');
+			$lastReminderDate = ! empty(get_post_meta($reviewItem->ID, PostMeta::LAST_REMINDER_DATE, true)) ? $this->formatDate(get_post_meta($reviewItem->ID, PostMeta::LAST_REMINDER_DATE, true)) : __('N.v.t.', 'yard-page-guard');
 			$reviewStatus = __('Gecontroleerd', 'yard-page-guard');
 			$contentOwner = (ContentOwnerType::EXTERNAL === $contentOwnerType)
 				? get_term($contentOwnerId, 'ypg_external_content_owner')
@@ -260,8 +262,8 @@ class AdminOverviewService
 		}
 
 		foreach ($externalUsers as $user) {
-			$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
-			$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
+			$email = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true) ?: '');
+			$phoneNumber = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true) ?: '');
 			$value = "{$user->term_id}|{$user->name}|{$email}|external|{$phoneNumber}";
 			$selected = null !== $filterValue ? selected($value, $filterValue, false) : '';
 			$label = __('Extern', 'yard-page-guard');

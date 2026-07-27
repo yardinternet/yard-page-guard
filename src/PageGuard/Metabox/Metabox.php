@@ -6,6 +6,8 @@ namespace Yard\PageGuard\Metabox;
 
 use WP_Post;
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Enums\PostMeta;
+use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Meta;
 use Yard\PageGuard\Traits\Text;
@@ -52,8 +54,8 @@ class Metabox
 
 	private function contentOwnerMetabox(string $html, int $postId): string
 	{
-		$contentOwnerId = get_post_meta($postId, 'ypg_post_content_owner_id', true);
-		$contentOwnerType = get_post_meta($postId, 'ypg_post_content_owner_type', true);
+		$contentOwnerId = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_ID, true);
+		$contentOwnerType = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_TYPE, true);
 
 		$wpUsers = get_users([
 			'capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
@@ -91,8 +93,8 @@ class Metabox
 
 		if (! is_wp_error($externalUsers)) {
 			foreach ($externalUsers as $user) {
-				$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
-				$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
+				$email = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true) ?: '');
+				$phoneNumber = (string) (get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true) ?: '');
 				$selected = ($contentOwnerId == $user->term_id && ContentOwnerType::EXTERNAL === $contentOwnerType) ? ' selected="selected"' : '';
 
 				$optionsHtml .= sprintf(
@@ -124,7 +126,7 @@ class Metabox
 
 	private function isVerifiedMetabox(string $html, int $postId): string
 	{
-		$isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
+		$isVerified = (bool) get_post_meta($postId, PostMeta::IS_VERIFIED, true);
 		$checked = checked($isVerified, 1, false);
 		$label = __('Gecontroleerd?', 'yard-page-guard');
 
@@ -142,8 +144,8 @@ class Metabox
 
 	private function reviewDateMetabox(string $html, int $postId): string
 	{
-		$reviewDate = get_post_meta($postId, 'ypg_review_date', true);
-		$isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
+		$reviewDate = get_post_meta($postId, PostMeta::REVIEW_DATE, true);
+		$isVerified = (bool) get_post_meta($postId, PostMeta::IS_VERIFIED, true);
 
 		$label = $isVerified
 			? __('Volgende herzieningsdatum', 'yard-page-guard')
@@ -169,8 +171,8 @@ class Metabox
 
 	private function reminderMetabox(string $html, int $postId): string
 	{
-		$postUnit = get_post_meta($postId, 'ypg_reminder_time_unit', true);
-		$postPeriod = get_post_meta($postId, 'ypg_reminder_time_period', true);
+		$postUnit = get_post_meta($postId, PostMeta::REMINDER_TIME_UNIT, true);
+		$postPeriod = get_post_meta($postId, PostMeta::REMINDER_TIME_PERIOD, true);
 		$isDefault = empty($postPeriod) || empty($postUnit);
 		$customReminderAriaHidden = $isDefault ? 'true' : 'false';
 		$currentUnit = ! empty($postUnit) ? $postUnit : get_option('ypg_reminder_time_unit', 'weeks');
@@ -241,21 +243,21 @@ class Metabox
 		$ownerData = $this->parseContentOwnerData($contentOwner);
 		$this->updateOwnerMeta($postId, $ownerData);
 
-		$wasPreviouslyVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
+		$wasPreviouslyVerified = (bool) get_post_meta($postId, PostMeta::IS_VERIFIED, true);
 		$toBeVerified = isset($_POST['ypg_is_verified']);
 
 		// Remove mail sent status if verified (date will update) OR post is manually being unverified
 		if ($toBeVerified || ! $toBeVerified && $wasPreviouslyVerified) {
-			delete_post_meta($postId, 'ypg_review_mail_sent');
-			delete_post_meta($postId, 'ypg_last_reminder_date');
+			delete_post_meta($postId, PostMeta::REVIEW_MAIL_SENT);
+			delete_post_meta($postId, PostMeta::LAST_REMINDER_DATE);
 		}
 
 		if ('custom' === ($_POST['ypg_reminder_type'] ?? 'standard')) {
-			update_post_meta($postId, 'ypg_reminder_time_period', $_POST['ypg_reminder_time_period']);
-			update_post_meta($postId, 'ypg_reminder_time_unit', $_POST['ypg_reminder_time_unit']);
+			update_post_meta($postId, PostMeta::REMINDER_TIME_PERIOD, $_POST['ypg_reminder_time_period']);
+			update_post_meta($postId, PostMeta::REMINDER_TIME_UNIT, $_POST['ypg_reminder_time_unit']);
 		} else {
-			delete_post_meta($postId, 'ypg_reminder_time_period');
-			delete_post_meta($postId, 'ypg_reminder_time_unit');
+			delete_post_meta($postId, PostMeta::REMINDER_TIME_PERIOD);
+			delete_post_meta($postId, PostMeta::REMINDER_TIME_UNIT);
 		}
 
 		$reviewDate = $this->computeReviewDate($postId, $toBeVerified, $wasPreviouslyVerified);
@@ -266,21 +268,21 @@ class Metabox
 
 	private function updateOwnerMeta(int $postId, array $ownerData): void
 	{
-		update_post_meta($postId, 'ypg_post_content_owner_id', $ownerData['id']);
-		update_post_meta($postId, 'ypg_post_content_owner_name', $ownerData['name']);
-		update_post_meta($postId, 'ypg_post_content_owner_email', $ownerData['email']);
-		update_post_meta($postId, 'ypg_post_content_owner_type', $ownerData['type']);
-		update_post_meta($postId, 'ypg_post_content_owner_phone_number', $ownerData['phone_number']);
+		update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_ID, $ownerData['id']);
+		update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_NAME, $ownerData['name']);
+		update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_EMAIL, $ownerData['email']);
+		update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_TYPE, $ownerData['type']);
+		update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_PHONE_NUMBER, $ownerData['phone_number']);
 	}
 
 	private function updateVerificationMeta(int $postId, bool $isVerified, string $reviewDate, string $reminderDate): void
 	{
-		update_post_meta($postId, 'ypg_is_verified', (int) $isVerified);
-		update_post_meta($postId, 'ypg_review_date', $reviewDate);
-		update_post_meta($postId, 'ypg_reminder_date', $reminderDate);
+		update_post_meta($postId, PostMeta::IS_VERIFIED, (int) $isVerified);
+		update_post_meta($postId, PostMeta::REVIEW_DATE, $reviewDate);
+		update_post_meta($postId, PostMeta::REMINDER_DATE, $reminderDate);
 
 		if ($isVerified) {
-			update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
+			update_post_meta($postId, PostMeta::LAST_REVIEW_DATE, date('Y-m-d'));
 		}
 	}
 
@@ -335,8 +337,8 @@ class Metabox
 	private function currentUserHasAccess(int $postId): bool
 	{
 		$post = get_post($postId);
-		$contentOwnerId = get_post_meta($postId, 'ypg_post_content_owner_id', true) ?: '';
-		$contentOwnerType = get_post_meta($postId, 'ypg_post_content_owner_type', true);
+		$contentOwnerId = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_ID, true) ?: '';
+		$contentOwnerType = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_TYPE, true);
 		$currentUser = wp_get_current_user();
 
 		// Make admin roles filterable
@@ -366,7 +368,7 @@ class Metabox
 			return;
 		}
 
-		$contentOwnerName = trim((string) (get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: ''));
+		$contentOwnerName = trim((string) (get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_NAME, true) ?: ''));
 
 		if ('' === $contentOwnerName) {
 			$this->removeInternalData($postId);
@@ -412,9 +414,9 @@ class Metabox
 
 	private function addInternalData(int $postId): void
 	{
-		$ownerName = get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: '';
-		$ownerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
-		$ownerPhone = get_post_meta($postId, 'ypg_post_content_owner_phone_number', true) ?: '';
+		$ownerName = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_NAME, true) ?: '';
+		$ownerEmail = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_EMAIL, true) ?: '';
+		$ownerPhone = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_PHONE_NUMBER, true) ?: '';
 
 		$title = __('Houdbaarheidsmodule', 'yard-page-guard');
 		$label = __('Inhoudseigenaar', 'yard-page-guard') . ': ';

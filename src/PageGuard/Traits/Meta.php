@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Traits;
 
+use Yard\PageGuard\Enums\PostMeta;
+
 trait Meta
 {
 	public function clearReviewMeta(int $postId): void
 	{
 		$keys = [
-			'ypg_post_content_owner_id',
-			'ypg_post_content_owner_name',
-			'ypg_post_content_owner_email',
-			'ypg_post_content_owner_type',
-			'ypg_post_content_owner_phone_number',
-			'ypg_review_date',
-			'ypg_reminder_date',
-			'ypg_is_verified',
-			'ypg_reminder_time_period',
-			'ypg_reminder_time_unit',
-			'ypg_review_mail_sent',
-			'ypg_last_review_date',
-			'ypg_last_reminder_date',
+			PostMeta::POST_CONTENT_OWNER_ID,
+			PostMeta::POST_CONTENT_OWNER_NAME,
+			PostMeta::POST_CONTENT_OWNER_EMAIL,
+			PostMeta::POST_CONTENT_OWNER_TYPE,
+			PostMeta::POST_CONTENT_OWNER_PHONE_NUMBER,
+			PostMeta::REVIEW_DATE,
+			PostMeta::REMINDER_DATE,
+			PostMeta::IS_VERIFIED,
+			PostMeta::REMINDER_TIME_PERIOD,
+			PostMeta::REMINDER_TIME_UNIT,
+			PostMeta::REVIEW_MAIL_SENT,
+			PostMeta::LAST_REVIEW_DATE,
+			PostMeta::LAST_REMINDER_DATE,
 		];
 
 		foreach ($keys as $key) {

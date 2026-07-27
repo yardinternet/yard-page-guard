@@ -8,6 +8,7 @@ use DateTime;
 use DateTimeZone;
 use RuntimeException;
 use WP_Post;
+use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Token;
 
@@ -51,8 +52,8 @@ class ReviewItem
 			return '';
 		}
 
-		$ownerEmail = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true) ?? '';
-		$reviewDate = get_post_meta($this->ID(), 'ypg_review_date', true) ?? '';
+		$ownerEmail = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_EMAIL, true) ?? '';
+		$reviewDate = get_post_meta($this->ID(), PostMeta::REVIEW_DATE, true) ?? '';
 
 		try {
 			$token = $this->generateReviewToken($this->ID(), $ownerEmail, $reviewDate);
@@ -77,7 +78,7 @@ class ReviewItem
 
 	public function reviewDate(string $format = 'd-m-Y'): string
 	{
-		$date = get_post_meta($this->ID(), 'ypg_review_date', true);
+		$date = get_post_meta($this->ID(), PostMeta::REVIEW_DATE, true);
 
 		if (! $this->isValidDate($date)) {
 			return __('Niet ingesteld', 'yard-page-guard');
@@ -90,7 +91,7 @@ class ReviewItem
 
 	public function reminderDate(string $format = 'd-m-Y'): string
 	{
-		$date = get_post_meta($this->ID(), 'ypg_reminder_date', true);
+		$date = get_post_meta($this->ID(), PostMeta::REMINDER_DATE, true);
 
 		if (! $this->isValidDate($date)) {
 			return __('Niet ingesteld', 'yard-page-guard');
@@ -103,10 +104,10 @@ class ReviewItem
 
 	public function contentOwner(): ?ContentOwner
 	{
-		$id = get_post_meta($this->ID(), 'ypg_post_content_owner_id', true);
-		$name = get_post_meta($this->ID(), 'ypg_post_content_owner_name', true);
-		$email = get_post_meta($this->ID(), 'ypg_post_content_owner_email', true);
-		$type = get_post_meta($this->ID(), 'ypg_post_content_owner_type', true);
+		$id = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_ID, true);
+		$name = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_NAME, true);
+		$email = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_EMAIL, true);
+		$type = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_TYPE, true);
 
 		if (false === $id || '' === $id) {
 			return null;
