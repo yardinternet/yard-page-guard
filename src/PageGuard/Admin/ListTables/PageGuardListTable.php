@@ -67,7 +67,7 @@ class PageGuardListTable extends \WP_List_Table
 			case 'next_review':
 				return wp_date('d F Y', strtotime(get_post_meta($item->ID, PostMeta::REVIEW_DATE, true)));
 			case 'status':
-				if (get_post_meta($item->ID, PostMeta::REVIEW_DATE, true) < current_time('mysql')) {
+				if (get_post_meta($item->ID, PostMeta::REVIEW_DATE, true) < current_time('Y-m-d')) {
 					// TODO: class for styling and translation for "Achterstallig"
 					return '<span style="color: #bd8600;"><span class="dashicons dashicons-warning" aria-hidden="true"></span> Achterstallig</span>';
 				}
