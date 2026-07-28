@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Traits;
 
+use Yard\PageGuard\Enums\Options;
 use Yard\PageGuard\Models\ReviewItem;
 
 trait Email
@@ -48,8 +49,8 @@ trait Email
 	{
 		$headers = ['Content-Type: text/html; charset=UTF-8'];
 
-		$from_name = get_option('ypg_email_from_name', get_bloginfo('name'));
-		$from_email = get_option('ypg_email_from_address', $_SERVER['HTTP_HOST']);
+		$from_name = get_option(Options::EMAIL_FROM_NAME, get_bloginfo('name'));
+		$from_email = get_option(Options::EMAIL_FROM_ADDRESS, $_SERVER['HTTP_HOST']);
 
 		if (! empty($from_name) && ! empty($from_email) && is_email($from_email)) {
 			$headers[] = 'From: ' . sprintf('"%s" <%s>', $from_name, $from_email);

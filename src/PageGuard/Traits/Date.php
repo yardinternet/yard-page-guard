@@ -7,6 +7,7 @@ namespace Yard\PageGuard\Traits;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use Yard\PageGuard\Enums\Options;
 use Yard\PageGuard\Enums\PostMeta;
 
 trait Date
@@ -38,31 +39,6 @@ trait Date
 		}
 
 		return $date->format('Y-m-d');
-	}
-
-	/**
-	 * Steps a Y-m-d date forward in whole $period/$unit jumps until it lands
-	 * strictly after today, returning the new Y-m-d.
-	 *
-	 * Used to roll a recurring reminder onto its next slot: it collapses any
-	 * missed periods into a single jump (one nudge instead of a backlog) and,
-	 * because the result is always in the future, leaves callers that select on
-	 * `<= today` idempotent — repeated (manual) cron runs the same day can't
-	 * advance the date again or resend.
-	 */
-	public function advanceToFuture(string $base, int $period, string $unit): string
-	{
-		// A non-positive period would never clear today; clamp so the loop always
-		// makes forward progress (the UI enforces a minimum of 1 anyway).
-		$period = max(1, $period);
-		$today = date('Y-m-d');
-
-		$next = $base;
-		while ($next <= $today) {
-			$next = $this->addPeriodToBase($next, $period, $unit);
-		}
-
-		return $next;
 	}
 
 	/**
@@ -115,8 +91,8 @@ trait Date
 
 	private function computeReviewDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false): string
 	{
-		$datePeriod = (int) get_option('ypg_review_time_period', 1);
-		$dateUnit = get_option('ypg_review_time_unit', 'weeks');
+		$datePeriod = (int) get_option(Options::REVIEW_TIME_PERIOD, 1);
+		$dateUnit = get_option(Options::REVIEW_TIME_UNIT, 'weeks');
 
 		// The stored value is the comparison baseline, so a form echoing it back
 		// is not mistaken for a manual change. Recomputes run from today: a fresh
@@ -132,42 +108,23 @@ trait Date
 		);
 	}
 
-	private function computeReminderDate(int $postId, bool $toBeVerified = true, bool $wasPreviouslyVerified = false, string $reviewDate = ''): string
+	private function computeReminderDate(int $postId, string $reviewDate = ''): string
 	{
-		// Get the current reminder date
-		$currentReminderDate = get_post_meta($postId, PostMeta::REMINDER_DATE, true);
-
-		// The review date this reminder must follow. Callers that compute a new
-		// review date in the same request pass it in; reading it from POST/meta
-		// here would race the not-yet-persisted value and base the reminder on a
-		// stale date.
-		if ('' === $reviewDate) {
-			$reviewDateInput = isset($_POST['ypg_review_date']) ? sanitize_text_field($_POST['ypg_review_date']) : '';
-			$reviewDate = '' !== $reviewDateInput ? $reviewDateInput : (string) get_post_meta($postId, PostMeta::REVIEW_DATE, true);
-		}
-
-		// A reminder is the follow-up nag after an unanswered review mail, so it
-		// must land after its review date. An earlier/equal stored value is
-		// corrupt state written by older versions — drop it so it gets
-		// recalculated from $reviewDate below.
-		if (! empty($currentReminderDate) && '' !== $reviewDate && $currentReminderDate <= $reviewDate) {
-			$currentReminderDate = '';
-		}
-
 		$dateUnitOverride = get_post_meta($postId, PostMeta::REMINDER_TIME_UNIT, true);
 		$datePeriodOverride = (int) get_post_meta($postId, PostMeta::REMINDER_TIME_PERIOD, true);
 
-		$finalPeriod = ! empty($datePeriodOverride) ? $datePeriodOverride : (int) get_option('ypg_reminder_time_period', 1);
-		$finalUnit = ! empty($dateUnitOverride) ? $dateUnitOverride : get_option('ypg_reminder_time_unit', 'weeks');
+		if (! empty($dateUnitOverride) && ! empty($datePeriodOverride)) {
+			$finalPeriod = $datePeriodOverride;
+			$finalUnit = $dateUnitOverride;
+		} else {
+			$finalPeriod = (int) get_option(Options::REMINDER_TIME_PERIOD, 1);
+			$finalUnit = get_option(Options::REMINDER_TIME_UNIT, 'weeks');
+		}
 
-		return $this->computeDateMeta(
-			'ypg_reminder_date',
-			$currentReminderDate,
-			$toBeVerified,
-			$wasPreviouslyVerified,
+		return $this->addPeriodToBase(
+			$reviewDate ?: date('Y-m-d'),
 			$finalPeriod,
-			$finalUnit,
-			$reviewDate
+			$finalUnit
 		);
 	}
 

@@ -2,6 +2,9 @@
 /**
  * @uses Yard\PageGuard\Traits\Text
  */
+
+use Yard\PageGuard\Enums\Options;
+
 ?>
 
 <div class="wrap">
@@ -13,28 +16,28 @@
 			<tr valign="top">
 				<th scope="row"><?= __('Afzend naam', 'yard-page-guard') ?></th>
 				<td>
-					<input type="text" name="ypg_email_from_name" value="<?= esc_attr(get_option('ypg_email_from_name', get_bloginfo('name'))); ?>" />
+					<input type="text" name="ypg_email_from_name" value="<?= esc_attr(get_option(Options::EMAIL_FROM_NAME, get_bloginfo('name'))); ?>" />
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><?= __('Afzend emailadres', 'yard-page-guard') ?></th>
 				<td>
-					<input type="email" name="ypg_email_from_address" value="<?= esc_attr(get_option('ypg_email_from_address', 'houdbaarheid@' . $_SERVER['HTTP_HOST'])); ?>" />
+					<input type="email" name="ypg_email_from_address" value="<?= esc_attr(get_option(Options::EMAIL_FROM_ADDRESS, 'houdbaarheid@' . $_SERVER['HTTP_HOST'])); ?>" />
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><?= __('Herinneringmail BCC emailadres', 'yard-page-guard') ?></th>
 				<td>
-					<input type="email" name="ypg_reminder_email_bcc" value="<?= esc_attr(get_option('ypg_reminder_email_bcc', '')); ?>" />
+					<input type="email" name="ypg_reminder_email_bcc" value="<?= esc_attr(get_option(Options::REMINDER_EMAIL_BCC, '')); ?>" />
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><?= __('Herzieningsperiode', 'yard-page-guard') ?></th>
 				<td class="d-flex">
-					<input type="number" name="ypg_review_time_period" value="<?= esc_attr(get_option('ypg_review_time_period', 2)); ?>" min="1" />
+					<input type="number" name="ypg_review_time_period" value="<?= esc_attr(get_option(Options::REVIEW_TIME_PERIOD, 2)); ?>" min="1" />
 					<select name="ypg_review_time_unit">
 						<?php
-						$selected_unit = get_option('ypg_review_time_unit', 'weeks');
+						$selected_unit = get_option(Options::REVIEW_TIME_UNIT, 'weeks');
 foreach ($this->getUnitOptions() as $key => $label) {
 	echo '<option value="' . esc_attr($key) . '"' . selected($selected_unit, $key, false) . '>' . esc_html($label) . '</option>';
 }
@@ -45,10 +48,10 @@ foreach ($this->getUnitOptions() as $key => $label) {
 			<tr valign="top">
 				<th scope="row"><?= __('Herinneringsperiode', 'yard-page-guard') ?></th>
 				<td class="d-flex">
-					<input type="number" name="ypg_reminder_time_period" value="<?= esc_attr(get_option('ypg_reminder_time_period', 1)); ?>" min="1" />
+					<input type="number" name="ypg_reminder_time_period" value="<?= esc_attr(get_option(Options::REMINDER_TIME_PERIOD, 1)); ?>" min="1" />
 					<select name="ypg_reminder_time_unit">
 						<?php
-$selected_unit = get_option('ypg_reminder_time_unit', 'weeks');
+$selected_unit = get_option(Options::REMINDER_TIME_UNIT, 'weeks');
 foreach ($this->getUnitOptions() as $key => $label) {
 	echo '<option value="' . esc_attr($key) . '"' . selected($selected_unit, $key, false) . '>' . esc_html($label) . '</option>';
 }
@@ -59,14 +62,14 @@ foreach ($this->getUnitOptions() as $key => $label) {
 			<tr valign="top">
 				<th scope="row"><?= __('Herzieningsmail onderwerp', 'yard-page-guard') ?></th>
 				<td>
-					<input type="text" name="ypg_review_email_subject" value="<?= esc_attr(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))); ?>" />
+					<input type="text" name="ypg_review_email_subject" value="<?= esc_attr(get_option(Options::REVIEW_EMAIL_SUBJECT, __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))); ?>" />
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><?= __('Herzieningsmail inhoud', 'yard-page-guard') ?></th>
 				<td>
 					<?php
-					$notificationContent = get_option('ypg_review_email_content', '');
+					$notificationContent = get_option(Options::REVIEW_EMAIL_CONTENT, '');
 wp_editor($notificationContent, 'ypg_review_email_content', [
 	'textarea_name' => 'ypg_review_email_content',
 	'textarea_rows' => 8,
@@ -86,14 +89,14 @@ wp_editor($notificationContent, 'ypg_review_email_content', [
 			<tr valign="top">
 				<th scope="row"><?= __('Herinneringsmail onderwerp', 'yard-page-guard') ?></th>
 				<td>
-					<input type="text" name="ypg_reminder_email_subject" value="<?= esc_attr(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))); ?>" />
+					<input type="text" name="ypg_reminder_email_subject" value="<?= esc_attr(get_option(Options::REMINDER_EMAIL_SUBJECT, __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))); ?>" />
 				</td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><?= __('Herinneringsmail inhoud', 'yard-page-guard') ?></th>
 				<td>
 					<?php
-$reminderContent = get_option('ypg_reminder_email_content', '');
+$reminderContent = get_option(Options::REMINDER_EMAIL_CONTENT, '');
 wp_editor($reminderContent, 'ypg_reminder_email_content', [
 	'textarea_name' => 'ypg_reminder_email_content',
 	'textarea_rows' => 8,
@@ -114,7 +117,7 @@ wp_editor($reminderContent, 'ypg_reminder_email_content', [
 				<th scope="row"><?= __('Controleer venster footer inhoud', 'yard-page-guard') ?></th>
 				<td>
 					<?php
-$modalFooterContent = get_option('ypg_modal_footer_content', '');
+$modalFooterContent = get_option(Options::MODAL_FOOTER_CONTENT, '');
 wp_editor($modalFooterContent, 'ypg_modal_footer_content', [
 	'textarea_name' => 'ypg_modal_footer_content',
 	'textarea_rows' => 6,
@@ -130,7 +133,7 @@ wp_editor($modalFooterContent, 'ypg_modal_footer_content', [
 			<tr valign="top">
 				<th scope="row"><?= __('Externe eigenaren kunnen interne data inzien', 'yard-page-guard') ?></th>
 				<td>
-					<input type="checkbox" name="ypg_show_internal_data_on_review" <?= checked(get_option('ypg_show_internal_data_on_review', false)) ?> />
+					<input type="checkbox" name="ypg_show_internal_data_on_review" <?= checked(get_option(Options::SHOW_INTERNAL_DATA_ON_REVIEW, false)) ?> />
 				</td>
 			</tr>
 		</table>
