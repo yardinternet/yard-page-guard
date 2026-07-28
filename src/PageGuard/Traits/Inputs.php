@@ -8,7 +8,6 @@ trait Inputs
 {
 	public function select(array $options_data, $select_name = '', $selected_val = '', array $attributes = [])
 	{
-
 		$attr_string = '';
 		foreach ($attributes as $key => $value) {
 			$attr_string .= ' ' . esc_attr($key) . '="' . esc_attr($value) . '"';

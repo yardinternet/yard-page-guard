@@ -14,7 +14,6 @@ class AdminSettingsController
 	public const PAGE_SLUG = 'page-guard-settings';
 	public const OPTION_GROUP = 'ypg_settings';
 
-
 	public function init(): void
 	{
 		add_action('admin_menu', [$this, 'addSettingsPage']);
@@ -117,7 +116,6 @@ class AdminSettingsController
 			]
 		);
 
-
 		// Herzienings instelling
 		add_settings_section(
 			'review_settings',
@@ -180,7 +178,6 @@ class AdminSettingsController
 			'',
 			self::PAGE_SLUG,
 		);
-
 
 		add_settings_field(
 			Options::REMINDER_TIME_PERIOD,
@@ -246,7 +243,7 @@ class AdminSettingsController
 				'name' => Options::MODAL_FOOTER_CONTENT,
 				'label_for' => Options::MODAL_FOOTER_CONTENT,
 				'value' => get_option(Options::MODAL_FOOTER_CONTENT),
-				'description' =>  __('Een knop kan aangemaakt worden door een link op een nieuwe regel toe te voegen en deze dikgedrukt te maken.', 'yard-page-guard')
+				'description' => __('Een knop kan aangemaakt worden door een link op een nieuwe regel toe te voegen en deze dikgedrukt te maken.', 'yard-page-guard'),
 			]
 		);
 		add_settings_section(
@@ -274,20 +271,19 @@ class AdminSettingsController
 	}
 	public function renderSettingsPage(): void
 	{
-	?>
+		?>
 		<div class="wrap">
 			<h1><?php echo get_admin_page_title() ?></h1>
 			<form method="post" action="options.php">
 				<?php
-					settings_fields( self::OPTION_GROUP );
-					do_settings_sections( self::PAGE_SLUG );
-					submit_button();
-				?>
+						settings_fields(self::OPTION_GROUP);
+		do_settings_sections(self::PAGE_SLUG);
+		submit_button();
+		?>
 			</form>
 		</div>
 	<?php
 	}
-
 
 	public function renderInput(array $args): void
 	{
@@ -377,7 +373,6 @@ class AdminSettingsController
 		echo '</select>';
 	}
 
-
 	public function renderEditor(array $args): void
 	{
 		$args = wp_parse_args($args, [
@@ -394,9 +389,8 @@ class AdminSettingsController
 			'teeny' => true,
 		]);
 
-		if (!empty($args['description'])) {
+		if (! empty($args['description'])) {
 			printf('<p class="description">%s</p>', wp_kses_post($args['description']));
 		}
-
 	}
 }
