@@ -17,7 +17,7 @@ class VerifyPostController
 	use Token;
 
 	/**
-	 * Updates a post's meta so it gets verified and receives its next review and reminder dates.
+	 * Updates a post's meta so it gets verified and receives its next review date
 	 * Returns a HTML response since it gets handled by htmx on the frontend.
 	 */
 	public function handleRequest(WP_REST_Request $request): void
@@ -26,9 +26,6 @@ class VerifyPostController
 
 		$newReviewDate = $this->computeReviewDate($postId);
 		$updatedReviewDate = update_post_meta($postId, PostMeta::REVIEW_DATE, $newReviewDate);
-
-		$newReminderDate = $this->computeReminderDate($postId, true, false, $newReviewDate);
-		$updatedReminderDate = update_post_meta($postId, PostMeta::REMINDER_DATE, $newReminderDate);
 
 		$updatedVerifiedStatus = update_post_meta($postId, PostMeta::IS_VERIFIED, '1');
 		$updatedLastReviewDate = update_post_meta($postId, PostMeta::LAST_REVIEW_DATE, date('Y-m-d'));
@@ -41,7 +38,7 @@ class VerifyPostController
 		header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
 		http_response_code(200); # HTML needs to be returned properly, so no 500 in case of an error.
 
-		if ($updatedReviewDate && $updatedReminderDate && $updatedVerifiedStatus && $updatedLastReviewDate) {
+		if ($updatedReviewDate && $updatedVerifiedStatus && $updatedLastReviewDate) {
 			echo self::getSuccessResponse();
 
 			exit();

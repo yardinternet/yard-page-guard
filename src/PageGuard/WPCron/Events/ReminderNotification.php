@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
+use Yard\PageGuard\Enums\Options;
 use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
@@ -81,11 +82,11 @@ class ReminderNotification extends Event
 			$owner = $group['owner'];
 			$ownerItems = $group['items'];
 
-			$headers = $this->buildMailHeaders('ypg_reminder_email_bcc');
+			$headers = $this->buildMailHeaders(Options::REMINDER_EMAIL_BCC);
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option(Options::REMINDER_EMAIL_SUBJECT, __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
@@ -107,7 +108,7 @@ class ReminderNotification extends Event
 	 */
 	private function getContent(array $items, ContentOwner $owner): string
 	{
-		$content = wpautop(get_option('ypg_reminder_email_content', ''));
+		$content = wpautop(get_option(Options::REMINDER_EMAIL_CONTENT, ''));
 		$itemList = $this->buildItemListHtml($items, true);
 
 		$values = [
@@ -122,20 +123,7 @@ class ReminderNotification extends Event
 
 	private function updateModuleMeta(ReviewItem $item): void
 	{
-		$currentReminderDate = $item->reminderDate('Y-m-d');
-
-		if (! $this->isValidDate($currentReminderDate)) {
-			$currentReminderDate = date('Y-m-d');
-		}
-
-		$overrideDateUnit = get_post_meta($item->ID(), PostMeta::REMINDER_TIME_UNIT, true);
-		$overrideDatePeriod = (int) get_post_meta($item->ID(), PostMeta::REMINDER_TIME_PERIOD, true);
-		$finalDateUnit = ! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit', 'weeks');
-		$finalDatePeriod = ! empty($overrideDatePeriod) ? $overrideDatePeriod : (int) get_option('ypg_reminder_time_period', 1);
-
 		update_post_meta($item->ID(), PostMeta::LAST_REMINDER_DATE, date('Y-m-d'));
-		// Advance in whole periods past today (not a single bump from a possibly
-		// stale date) so an overdue reminder can't re-mail on every cron run.
-		update_post_meta($item->ID(), PostMeta::REMINDER_DATE, $this->advanceToFuture($currentReminderDate, $finalDatePeriod, $finalDateUnit));
+		update_post_meta($item->ID(), PostMeta::REMINDER_DATE, $this->computeReminderDate($item->ID(), $item->reviewDate()));
 	}
 }

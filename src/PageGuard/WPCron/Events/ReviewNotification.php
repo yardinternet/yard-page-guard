@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
+use Yard\PageGuard\Enums\Options;
 use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
@@ -81,7 +82,7 @@ class ReviewNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option(Options::REVIEW_EMAIL_SUBJECT, __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
@@ -101,7 +102,7 @@ class ReviewNotification extends Event
 	 */
 	private function getContent(array $items, ContentOwner $owner): string
 	{
-		$content = wpautop(get_option('ypg_review_email_content', ''));
+		$content = wpautop(get_option(Options::REVIEW_EMAIL_CONTENT, ''));
 		$itemList = $this->buildItemListHtml($items);
 
 		$values = [
@@ -118,5 +119,6 @@ class ReviewNotification extends Event
 	{
 		update_post_meta($item->ID(), PostMeta::IS_VERIFIED, '0');
 		update_post_meta($item->ID(), PostMeta::REVIEW_MAIL_SENT, '1');
+		update_post_meta($item->ID(), PostMeta::REMINDER_DATE, $this->computeReminderDate($item->ID(), $item->reviewDate()));
 	}
 }

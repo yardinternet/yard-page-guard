@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Traits;
 
 use RuntimeException;
+use Yard\PageGuard\Enums\Options;
 use Yard\PageGuard\Enums\PostMeta;
 
 trait Token
@@ -81,7 +82,7 @@ trait Token
 			return null;
 		}
 
-		$footer = trim(strip_tags(get_option('ypg_modal_footer_content', ''))) !== '' ? wpautop(get_option('ypg_modal_footer_content', '')) : false;
+		$footer = trim(strip_tags(get_option(Options::MODAL_FOOTER_CONTENT, ''))) !== '' ? wpautop(get_option(Options::MODAL_FOOTER_CONTENT, '')) : false;
 
 		return [
 			'id' => get_the_ID(),

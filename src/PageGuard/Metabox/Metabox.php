@@ -6,6 +6,7 @@ namespace Yard\PageGuard\Metabox;
 
 use WP_Post;
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Enums\Options;
 use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Traits\Date;
@@ -175,8 +176,8 @@ class Metabox
 		$postPeriod = get_post_meta($postId, PostMeta::REMINDER_TIME_PERIOD, true);
 		$isDefault = empty($postPeriod) || empty($postUnit);
 		$customReminderAriaHidden = $isDefault ? 'true' : 'false';
-		$currentUnit = ! empty($postUnit) ? $postUnit : get_option('ypg_reminder_time_unit', 'weeks');
-		$currentPeriod = ! empty($postPeriod) ? $postPeriod : get_option('ypg_reminder_time_period', 1);
+		$currentUnit = ! empty($postUnit) ? $postUnit : get_option(Options::REMINDER_TIME_UNIT, 'weeks');
+		$currentPeriod = ! empty($postPeriod) ? $postPeriod : get_option(Options::REMINDER_TIME_PERIOD, 1);
 
 		$unitOptionElements = '';
 
@@ -261,13 +262,13 @@ class Metabox
 		}
 
 		$reviewDate = $this->computeReviewDate($postId, $toBeVerified, $wasPreviouslyVerified);
-		$reminderDate = $this->computeReminderDate($postId, $toBeVerified, $wasPreviouslyVerified, $reviewDate);
-
-		$this->updateVerificationMeta($postId, $toBeVerified, $reviewDate, $reminderDate);
+		$this->updateVerificationMeta($postId, $toBeVerified, $reviewDate);
 	}
 
 	private function updateOwnerMeta(int $postId, array $ownerData): void
 	{
+		//FIXME only ID and type are required, the rest is redundant
+
 		update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_ID, $ownerData['id']);
 		update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_NAME, $ownerData['name']);
 		update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_EMAIL, $ownerData['email']);
@@ -275,11 +276,11 @@ class Metabox
 		update_post_meta($postId, PostMeta::POST_CONTENT_OWNER_PHONE_NUMBER, $ownerData['phone_number']);
 	}
 
-	private function updateVerificationMeta(int $postId, bool $isVerified, string $reviewDate, string $reminderDate): void
+	private function updateVerificationMeta(int $postId, bool $isVerified, string $reviewDate): void
 	{
+		// FIXME: is_verified should not be stored but inferred
 		update_post_meta($postId, PostMeta::IS_VERIFIED, (int) $isVerified);
 		update_post_meta($postId, PostMeta::REVIEW_DATE, $reviewDate);
-		update_post_meta($postId, PostMeta::REMINDER_DATE, $reminderDate);
 
 		if ($isVerified) {
 			update_post_meta($postId, PostMeta::LAST_REVIEW_DATE, date('Y-m-d'));
