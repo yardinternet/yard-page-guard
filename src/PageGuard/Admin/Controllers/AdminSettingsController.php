@@ -277,9 +277,9 @@ class AdminSettingsController
 			<form method="post" action="options.php">
 				<?php
 				settings_fields(self::OPTION_GROUP);
-				do_settings_sections(self::PAGE_SLUG);
-				submit_button();
-				?>
+		do_settings_sections(self::PAGE_SLUG);
+		submit_button();
+		?>
 			</form>
 		</div>
 	<?php
@@ -302,7 +302,7 @@ class AdminSettingsController
 			esc_attr($args['label_for']),
 			esc_attr($args['value']),
 			$args['required'] ? 'required' : '',
-			$args['type']  !== 'number' ? 'regular-text' : 'small-text',
+			'number' !== $args['type'] ? 'regular-text' : 'small-text',
 		);
 	}
 
