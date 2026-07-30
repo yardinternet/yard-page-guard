@@ -276,10 +276,10 @@ class AdminSettingsController
 			<h1><?php echo get_admin_page_title() ?></h1>
 			<form method="post" action="options.php">
 				<?php
-						settings_fields(self::OPTION_GROUP);
-		do_settings_sections(self::PAGE_SLUG);
-		submit_button();
-		?>
+				settings_fields(self::OPTION_GROUP);
+				do_settings_sections(self::PAGE_SLUG);
+				submit_button();
+				?>
 			</form>
 		</div>
 	<?php
@@ -295,16 +295,14 @@ class AdminSettingsController
 			'required' => false,
 		]);
 
-		$type = $args['type'] ?? 'text';
-		$name = $args['name'] ?? '';
-		$value = $args['value'] ?? '';
 		printf(
-			'<input type="%1$s" name="%2$s" id="%3$s" value="%4$s" %5$s/>',
-			esc_attr($type),
-			esc_attr($name),
+			'<input type="%1$s" name="%2$s" id="%3$s" value="%4$s" %5$s class="%6$s"/>',
+			esc_attr($args['type']),
+			esc_attr($args['name']),
 			esc_attr($args['label_for']),
-			esc_attr($value),
-			$args['required'] ? 'required' : ''
+			esc_attr($args['value']),
+			$args['required'] ? 'required' : '',
+			$args['type']  !== 'number' ? 'regular-text' : 'small-text',
 		);
 	}
 
