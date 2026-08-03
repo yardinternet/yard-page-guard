@@ -13,7 +13,6 @@ use Yard\PageGuard\Traits\Date;
 
 class Metabox
 {
-	use ContentOwner;
 	use Date;
 
 	public function addMetaboxes(): void
@@ -523,6 +522,31 @@ class Metabox
 	}
 
 	// TODO: move to to trait?
+	/**
+	 * Owner options for the classic metabox select, keyed by the same composite
+	 * "type:id" value the block editor sidebar uses.
+	 *
+	 * @return array<string, string>
+	 */
+	protected function getContentOwnerOptions(): array
+	{
+		$options = [];
+
+		foreach ($this->contentOwnerRepository->all() as $owner) {
+			$label = ContentOwnerType::EXTERNAL === $owner->type()
+				? sprintf(
+					/* translators: %s: content owner name. */
+					__('%s (extern)', 'yard-page-guard'),
+					$owner->name()
+				)
+				: $owner->name();
+
+			$options[sprintf('%s:%d', $owner->type(), $owner->id())] = $label;
+		}
+
+		return $options;
+	}
+
 	protected function renderInput(array $args): string
 	{
 		$args = wp_parse_args($args, [

@@ -1,28 +1,53 @@
 /**
  * WordPress dependencies
  */
-import { PanelBody, SelectControl } from '@wordpress/components';
-import { useEntityProp } from '@wordpress/core-data';
-import { useSelect } from '@wordpress/data';
-import { store as editorStore } from '@wordpress/editor';
+import {
+	Notice,
+	PanelBody,
+	SelectControl,
+	Spinner,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { META_CONTENT_OWNER_ID } from '../meta-keys';
-import { getContentOwnerOptions } from '../localized-data';
+import { useContentOwners } from '../hooks/use-content-owners';
+import { usePostMeta } from '../hooks/use-post-meta';
+import { META_CONTENT_OWNER_ID, META_CONTENT_OWNER_TYPE } from '../meta-keys';
+import {
+	NO_OWNER,
+	decodeOwnerValue,
+	encodeOwnerValue,
+} from '../utils/owner-value';
 
 const ContentOwnerPanel = () => {
-	const postType = useSelect(
-		( select ) => select( editorStore ).getCurrentPostType(),
-		[]
+	const { owners, isLoading, error } = useContentOwners();
+	const [ meta, updateMeta ] = usePostMeta();
+
+	const value = encodeOwnerValue(
+		meta[ META_CONTENT_OWNER_ID ],
+		meta[ META_CONTENT_OWNER_TYPE ]
 	);
-	const [ meta, setMeta ] = useEntityProp( 'postType', postType, 'meta' );
+
+	const onChange = ( nextValue ) => {
+		const { id, type } = decodeOwnerValue( nextValue );
+
+		updateMeta( {
+			[ META_CONTENT_OWNER_ID ]: id,
+			[ META_CONTENT_OWNER_TYPE ]: type,
+		} );
+	};
 
 	const options = [
-		{ label: __( 'Geen inhoudseigenaar', 'yard-page-guard' ), value: '' },
-		...getContentOwnerOptions(),
+		{
+			label: __( 'Geen inhoudseigenaar', 'yard-page-guard' ),
+			value: NO_OWNER,
+		},
+		...owners.map( ( owner ) => ( {
+			label: owner.label,
+			value: owner.value,
+		} ) ),
 	];
 
 	return (
@@ -30,20 +55,29 @@ const ContentOwnerPanel = () => {
 			title={ __( 'Inhoudseigenaren', 'yard-page-guard' ) }
 			initialOpen
 		>
-			<SelectControl
-				// __next40pxDefaultSize
-				// __nextHasNoMarginBottom
-				label={ __( 'Inhoudseigenaar', 'yard-page-guard' ) }
-				help={ __(
-					'Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.',
-					'yard-page-guard'
-				) }
-				value={ meta?.[ META_CONTENT_OWNER_ID ] ?? '' }
-				options={ options }
-				onChange={ ( value ) =>
-					setMeta( { ...meta, [ META_CONTENT_OWNER_ID ]: value } )
-				}
-			/>
+			{ isLoading && <Spinner /> }
+
+			{ error && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'De inhoudseigenaren konden niet worden geladen.',
+						'yard-page-guard'
+					) }
+				</Notice>
+			) }
+
+			{ ! isLoading && ! error && (
+				<SelectControl
+					label={ __( 'Inhoudseigenaar', 'yard-page-guard' ) }
+					help={ __(
+						'Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.',
+						'yard-page-guard'
+					) }
+					value={ value }
+					options={ options }
+					onChange={ onChange }
+				/>
+			) }
 		</PanelBody>
 	);
 };

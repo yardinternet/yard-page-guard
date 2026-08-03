@@ -9,6 +9,20 @@ use DateTimeZone;
 
 trait Date
 {
+
+	public function formatPeriod(int $period, string $unit): string
+	{
+		if ('weeks' === $unit) {
+			return sprintf(_n('%d week', '%d weken', $period, 'yard-page-guard'), $period);
+		}
+
+		if ('months' === $unit) {
+			return sprintf(_n('%d maand', '%d maanden', $period, 'yard-page-guard'), $period);
+		}
+
+		return sprintf(_n('%d dag', '%d dagen', $period, 'yard-page-guard'), $period);
+	}
+
 	/**
 	 * Adds a date period to a base date (provided as Y-m-d string)
 	 */
