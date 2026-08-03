@@ -1,21 +1,8 @@
-import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { laravelPackageConfig } from '@yardinternet/vite-config';
 
-export default defineConfig({
-	root: 'resources',
-	build: {
-		outDir: '../build',
-		emptyOutDir: true,
-		rolldownOptions: {
-			input: {
-				frontend: resolve(__dirname, 'resources/js/frontend.js'),
-				admin: resolve(__dirname, 'resources/js/admin.js'),
-			},
-			output: {
-				entryFileNames: '[name].js',
-				chunkFileNames: '[name].js',
-				assetFileNames: '[name].[ext]',
-			},
-		},
+export default laravelPackageConfig( {
+	entryPoints: {
+		frontend: 'resources/js/frontend.js',
+		admin: 'resources/js/admin.js',
 	},
-});
+} );

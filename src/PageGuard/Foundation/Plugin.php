@@ -44,14 +44,14 @@ class Plugin
 	{
 		$directory = ! empty($directory) ? $directory . '/' : '';
 
-		return plugins_url("build/{$directory}{$file}", YPG_PLUGIN_NAME . '/plugin.php');
+		return plugins_url("public/{$directory}{$file}", YPG_PLUGIN_NAME . '/plugin.php');
 	}
 
 	public function resourcePath(string $file, string $directory = ''): string
 	{
 		$directory = ! empty($directory) ? $directory . '/' : '';
 
-		return $this->rootPath . "/build/{$directory}{$file}";
+		return $this->rootPath . "/public/{$directory}{$file}";
 	}
 
 	public function callServiceProviders(string $method, string $key = ''): void
