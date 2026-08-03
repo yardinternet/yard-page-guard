@@ -7,6 +7,7 @@ return [
 	 * Service Providers.
 	 */
 	'providers' => [
+		Yard\PageGuard\Meta\MetaServiceProvider::class,
 		Yard\PageGuard\WPCron\WPCronServiceProvider::class,
 		Yard\PageGuard\WPJson\WPJsonServiceProvider::class,
 		Yard\PageGuard\Frontend\FrontendServiceProvider::class,

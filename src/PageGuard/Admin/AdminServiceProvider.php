@@ -10,12 +10,10 @@ use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
 use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
-use Yard\PageGuard\Traits\ContentOwner;
 use Yard\PageGuard\Traits\Date;
 
 class AdminServiceProvider extends ServiceProvider
 {
-	use ContentOwner;
 	use Date;
 
 	private AdminSettingsController $adminSettingsController;
@@ -107,10 +105,6 @@ class AdminServiceProvider extends ServiceProvider
 			filemtime($this->plugin->resourcePath('editor-sidebar.js')),
 			['in_footer' => true],
 		);
-
-		wp_localize_script($handle, 'ypgEditorSidebar', [
-			'contentOwners' => $this->getContentOwnerSelectOptions(),
-		]);
 
 		wp_set_script_translations($handle, 'yard-page-guard', $this->plugin->rootPath . '/languages');
 	}
