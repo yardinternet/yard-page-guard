@@ -112,7 +112,7 @@ class ReviewItem
 		}
 
 		$type = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_TYPE, true);
-		if ( $type === ContentOwnerType::USER) {
+		if (ContentOwnerType::USER === $type) {
 			$user = get_user_by('id',  $id);
 			if ($user) {
 				$name = $user->display_name;

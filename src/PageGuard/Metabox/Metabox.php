@@ -30,7 +30,6 @@ class Metabox
 		);
 	}
 
-
 	private function shouldSave(int $postId): bool
 	{
 		// Check save location
