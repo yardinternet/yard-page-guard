@@ -12,14 +12,9 @@ if (! defined('ABSPATH')) {
 }
 
 use Yard\PageGuard\Admin\ListTables\PageGuardListTable;
-use Yard\PageGuard\Traits\Date;
-use Yard\PageGuard\Traits\Text;
 
 class AdminOverviewController
 {
-	use Text;
-	use Date;
-
 	public function init(): void
 	{
 		add_action('admin_menu', [$this, 'addOverviewPage']);
@@ -35,8 +30,8 @@ class AdminOverviewController
 	public function addOverviewPage(): void
 	{
 		$adminScreen = add_menu_page(
-			__('Houdbaarheids Overzicht', 'yard-page-guard'),
-			__('Houdbaarheids Overzicht', 'yard-page-guard'),
+			__('Inhoudscontrole overzicht', 'yard-page-guard'),
+			__('Inhoudscontrole overzicht', 'yard-page-guard'),
 			apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
 			'ypg-overview',
 			[$this, 'renderOverviewPage'],
@@ -79,11 +74,5 @@ class AdminOverviewController
 			</form>
 		</div>
 		<?php
-	}
-
-	public function redirectToExternalContentOwners(): void
-	{
-		wp_safe_redirect(admin_url('edit-tags.php?taxonomy=ypg_external_content_owner'));
-		exit();
 	}
 }
