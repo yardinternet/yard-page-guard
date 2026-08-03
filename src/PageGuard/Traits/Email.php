@@ -120,7 +120,7 @@ trait Email
 		);
 	}
 
-	private function formatSubject(string $title = 'Houdbaarheidsmodule'): string
+	private function formatSubject(string $title = 'Inhoudscontrole module'): string
 	{
 		return sprintf(
 			'%s - %s',
