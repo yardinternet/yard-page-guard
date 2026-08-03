@@ -13,6 +13,7 @@ use Yard\PageGuard\Traits\Date;
 
 class Metabox
 {
+	use ContentOwner;
 	use Date;
 
 	public function addMetaboxes(): void

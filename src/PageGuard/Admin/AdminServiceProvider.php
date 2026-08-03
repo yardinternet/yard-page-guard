@@ -10,9 +10,14 @@ use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
 use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
+use Yard\PageGuard\Traits\ContentOwner;
+use Yard\PageGuard\Traits\Date;
 
 class AdminServiceProvider extends ServiceProvider
 {
+	use ContentOwner;
+	use Date;
+
 	private AdminSettingsController $adminSettingsController;
 	private AdminOverviewController $adminOverviewController;
 	private AdminColumnsController $adminColumnsController;
@@ -31,6 +36,11 @@ class AdminServiceProvider extends ServiceProvider
 		$this->adminSettingsController->init();
 		$this->adminOverviewController->init();
 		$this->adminColumnsController->init();
+
+		/**
+		 * Enqueue the block editor sidebar for the post types this plugin is enabled for
+		 */
+		add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorSidebarAssets']);
 
 		/**
 		 * Enqueue admin scripts where necessary
@@ -73,6 +83,59 @@ class AdminServiceProvider extends ServiceProvider
 			['wp-dom-ready'],
 			filemtime($this->plugin->resourcePath('admin.js')),
 		);
+	}
+
+	public function enqueueEditorSidebarAssets(): void
+	{
+		if (! $this->isEditorForEnabledPostType()) {
+			return;
+		}
+
+		$handle = 'ypg-editor-sidebar';
+
+		wp_enqueue_style(
+			$handle,
+			$this->plugin->resourceUrl('editor-sidebar.css'),
+			[],
+			filemtime($this->plugin->resourcePath('editor-sidebar.css')),
+		);
+
+		wp_enqueue_script(
+			$handle,
+			$this->plugin->resourceUrl('editor-sidebar.js'),
+			$this->getEditorScriptDependencies(),
+			filemtime($this->plugin->resourcePath('editor-sidebar.js')),
+			['in_footer' => true],
+		);
+
+		wp_localize_script($handle, 'ypgEditorSidebar', [
+			'contentOwners' => $this->getContentOwnerSelectOptions(),
+		]);
+
+		wp_set_script_translations($handle, 'yard-page-guard', $this->plugin->rootPath . '/languages');
+	}
+
+	private function getEditorScriptDependencies(): array
+	{
+		$path = $this->plugin->resourcePath('editor.deps.json', 'assets');
+		$deps = file_exists($path) ? json_decode(file_get_contents($path), true) : [];
+
+		return array_values(array_unique(array_merge(['wp-element'], is_array($deps) ? $deps : [])));
+	}
+
+	private function isEditorForEnabledPostType(): bool
+	{
+		if (! function_exists('get_current_screen')) {
+			return false;
+		}
+
+		$screen = get_current_screen();
+
+		if (! $screen instanceof \WP_Screen || ! $screen->is_block_editor()) {
+			return false;
+		}
+
+		return in_array($screen->post_type, apply_filters('yard::page-guard/post-types-to-use', ['page']), true);
 	}
 
 	public function enqueueAdminAssetsPerHook(string $hook): void
