@@ -14,7 +14,5 @@ class MetaboxServiceProvider extends ServiceProvider
 		add_action('add_meta_boxes', [$metabox, 'addMetaboxes'], 999, 0);
 		add_action('save_post', [$metabox, 'handleInternalData'], 999, 1);
 		add_action('save_post', [$metabox, 'saveMeta'], 999, 1);
-		add_action('init', [$metabox, 'registerMeta']);
-		add_action('rest_api_init', [$metabox, 'registerMeta']);
 	}
 }
