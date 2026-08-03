@@ -27,11 +27,10 @@ class Plugin
 		// Set up service providers
 		$this->callServiceProviders('register');
 
-		//FIXME: move meta registration to seperate service provider so the is_admin check can be enabled again
-		//if (\is_admin()) {
+		if (\is_admin()) {
 			$this->callServiceProviders('register', 'admin');
 			$this->callServiceProviders('boot', 'admin');
-		//}
+		}
 
 		$this->callServiceProviders('boot');
 
