@@ -8,7 +8,9 @@ use DateTime;
 use DateTimeZone;
 use RuntimeException;
 use WP_Post;
+use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Enums\PostMeta;
+use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Token;
 
@@ -104,13 +106,24 @@ class ReviewItem
 
 	public function contentOwner(): ?ContentOwner
 	{
-		$id = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_ID, true);
-		$name = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_NAME, true);
-		$email = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_EMAIL, true);
-		$type = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_TYPE, true);
-
-		if (false === $id || '' === $id) {
+		$id = (int) get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_ID, true);
+		if (0 === $id) {
 			return null;
+		}
+
+		$type = get_post_meta($this->ID(), PostMeta::POST_CONTENT_OWNER_TYPE, true);
+		if ( $type === ContentOwnerType::USER) {
+			$user = get_user_by('id',  $id);
+			if ($user) {
+				$name = $user->display_name;
+				$email = $user->user_email;
+			} else {
+				$name = '';
+				$email = '';
+			}
+		} else {
+			$name = get_term_field('name', $id, 'ypg_external_content_owner');
+			$email = get_term_meta($id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true);
 		}
 
 		return new ContentOwner((int) $id, $name, $email, $type);
