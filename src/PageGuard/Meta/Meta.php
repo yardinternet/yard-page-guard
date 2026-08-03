@@ -1,12 +1,14 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Yard\PageGuard\Meta;
 
 use Yard\PageGuard\Enums\PostMeta;
 
-class Meta {
-
-
-public function registerMeta(): void
+class Meta
+{
+	public function registerMeta(): void
 	{
 		//TODO: set default values
 		$meta_fields = [
