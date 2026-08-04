@@ -3,8 +3,8 @@
   "wp-editor",
   "wp-plugins",
   "wp-i18n",
-  "wp-core-data",
   "wp-data",
+  "wp-core-data",
   "wp-element",
   "wp-api-fetch"
 ]
