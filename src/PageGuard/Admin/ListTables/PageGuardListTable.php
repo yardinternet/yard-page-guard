@@ -226,6 +226,8 @@ class PageGuardListTable extends \WP_List_Table
 
 		switch ($action) {
 			case 'mark_as_reviewed':
+				$scheduler = new ReviewScheduler();
+
 				foreach ($ids as $id) {
 					$reviewItem = new \Yard\PageGuard\Models\ReviewItem(get_post($id));
 					$reviewItem->markAsReviewed();
