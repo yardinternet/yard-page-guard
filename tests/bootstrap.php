@@ -20,10 +20,13 @@ $GLOBALS['yard-page-guard'] = [
 	'active_plugins' => ['yard-page-guard/yard-page-guard.php'],
 ];
 
-class WP_CLI
-{
-	public static function add_command()
+// wp-cli/i18n-command pulls in the real class, so only stub it when absent.
+if (! class_exists('WP_CLI')) {
+	class WP_CLI
 	{
+		public static function add_command()
+		{
+		}
 	}
 }
 

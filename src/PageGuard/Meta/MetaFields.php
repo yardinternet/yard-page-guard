@@ -38,6 +38,12 @@ class MetaFields
 	];
 
 	/**
+	 * Separator of the composite owner select value. Must stay in sync with
+	 * `resources/js/editor-sidebar/utils/owner-value.js`.
+	 */
+	public const OWNER_VALUE_SEPARATOR = ':';
+
+	/**
 	 * Pattern shared by the date fields: an empty string (not set) or Y-m-d.
 	 */
 	private const DATE_PATTERN = '^(\d{4}-\d{2}-\d{2})?$';
@@ -106,6 +112,50 @@ class MetaFields
 				'schema' => [ 'pattern' => self::DATE_PATTERN, 'readonly' => true ],
 			],
 		];
+	}
+
+	/**
+	 * Mirrors `encodeOwnerValue()` in utils/owner-value.js.
+	 */
+	public static function encodeOwnerValue(int $id, string $type): string
+	{
+		if (0 >= $id || ! ContentOwnerType::isValid($type)) {
+			return '';
+		}
+
+		return $type . self::OWNER_VALUE_SEPARATOR . $id;
+	}
+
+	/**
+	 * Mirrors `decodeOwnerValue()` in utils/owner-value.js. Anything that is not a
+	 * valid owner reference decodes to "no owner".
+	 *
+	 * @param mixed $value
+	 *
+	 * @return array{id: int, type: string}
+	 */
+	public static function decodeOwnerValue($value): array
+	{
+		$none = [ 'id' => 0, 'type' => '' ];
+
+		if (! is_scalar($value)) {
+			return $none;
+		}
+
+		$parts = explode(self::OWNER_VALUE_SEPARATOR, (string) $value);
+
+		if (count($parts) < 2) {
+			return $none;
+		}
+
+		$type = $parts[0];
+		$id = (int) $parts[1];
+
+		if (0 >= $id || ! ContentOwnerType::isValid($type)) {
+			return $none;
+		}
+
+		return [ 'id' => $id, 'type' => $type ];
 	}
 
 	/**
