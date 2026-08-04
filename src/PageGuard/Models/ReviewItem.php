@@ -167,8 +167,11 @@ class ReviewItem
 				$email = '';
 			}
 		} else {
+			// A deleted term returns a WP_Error, which is a TypeError against ContentOwner's string parameter.
 			$name = get_term_field('name', $id, 'ypg_external_content_owner');
+			$name = is_string($name) ? $name : '';
 			$email = get_term_meta($id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true);
+			$email = is_string($email) ? $email : '';
 		}
 
 		return new ContentOwner((int) $id, $name, $email, $type);
