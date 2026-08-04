@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { SIDEBAR_NAME, SIDEBAR_ICON } from '../constants';
+import { SIDEBAR_NAME, SIDEBAR_ICON } from '../config/constants';
 
 const SidebarToggleButton = ( { className } ) => {
 	const { openGeneralSidebar } = useDispatch( 'core/edit-post' );
