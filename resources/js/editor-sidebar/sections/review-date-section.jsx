@@ -23,8 +23,7 @@ const ReviewDateSection = () => {
 	const date = meta[ META_REVIEW_DATE ] || '';
 
 	const onChangeType = ( nextType ) => {
-		// Clearing the date is what makes ReviewScheduler resolve the site default;
-		// it keeps an existing date otherwise, so saving never moves the date.
+		// Clearing date makes ReviewScheduler resolve site default.
 		updateMeta(
 			DATE_TYPE_CUSTOM === nextType
 				? { [ META_REVIEW_DATE_TYPE ]: nextType }

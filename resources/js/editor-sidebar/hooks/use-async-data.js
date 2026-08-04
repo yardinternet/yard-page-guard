@@ -4,9 +4,7 @@
 import { useEffect, useState } from '@wordpress/element';
 
 /**
- * Resolves a promise returning fetcher into render state, ignoring the result
- * when the component unmounted before the request settled. Callers normalise
- * `data`, which is null until the request resolves and after a failure.
+ * Resolves fetcher into render state, ignoring stale results after unmount.
  *
  * @param {Function} fetcher Returns a promise with the data. Must be a stable reference.
  * @return {{data: *, isLoading: boolean, error: ?Object}} Request state.

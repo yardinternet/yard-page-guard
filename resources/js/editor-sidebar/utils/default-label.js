@@ -4,13 +4,11 @@
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
- * Label for a "volgens de standaardinstelling" radio option, built from one of the
- * period objects `GET /editor/defaults` returns.
+ * Label for a "volgens de standaardinstelling" radio option.
  *
  * @param {?Object} periodDefaults `review` or `reminder` from the defaults endpoint.
  * @param {boolean} withDate       Append the resolved date to the period.
- * @return {string} Translated label, falling back to the bare text while the
- *                  defaults are still loading.
+ * @return {string} Translated label, falling back to bare text while loading.
  */
 export const defaultSettingLabel = ( periodDefaults, withDate = false ) => {
 	if ( ! periodDefaults?.label ) {

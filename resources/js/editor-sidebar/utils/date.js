@@ -1,7 +1,5 @@
 /**
- * DatePicker hands back a full ISO like timestamp, while the meta is Y-m-d. The
- * local getters are used on purpose: `toISOString()` shifts to UTC, which moves
- * the date by a day for part of every day.
+ * Local getters on purpose: `toISOString()` shifts to UTC, off by a day part of every day.
  *
  * @param {Date|string} value
  * @return {string} Y-m-d, or an empty string when the value is not a date.
