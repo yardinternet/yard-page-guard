@@ -1,6 +1,6 @@
 # Gutenberg editor sidebar — implementation plan
 
-Status: **implemented, not yet smoke tested in a browser.** All four sections, `ReviewScheduler`, the
+Status: **implemented** All four sections, `ReviewScheduler`, the
 repaired classic metabox and the tests are in place. `pnpm build`, `npx eslint`, `composer test`
 (30 tests) and `php-cs-fixer` all pass. Verification step 5 (runtime smoke test in the block editor)
 and step 6 (overview columns) still have to be done by hand.

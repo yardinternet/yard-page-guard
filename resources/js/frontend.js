@@ -1,27 +1,29 @@
 import htmx from 'htmx.org';
 import '../css/frontend.css';
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener( 'DOMContentLoaded', function () {
 	htmx.config.selfRequestsOnly = false; // Required for doing WP-JSON requests to PDC/PUB endpoints
 	initReviewModal();
-});
+} );
 
 function initReviewModal() {
-	const modal = document.getElementById('ypg-review-modal');
-	if (!modal) return;
-
-	enableDrag(modal);
-
-	const closeButton = modal.querySelector('.ypg-close-modal');
-	if (closeButton) {
-		closeButton.addEventListener('click', function () {
-			modal.classList.add('closed');
-		});
+	const modal = document.getElementById( 'ypg-review-modal' );
+	if ( ! modal ) {
+		return;
 	}
 
-	window.addEventListener('resize', function () {
-		reposition(modal);
-	});
+	enableDrag( modal );
+
+	const closeButton = modal.querySelector( '.ypg-close-modal' );
+	if ( closeButton ) {
+		closeButton.addEventListener( 'click', function () {
+			modal.classList.add( 'closed' );
+		} );
+	}
+
+	window.addEventListener( 'resize', function () {
+		reposition( modal );
+	} );
 }
 
 /**
@@ -29,11 +31,11 @@ function initReviewModal() {
  * @param {HTMLElement} element
  * @param {Event}       event
  */
-function reposition(element, event) {
+function reposition( element, event ) {
 	let newLeft = element.offsetLeft;
 	let newTop = element.offsetTop;
 
-	if (event) {
+	if ( event ) {
 		const deltaX = element._prevX - event.clientX;
 		const deltaY = element._prevY - event.clientY;
 
@@ -48,10 +50,18 @@ function reposition(element, event) {
 	const vw = window.innerWidth;
 	const vh = window.innerHeight;
 
-	if (rect.right > vw) newLeft = vw - rect.width;
-	if (rect.bottom > vh) newTop = vh - rect.height;
-	if (rect.left < 0) newLeft = 0;
-	if (rect.top < 0) newTop = 0;
+	if ( rect.right > vw ) {
+		newLeft = vw - rect.width;
+	}
+	if ( rect.bottom > vh ) {
+		newTop = vh - rect.height;
+	}
+	if ( rect.left < 0 ) {
+		newLeft = 0;
+	}
+	if ( rect.top < 0 ) {
+		newTop = 0;
+	}
 
 	element.style.left = newLeft + 'px';
 	element.style.top = newTop + 'px';
@@ -62,14 +72,16 @@ function reposition(element, event) {
  * Handles drag functionality on an element
  * @param {HTMLElement} element
  */
-function enableDrag(element) {
+function enableDrag( element ) {
 	let isDragging = false;
 
 	element.style.cursor = 'grab';
-	element.addEventListener('mousedown', initDragging);
+	element.addEventListener( 'mousedown', initDragging );
 
-	function initDragging(event) {
-		if (event.target.closest('button, input, textarea, a, select')) return;
+	function initDragging( event ) {
+		if ( event.target.closest( 'button, input, textarea, a, select' ) ) {
+			return;
+		}
 
 		event.preventDefault();
 		isDragging = true;
@@ -77,24 +89,28 @@ function enableDrag(element) {
 		element._prevX = event.clientX;
 		element._prevY = event.clientY;
 
-		document.addEventListener('mousemove', startDragging);
-		document.addEventListener('mouseup', stopDragging);
+		document.addEventListener( 'mousemove', startDragging );
+		document.addEventListener( 'mouseup', stopDragging );
 
 		element.style.cursor = 'grabbing';
 	}
 
-	function startDragging(event) {
-		if (!isDragging) return;
+	function startDragging( event ) {
+		if ( ! isDragging ) {
+			return;
+		}
 		event.preventDefault();
-		reposition(element, event);
+		reposition( element, event );
 	}
 
 	function stopDragging() {
-		if (!isDragging) return;
+		if ( ! isDragging ) {
+			return;
+		}
 		isDragging = false;
 		element.style.cursor = 'grab';
 
-		document.removeEventListener('mousemove', startDragging);
-		document.removeEventListener('mouseup', stopDragging);
+		document.removeEventListener( 'mousemove', startDragging );
+		document.removeEventListener( 'mouseup', stopDragging );
 	}
 }

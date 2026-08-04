@@ -15,7 +15,7 @@ const allowedExperimentalComponents = [
 ];
 
 export default [
-	globalIgnores( [ 'build/', 'node_modules/', 'vendor/' ] ),
+	globalIgnores( [ 'public/', 'node_modules/', 'vendor/' ] ),
 	...config,
 	{
 		files: [ 'resources/js/editor-sidebar/**/*.{js,jsx}' ],

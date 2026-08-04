@@ -1,4 +1,4 @@
-build/**
+public/**
 composer.json
 composer.lock
 package.json
