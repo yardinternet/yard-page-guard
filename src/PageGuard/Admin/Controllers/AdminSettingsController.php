@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Admin\Controllers;
 
-use Yard\PageGuard\Enums\Options;
-use Yard\PageGuard\Traits\Text;
+use Yard\PageGuard\Enums\TimeUnit;
+use Yard\PageGuard\Settings\Settings;
 
 class AdminSettingsController
 {
-	use Text;
-
 	public const PAGE_SLUG = 'page-guard-settings';
-	public const OPTION_GROUP = 'ypg_settings';
 
 	public function init(): void
 	{
@@ -33,41 +30,6 @@ class AdminSettingsController
 
 	public function registerSettings(): void
 	{
-		register_setting(self::OPTION_GROUP, Options::REVIEW_TIME_PERIOD, [
-			'sanitize_callback' => 'absint',
-			'default' => 1,
-		]);
-		register_setting(self::OPTION_GROUP, Options::REVIEW_TIME_UNIT, [
-			'default' => 'days',
-		]);
-		register_setting(self::OPTION_GROUP, Options::REMINDER_TIME_PERIOD, [
-			'sanitize_callback' => 'absint',
-			'default' => 1,
-		]);
-		register_setting(self::OPTION_GROUP, Options::REMINDER_TIME_UNIT);
-		register_setting(self::OPTION_GROUP, Options::EMAIL_FROM_NAME, [
-			'sanitize_callback' => 'sanitize_text_field',
-			'default' => get_bloginfo('name'),
-		]);
-		register_setting(self::OPTION_GROUP, Options::EMAIL_FROM_ADDRESS, [
-			'sanitize_callback' => 'sanitize_email',
-		]);
-		register_setting(self::OPTION_GROUP, Options::REMINDER_EMAIL_BCC, [
-			'sanitize_callback' => 'sanitize_email',
-		]);
-		register_setting(self::OPTION_GROUP, Options::REVIEW_EMAIL_CONTENT);
-		register_setting(self::OPTION_GROUP, Options::REMINDER_EMAIL_CONTENT);
-		register_setting(self::OPTION_GROUP, Options::REVIEW_EMAIL_SUBJECT, [
-			'sanitize_callback' => 'sanitize_text_field',
-		]);
-		register_setting(self::OPTION_GROUP, Options::REMINDER_EMAIL_SUBJECT, [
-			'sanitize_callback' => 'sanitize_text_field',
-		]);
-		register_setting(self::OPTION_GROUP, Options::MODAL_FOOTER_CONTENT);
-		register_setting(self::OPTION_GROUP, Options::SHOW_INTERNAL_DATA_ON_REVIEW, [
-			'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
-		]);
-
 		add_settings_section(
 			'email',
 			__('E-mails', 'yard-page-guard'),
@@ -76,43 +38,43 @@ class AdminSettingsController
 		);
 
 		add_settings_field(
-			Options::EMAIL_FROM_NAME,
+			Settings::EMAIL_FROM_NAME,
 			__('Afzend naam', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
 			'email',
 			[
 				'type' => 'text',
-				'name' => Options::EMAIL_FROM_NAME,
-				'label_for' => Options::EMAIL_FROM_NAME,
-				'value' => get_option(Options::EMAIL_FROM_NAME),
+				'name' => Settings::EMAIL_FROM_NAME,
+				'label_for' => Settings::EMAIL_FROM_NAME,
+				'value' => get_option(Settings::EMAIL_FROM_NAME),
 			]
 		);
 
 		add_settings_field(
-			Options::EMAIL_FROM_ADDRESS,
+			Settings::EMAIL_FROM_ADDRESS,
 			__('Afzend emailadres', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
 			'email',
 			[
 				'type' => 'email',
-				'name' => Options::EMAIL_FROM_ADDRESS,
-				'label_for' => Options::EMAIL_FROM_ADDRESS,
-				'value' => get_option(Options::EMAIL_FROM_ADDRESS),
+				'name' => Settings::EMAIL_FROM_ADDRESS,
+				'label_for' => Settings::EMAIL_FROM_ADDRESS,
+				'value' => get_option(Settings::EMAIL_FROM_ADDRESS),
 			]
 		);
 		add_settings_field(
-			Options::REMINDER_EMAIL_BCC,
+			Settings::REMINDER_EMAIL_BCC,
 			__('Herinneringmail BCC emailadres', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
 			'email',
 			[
 				'type' => 'email',
-				'name' => Options::REMINDER_EMAIL_BCC,
-				'label_for' => Options::REMINDER_EMAIL_BCC,
-				'value' => get_option(Options::REMINDER_EMAIL_BCC),
+				'name' => Settings::REMINDER_EMAIL_BCC,
+				'label_for' => Settings::REMINDER_EMAIL_BCC,
+				'value' => get_option(Settings::REMINDER_EMAIL_BCC),
 			]
 		);
 
@@ -125,43 +87,43 @@ class AdminSettingsController
 		);
 
 		add_settings_field(
-			Options::REVIEW_TIME_PERIOD,
+			Settings::REVIEW_TIME_PERIOD,
 			__('Herzieningsperiode', 'yard-page-guard'),
 			[$this, 'renderPeriodInput'],
 			self::PAGE_SLUG,
 			'review_settings',
 			[
-				'label_for' => Options::REVIEW_TIME_PERIOD,
-				'period_name' => Options::REVIEW_TIME_PERIOD,
-				'period_value' => get_option(Options::REVIEW_TIME_PERIOD),
-				'unit_name' => Options::REVIEW_TIME_UNIT,
-				'unit_value' => get_option(Options::REVIEW_TIME_UNIT),
+				'label_for' => Settings::REVIEW_TIME_PERIOD,
+				'period_name' => Settings::REVIEW_TIME_PERIOD,
+				'period_value' => get_option(Settings::REVIEW_TIME_PERIOD),
+				'unit_name' => Settings::REVIEW_TIME_UNIT,
+				'unit_value' => get_option(Settings::REVIEW_TIME_UNIT),
 			]
 		);
 
 		add_settings_field(
-			Options::REVIEW_EMAIL_SUBJECT,
+			Settings::REVIEW_EMAIL_SUBJECT,
 			__('Herzieningsmail onderwerp', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
 			'review_settings',
 			[
 				'type' => 'text',
-				'name' => Options::REVIEW_EMAIL_SUBJECT,
-				'label_for' => Options::REVIEW_EMAIL_SUBJECT,
-				'value' => get_option(Options::REVIEW_EMAIL_SUBJECT),
+				'name' => Settings::REVIEW_EMAIL_SUBJECT,
+				'label_for' => Settings::REVIEW_EMAIL_SUBJECT,
+				'value' => get_option(Settings::REVIEW_EMAIL_SUBJECT),
 			]
 		);
 		add_settings_field(
-			Options::REVIEW_EMAIL_CONTENT,
+			Settings::REVIEW_EMAIL_CONTENT,
 			__('Herzieningsmail inhoud', 'yard-page-guard'),
 			[$this, 'renderEditor'],
 			self::PAGE_SLUG,
 			'review_settings',
 			[
-				'name' => Options::REVIEW_EMAIL_CONTENT,
-				'label_for' => Options::REVIEW_EMAIL_CONTENT,
-				'value' => get_option(Options::REVIEW_EMAIL_CONTENT),
+				'name' => Settings::REVIEW_EMAIL_CONTENT,
+				'label_for' => Settings::REVIEW_EMAIL_CONTENT,
+				'value' => get_option(Settings::REVIEW_EMAIL_CONTENT),
 				'description' => sprintf(
 					'%s<ol class="description"><li>%s</li><li>%s</li></ol>',
 					__('De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):', 'yard-page-guard'),
@@ -180,43 +142,43 @@ class AdminSettingsController
 		);
 
 		add_settings_field(
-			Options::REMINDER_TIME_PERIOD,
+			Settings::REMINDER_TIME_PERIOD,
 			__('Herinneringsperiode', 'yard-page-guard'),
 			[$this, 'renderPeriodInput'],
 			self::PAGE_SLUG,
 			'reminder_settings',
 			[
-				'label_for' => Options::REMINDER_TIME_PERIOD,
-				'period_name' => Options::REMINDER_TIME_PERIOD,
-				'period_value' => get_option(Options::REMINDER_TIME_PERIOD),
-				'unit_name' => Options::REMINDER_TIME_UNIT,
-				'unit_value' => get_option(Options::REMINDER_TIME_UNIT),
+				'label_for' => Settings::REMINDER_TIME_PERIOD,
+				'period_name' => Settings::REMINDER_TIME_PERIOD,
+				'period_value' => get_option(Settings::REMINDER_TIME_PERIOD),
+				'unit_name' => Settings::REMINDER_TIME_UNIT,
+				'unit_value' => get_option(Settings::REMINDER_TIME_UNIT),
 			]
 		);
 
 		add_settings_field(
-			Options::REMINDER_EMAIL_SUBJECT,
+			Settings::REMINDER_EMAIL_SUBJECT,
 			__('Herinneringsmail onderwerp', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
 			'reminder_settings',
 			[
 				'type' => 'text',
-				'name' => Options::REMINDER_EMAIL_SUBJECT,
-				'label_for' => Options::REMINDER_EMAIL_SUBJECT,
-				'value' => get_option(Options::REMINDER_EMAIL_SUBJECT),
+				'name' => Settings::REMINDER_EMAIL_SUBJECT,
+				'label_for' => Settings::REMINDER_EMAIL_SUBJECT,
+				'value' => get_option(Settings::REMINDER_EMAIL_SUBJECT),
 			]
 		);
 		add_settings_field(
-			Options::REMINDER_EMAIL_CONTENT,
+			Settings::REMINDER_EMAIL_CONTENT,
 			__('Herinneringsmail inhoud', 'yard-page-guard'),
 			[$this, 'renderEditor'],
 			self::PAGE_SLUG,
 			'reminder_settings',
 			[
-				'name' => Options::REMINDER_EMAIL_CONTENT,
-				'label_for' => Options::REMINDER_EMAIL_CONTENT,
-				'value' => get_option(Options::REMINDER_EMAIL_CONTENT),
+				'name' => Settings::REMINDER_EMAIL_CONTENT,
+				'label_for' => Settings::REMINDER_EMAIL_CONTENT,
+				'value' => get_option(Settings::REMINDER_EMAIL_CONTENT),
 				'description' => sprintf(
 					'%s<ol class="description"><li>%s</li><li>%s</li></ol>',
 					__('De volgende variabelen zijn invoerbaar door {#} toe te voegen aan de tekst (b.v. {1}):', 'yard-page-guard'),
@@ -234,15 +196,15 @@ class AdminSettingsController
 			self::PAGE_SLUG,
 		);
 		add_settings_field(
-			Options::MODAL_FOOTER_CONTENT,
+			Settings::MODAL_FOOTER_CONTENT,
 			__('Controleer venster footer inhoud', 'yard-page-guard'),
 			[$this, 'renderEditor'],
 			self::PAGE_SLUG,
 			'modal',
 			[
-				'name' => Options::MODAL_FOOTER_CONTENT,
-				'label_for' => Options::MODAL_FOOTER_CONTENT,
-				'value' => get_option(Options::MODAL_FOOTER_CONTENT),
+				'name' => Settings::MODAL_FOOTER_CONTENT,
+				'label_for' => Settings::MODAL_FOOTER_CONTENT,
+				'value' => get_option(Settings::MODAL_FOOTER_CONTENT),
 				'description' => __('Een knop kan aangemaakt worden door een link op een nieuwe regel toe te voegen en deze dikgedrukt te maken.', 'yard-page-guard'),
 			]
 		);
@@ -254,19 +216,21 @@ class AdminSettingsController
 		);
 
 		add_settings_field(
-			Options::SHOW_INTERNAL_DATA_ON_REVIEW,
+			Settings::SHOW_INTERNAL_DATA_ON_REVIEW,
 			__('Externe eigenaren kunnen interne data inzien', 'yard-page-guard'),
 			[$this, 'renderCheckbox'],
 			self::PAGE_SLUG,
 			'internal_information',
 			[
 				'type' => 'checkbox',
-				'name' => Options::SHOW_INTERNAL_DATA_ON_REVIEW,
-				'label_for' => Options::SHOW_INTERNAL_DATA_ON_REVIEW,
-				'checked' => get_option(Options::SHOW_INTERNAL_DATA_ON_REVIEW, 0) ? true : false,
+				'name' => Settings::SHOW_INTERNAL_DATA_ON_REVIEW,
+				'label_for' => Settings::SHOW_INTERNAL_DATA_ON_REVIEW,
+				'checked' => get_option(Settings::SHOW_INTERNAL_DATA_ON_REVIEW, 0) ? true : false,
 			]
 		);
 
+
+		// FIXME: this is a hack to make sure the settings page is only accessible to users with the correct capability. The settings are registered on init, so they can be accessed via the REST API, but we don't want that. We should find a better way to do this.
 		add_filter('option_page_capability_ypg_settings', fn () => apply_filters('yard::page-guard/capability/admin', 'edit_pages'));
 	}
 	public function renderSettingsPage(): void
@@ -275,11 +239,9 @@ class AdminSettingsController
 		<div class="wrap">
 			<h1><?php echo get_admin_page_title() ?></h1>
 			<form method="post" action="options.php">
-				<?php
-				settings_fields(self::OPTION_GROUP);
-		do_settings_sections(self::PAGE_SLUG);
-		submit_button();
-		?>
+				<?php settings_fields(Settings::OPTION_GROUP); ?>
+				<?php do_settings_sections(self::PAGE_SLUG); ?>
+				<?php submit_button(); ?>
 			</form>
 		</div>
 	<?php
@@ -332,7 +294,7 @@ class AdminSettingsController
 			'period_value' => '',
 			'unit_name' => '',
 			'unit_value' => '',
-			'unit_options' => $this->getUnitOptions(),
+			'unit_options' => TimeUnit::options(),
 		]);
 		$this->renderInput([
 			'type' => 'number',
