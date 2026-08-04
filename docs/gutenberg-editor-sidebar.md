@@ -1,7 +1,33 @@
 # Gutenberg editor sidebar — implementation plan
 
-Status: **planned, not implemented.** The foundation (meta registry, REST endpoints, owner select) is
-in place; the three remaining sections and the shared save path are not.
+Status: **implemented, not yet smoke tested in a browser.** All four sections, `ReviewScheduler`, the
+repaired classic metabox and the tests are in place. `pnpm build`, `npx eslint`, `composer test`
+(30 tests) and `php-cs-fixer` all pass. Verification step 5 (runtime smoke test in the block editor)
+and step 6 (overview columns) still have to be done by hand.
+
+Deviations from the plan as written, all deliberate:
+
+-   **Switching a radio back to "standaard" clears the dependent meta in the same `setMeta` call.**
+    `ReviewScheduler` keeps an existing `REVIEW_DATE` rather than recomputing it, so saving a page never
+    pushes the review date forward; the cleared value is what makes a recompute happen. Same reasoning
+    for the reminder override.
+-   **The dead inline toggle script is deleted without replacement.** The classic conditional fields are
+    always visible; the value is ignored unless its radio is on "custom", so the outcome is the same.
+-   **The metabox's stub `alert()` button became a "mark reviewed" checkbox** handled on save via
+    `ReviewScheduler::markReviewed()`, rather than being dropped.
+-   **`markReviewed()` resets `REVIEW_DATE_TYPE` to `default`**, because an afwijkende datum is eenmalig.
+-   **`VerifyPostController`'s success check now reads the resulting state.** It used
+    `update_post_meta()`'s return value, which is `false` when the value did not change — so reviewing
+    twice in one day reported a failure.
+-   **`eslint.config.js` allows the six `__experimental*` component names** for
+    `resources/js/editor-sidebar/**`, since `@wordpress/no-unsafe-wp-apis` rejects the only names that
+    exist in 6.8.6.
+-   **`tests/bootstrap.php` guards its `WP_CLI` stub with `class_exists()`.** `wp-cli/i18n-command` now
+    ships the real class, and the redeclaration was a fatal that blocked the whole suite.
+-   **`ReviewItem::contentOwner()` also guards the external branch**, where `get_term_field()` returns a
+    `WP_Error` for a deleted term — a `TypeError` against `ContentOwner`'s `string` parameter.
+-   `date('Y-m-d')` became `current_time('Y-m-d')` in the review/reminder computations, matching the
+    site timezone the rest of the plugin compares against.
 
 ## Context
 
