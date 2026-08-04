@@ -15,7 +15,7 @@ import { __ } from '@wordpress/i18n';
  */
 import SidebarToggleButton from './components/sidebar-toggle-button.jsx';
 import ContentOwnerPanel from './panels/content-owner-panel.jsx';
-import { SIDEBAR_NAME, SIDEBAR_ICON } from './constants';
+import { SIDEBAR_NAME, SIDEBAR_ICON } from './config/constants';
 import './editor-sidebar.css';
 
 const EditorSidebar = () => {
