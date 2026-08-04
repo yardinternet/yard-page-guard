@@ -41,11 +41,14 @@ class DefaultsController
 		$period = max(1, $period);
 		$unit = in_array($unit, MetaFields::TIME_UNITS, true) ? $unit : 'weeks';
 
+		$date = $this->addPeriodToBase(current_time('Y-m-d'), $period, $unit);
+
 		return [
 			'period' => $period,
 			'unit' => $unit,
 			'label' => $this->formatPeriod($period, $unit),
-			'date' => $this->addPeriodToBase(current_time('Y-m-d'), $period, $unit),
+			'date' => $date,
+			'formatted' => $this->formatDate($date),
 		];
 	}
 }

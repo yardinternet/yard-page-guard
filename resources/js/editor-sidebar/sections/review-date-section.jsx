@@ -2,7 +2,7 @@
  * WordPress dependencies
  */
 import { DatePicker, RadioControl, Spinner } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -13,6 +13,7 @@ import { usePostMeta } from '../hooks/use-post-meta';
 import { META_REVIEW_DATE, META_REVIEW_DATE_TYPE } from '../config/meta-keys';
 import { DATE_TYPE_CUSTOM, DATE_TYPE_DEFAULT } from '../config/constants';
 import { todayYmd, toYmd } from '../utils/date';
+import { defaultSettingLabel } from '../utils/default-label';
 
 const ReviewDateSection = () => {
 	const { defaults, isLoading } = useDefaults();
@@ -34,13 +35,7 @@ const ReviewDateSection = () => {
 		);
 	};
 
-	const defaultLabel = defaults?.review?.label
-		? sprintf(
-				/* translators: %s: resolved default period, e.g. "1 week". */
-				__( 'Volgens de standaardinstelling (%s)', 'yard-page-guard' ),
-				defaults.review.label
-		  )
-		: __( 'Volgens de standaardinstelling', 'yard-page-guard' );
+	const defaultLabel = defaultSettingLabel( defaults?.review, '' === date );
 
 	return (
 		<Section>

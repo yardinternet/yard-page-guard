@@ -8,7 +8,7 @@ import {
 	__experimentalHStack as HStack,
 	__experimentalNumberControl as NumberControl,
 } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -16,6 +16,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import Section from '../components/section.jsx';
 import { useDefaults } from '../hooks/use-defaults';
 import { usePostMeta } from '../hooks/use-post-meta';
+import { defaultSettingLabel } from '../utils/default-label';
 import {
 	META_REMINDER_TIME_PERIOD,
 	META_REMINDER_TIME_TYPE,
@@ -58,13 +59,7 @@ const ReminderPeriodSection = () => {
 		} );
 	};
 
-	const defaultLabel = defaults?.reminder?.label
-		? sprintf(
-				/* translators: %s: resolved default period, e.g. "1 week". */
-				__( 'Volgens de standaardinstelling (%s)', 'yard-page-guard' ),
-				defaults.reminder.label
-		  )
-		: __( 'Volgens de standaardinstelling', 'yard-page-guard' );
+	const defaultLabel = defaultSettingLabel( defaults?.reminder );
 
 	return (
 		<Section>
