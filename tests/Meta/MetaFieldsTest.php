@@ -103,4 +103,70 @@ class MetaFieldsTest extends TestCase
 			);
 		}
 	}
+
+	public function testOwnerValueEncodesTheSameCompositeTheSelectUses(): void
+	{
+		$this->assertSame('user:12', MetaFields::encodeOwnerValue(12, ContentOwnerType::USER));
+		$this->assertSame('external:3', MetaFields::encodeOwnerValue(3, ContentOwnerType::EXTERNAL));
+	}
+
+	public function testOwnerValueEncodesNoOwnerAsAnEmptyString(): void
+	{
+		$this->assertSame('', MetaFields::encodeOwnerValue(0, ContentOwnerType::USER));
+		$this->assertSame('', MetaFields::encodeOwnerValue(-1, ContentOwnerType::USER));
+		$this->assertSame('', MetaFields::encodeOwnerValue(12, ''));
+		$this->assertSame('', MetaFields::encodeOwnerValue(12, 'term'));
+	}
+
+	public function testOwnerValueDecodesIntoTheTwoMetaValues(): void
+	{
+		$this->assertSame(
+			['id' => 12, 'type' => ContentOwnerType::USER],
+			MetaFields::decodeOwnerValue('user:12')
+		);
+		$this->assertSame(
+			['id' => 3, 'type' => ContentOwnerType::EXTERNAL],
+			MetaFields::decodeOwnerValue('external:3')
+		);
+	}
+
+	/**
+	 * @dataProvider provideUnusableOwnerValues
+	 *
+	 * @param mixed $value
+	 */
+	public function testOwnerValueDecodesAnythingUnusableAsNoOwner($value): void
+	{
+		$this->assertSame(['id' => 0, 'type' => ''], MetaFields::decodeOwnerValue($value));
+	}
+
+	/**
+	 * @return array<string, array<int, mixed>>
+	 */
+	public static function provideUnusableOwnerValues(): array
+	{
+		return [
+			'empty' => [''],
+			'null' => [null],
+			'array' => [[]],
+			'id only' => ['12'],
+			'type only' => ['user'],
+			'unknown type' => ['term:12'],
+			'zero id' => ['user:0'],
+			'non numeric id' => ['user:abc'],
+		];
+	}
+
+	/**
+	 * The classic metabox and the sidebar each split the composite value themselves,
+	 * so a round trip must land on the same pair on both sides.
+	 */
+	public function testOwnerValueRoundTrips(): void
+	{
+		foreach ([ContentOwnerType::USER, ContentOwnerType::EXTERNAL] as $type) {
+			$encoded = MetaFields::encodeOwnerValue(7, $type);
+
+			$this->assertSame(['id' => 7, 'type' => $type], MetaFields::decodeOwnerValue($encoded));
+		}
+	}
 }
