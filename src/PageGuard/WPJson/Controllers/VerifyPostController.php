@@ -11,6 +11,7 @@ class VerifyPostController
 {
 	use Text;
 
+
 	/**
 	 * Updates a post's meta so it gets verified and receives its next review date
 	 * Returns a HTML response since it gets handled by htmx on the frontend.
@@ -27,7 +28,19 @@ class VerifyPostController
 		header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
 		http_response_code(200); # HTML needs to be returned properly, so no 500 in case of an error.
 
-		echo self::getSuccessResponse();
+		// update_post_meta() returns false when the value did not change, so check the resulting state instead.
+		$isReviewed = current_time('Y-m-d') === (string) get_post_meta($postId, PostMeta::LAST_REVIEW_DATE, true)
+			&& '' !== (string) get_post_meta($postId, PostMeta::REVIEW_DATE, true);
+
+		if ($isReviewed) {
+			echo self::getSuccessResponse();
+
+			exit();
+		}
+
+		trigger_error("[yard-page-guard] Failed to process review for post ID: $postId", E_USER_WARNING);
+		echo self::getErrorResponse();
+
 		exit();
 	}
 

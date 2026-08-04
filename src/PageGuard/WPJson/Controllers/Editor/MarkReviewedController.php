@@ -6,8 +6,7 @@ namespace Yard\PageGuard\WPJson\Controllers\Editor;
 
 use WP_REST_Request;
 use WP_REST_Response;
-use Yard\PageGuard\Enums\PostMeta;
-use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Meta\ReviewScheduler;
 
 /**
  * Marks a post as reviewed from within the editor and returns the resulting
@@ -16,27 +15,22 @@ use Yard\PageGuard\Traits\Date;
  */
 class MarkReviewedController
 {
-	use Date;
-
 	private ReviewStatusController $reviewStatusController;
+	private ReviewScheduler $scheduler;
 
-	public function __construct(?ReviewStatusController $reviewStatusController = null)
-	{
+	public function __construct(
+		?ReviewStatusController $reviewStatusController = null,
+		?ReviewScheduler $scheduler = null
+	) {
 		$this->reviewStatusController = $reviewStatusController ?? new ReviewStatusController();
+		$this->scheduler = $scheduler ?? new ReviewScheduler();
 	}
 
 	public function handleRequest(WP_REST_Request $request): WP_REST_Response
 	{
 		$postId = (int) $request->get_param('post_id');
 
-		update_post_meta($postId, PostMeta::REVIEW_DATE, $this->computeReviewDate($postId));
-		update_post_meta($postId, PostMeta::LAST_REVIEW_DATE, current_time('Y-m-d'));
-
-		// Deprecated, but the overview columns still read it. Kept in sync with the frontend verify flow.
-		update_post_meta($postId, PostMeta::IS_VERIFIED, '1');
-
-		delete_post_meta($postId, PostMeta::REVIEW_MAIL_SENT);
-		delete_post_meta($postId, PostMeta::LAST_REMINDER_DATE);
+		$this->scheduler->markReviewed($postId);
 
 		return new WP_REST_Response($this->reviewStatusController->getStatus($postId));
 	}
