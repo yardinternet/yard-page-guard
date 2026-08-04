@@ -132,26 +132,6 @@ class AdminServiceProvider extends ServiceProvider
 		return in_array($screen->post_type, apply_filters('yard::page-guard/post-types-to-use', ['page']), true);
 	}
 
-	public function enqueueAdminAssetsPerHook(string $hook): void
-	{
-		// Settings & overview page
-		if ('settings_page_page-guard-settings' === $hook || 'toplevel_page_ypg-overview' === $hook) {
-			$this->enqueueAdminAssets();
-		}
-
-		// External content owner term list & detail page
-		if (('edit-tags.php' === $hook || 'term.php' === $hook) && isset($_GET['taxonomy']) && 'ypg_external_content_owner' === $_GET['taxonomy']) {
-			$this->enqueueAdminAssets();
-		}
-
-		// Edit post page
-		if ('edit.php' === $hook && isset($_GET['post_type'])) {
-			if (in_array($_GET['post_type'], apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
-				$this->enqueueAdminAssets();
-			}
-		}
-	}
-
 	public function manageExternalContentOwnerColumns(array $columns): array
 	{
 		unset($columns['description']);
