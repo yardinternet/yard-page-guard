@@ -229,7 +229,6 @@ class AdminSettingsController
 			]
 		);
 
-
 		// FIXME: this is a hack to make sure the settings page is only accessible to users with the correct capability. The settings are registered on init, so they can be accessed via the REST API, but we don't want that. We should find a better way to do this.
 		add_filter('option_page_capability_ypg_settings', fn () => apply_filters('yard::page-guard/capability/admin', 'edit_pages'));
 	}

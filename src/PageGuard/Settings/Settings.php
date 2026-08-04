@@ -8,7 +8,6 @@ use Yard\PageGuard\Enums\TimeUnit;
 
 class Settings
 {
-
 	public const OPTION_GROUP = 'ypg_settings';
 
 	public const REVIEW_TIME_PERIOD = 'ypg_review_time_period';
@@ -24,8 +23,6 @@ class Settings
 	public const REMINDER_EMAIL_SUBJECT = 'ypg_reminder_email_subject';
 	public const MODAL_FOOTER_CONTENT = 'ypg_modal_footer_content';
 	public const SHOW_INTERNAL_DATA_ON_REVIEW = 'ypg_show_internal_data_on_review';
-
-
 
 	public function registerSettings(): void
 	{
