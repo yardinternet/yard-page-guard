@@ -1,8 +1,8 @@
 [
+  "wp-components",
   "wp-editor",
   "wp-plugins",
   "wp-i18n",
-  "wp-components",
   "wp-data",
   "wp-core-data",
   "wp-element",
