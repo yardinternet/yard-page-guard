@@ -7,19 +7,19 @@
 	border: 1px solid #b5b5b5;
 	border-radius: 10px;
 	background: #fff;
-	box-shadow: 0px 2px 50px 0px rgba(157, 157, 157, 0.25);
+	box-shadow: 0px 2px 50px 0px rgba( 157, 157, 157, 0.25 );
 	cursor: grab;
 	font-family: 'inter-variable', sans-serif;
 	transition-duration: 0.25s;
 	transition-property: visibility, opacity;
 	transition-timing-function: ease;
 
-	@media screen and (max-width: 1024px) {
+	@media screen and ( max-width: 1024px ) {
 		top: 20vh;
 	}
 
 	* {
-		max-width: min(50vw, 390px);
+		max-width: min( 50vw, 390px );
 	}
 
 	.ypg-title {
@@ -53,7 +53,7 @@
 			transition: transform 0.25s ease-in-out;
 
 			&:hover {
-				transform: scale(1.025);
+				transform: scale( 1.025 );
 			}
 		}
 	}
@@ -79,7 +79,7 @@
 
 			svg {
 				animation: ypg-pop-in 0.4s forwards;
-				transform: scale(0);
+				transform: scale( 0 );
 			}
 
 			p {
@@ -112,7 +112,7 @@
 			transition: transform 0.25s ease-in-out;
 
 			&:hover {
-				transform: scale(1.025);
+				transform: scale( 1.025 );
 			}
 		}
 	}
@@ -126,16 +126,16 @@
 @keyframes ypg-pop-in {
 	0% {
 		opacity: 0;
-		transform: scale(0);
+		transform: scale( 0 );
 	}
 
 	50% {
 		opacity: 1;
-		transform: scale(1.2);
+		transform: scale( 1.2 );
 	}
 
 	100% {
 		opacity: 1;
-		transform: scale(1);
+		transform: scale( 1 );
 	}
 }

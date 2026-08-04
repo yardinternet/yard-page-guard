@@ -24,8 +24,6 @@ import { META_CONTENT_OWNER_ID } from './config/meta-keys';
 import { SIDEBAR_NAME, SIDEBAR_ICON } from './config/constants';
 import './editor-sidebar.css';
 
-
-
 const EditorSidebar = () => {
 	const title = __( 'Inhoudscontrole', 'yard-page-guard' );
 
