@@ -1,10 +1,6 @@
 import config from '@yardinternet/eslint-config';
 import { globalIgnores } from 'eslint/config';
 
-/**
- * WP 6.8.6 ships these under their experimental names only; the stable names
- * upstream suggests are `undefined` at runtime. Allowed until core stabilises them.
- */
 const allowedExperimentalComponents = [
 	'__experimentalDivider',
 	'__experimentalHStack',

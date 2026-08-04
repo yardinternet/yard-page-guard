@@ -5,9 +5,7 @@ import { useSelect } from '@wordpress/data';
 import { store as editorStore } from '@wordpress/editor';
 
 /**
- * Editor state the sidebar needs to know whether writing straight to the
- * database is safe: an unsaved post has no usable id, and a dirty post would
- * have its meta overwritten by the save that follows.
+ * Editor state needed to tell if writing straight to the DB is safe.
  *
  * @return {{postId: number, isNew: boolean, isDirty: boolean, isSaving: boolean}} Editor state.
  */

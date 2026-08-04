@@ -8,10 +8,6 @@ import apiFetch from '@wordpress/api-fetch';
  */
 import * as endpoints from './endpoints';
 
-/**
- * Site wide data does not change while the editor is open, so the request is
- * shared between every panel that asks for it instead of refetched per mount.
- */
 const cache = new Map();
 
 const fetchOnce = ( path ) => {

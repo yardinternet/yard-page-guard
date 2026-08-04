@@ -39,9 +39,7 @@ export const useMarkReviewed = ( postId, onSuccess ) => {
 		try {
 			await markReviewedRequest( postId );
 
-			// The endpoint resets REVIEW_DATE_TYPE and REVIEW_DATE server side.
-			// Without dropping the cached record the radio keeps showing the old
-			// choice, and the next save PATCHes those stale values back over it.
+			// Endpoint resets REVIEW_DATE_TYPE/REVIEW_DATE server side; drop cache or stale values get PATCHed back.
 			invalidateResolution( 'getEntityRecord', [
 				'postType',
 				postType,

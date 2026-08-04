@@ -4,13 +4,9 @@
 import { OWNER_TYPES } from '../config/constants';
 
 /**
- * A select holds one scalar, but a content owner is an id plus the type telling
- * whether that id is a WP user or an external owner term. The composite value
- * therefore exists in the UI only: it is split again before it is stored, so the
- * post meta keeps a plain integer id and a separate owner type, which is what
- * the review queries, overview columns and notification mails read.
- *
- * Kept in sync with MetaFields::encodeOwnerValue() / ::decodeOwnerValue().
+ * Composite id+type value for the owner select; split back into separate
+ * meta fields before storage. Kept in sync with MetaFields::encodeOwnerValue()
+ * / ::decodeOwnerValue().
  */
 const SEPARATOR = ':';
 
