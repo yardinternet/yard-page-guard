@@ -1,6 +1,9 @@
 /**
  * WordPress dependencies
  */
+import { store as coreStore } from '@wordpress/core-data';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { store as editorStore } from '@wordpress/editor';
 import { useCallback, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -20,6 +23,11 @@ const IDLE = { isSaving: false, error: null, isSuccess: false };
  */
 export const useMarkReviewed = ( postId, onSuccess ) => {
 	const [ state, setState ] = useState( IDLE );
+	const postType = useSelect(
+		( select ) => select( editorStore ).getCurrentPostType(),
+		[]
+	);
+	const { invalidateResolution } = useDispatch( coreStore );
 
 	const markReviewed = useCallback( async () => {
 		if ( ! postId ) {
@@ -30,6 +38,16 @@ export const useMarkReviewed = ( postId, onSuccess ) => {
 
 		try {
 			await markReviewedRequest( postId );
+
+			// The endpoint resets REVIEW_DATE_TYPE and REVIEW_DATE server side.
+			// Without dropping the cached record the radio keeps showing the old
+			// choice, and the next save PATCHes those stale values back over it.
+			invalidateResolution( 'getEntityRecord', [
+				'postType',
+				postType,
+				postId,
+			] );
+
 			setState( { isSaving: false, error: null, isSuccess: true } );
 			onSuccess?.();
 		} catch ( error ) {
@@ -44,7 +62,7 @@ export const useMarkReviewed = ( postId, onSuccess ) => {
 				isSuccess: false,
 			} );
 		}
-	}, [ postId, onSuccess ] );
+	}, [ postId, postType, invalidateResolution, onSuccess ] );
 
 	return { markReviewed, ...state };
 };
