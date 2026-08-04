@@ -30,12 +30,7 @@ class Metabox
 
 	private function shouldSave(int $postId): bool
 	{
-		// Check save location
-		if (isset($_POST['ypg_metaboxes_nonce'])) {
-			if (! wp_verify_nonce($_POST['ypg_metaboxes_nonce'], basename(__FILE__))) {
-				return false;
-			}
-		} else {
+		if (! isset($_POST[self::NONCE_FIELD]) || ! wp_verify_nonce($_POST[self::NONCE_FIELD], self::NONCE_ACTION)) {
 			return false;
 		}
 
@@ -89,7 +84,7 @@ class Metabox
 			return;
 		}
 
-		if (! isset($_POST['ypg_post_content_owner'])) {
+		if (! isset($_POST[self::OWNER_FIELD])) {
 			return;
 		}
 
@@ -605,8 +600,8 @@ class Metabox
 				foreach ($args['options'] as $optionValue => $optionLabel) {
 					$radioHtml .= sprintf(
 						'<label style="display: block; margin-bottom: 5px;"><input type="radio" name="%1$s" value="%2$s" %3$s/>%4$s</label>',
-						$args['name'],
-						$optionValue,
+						esc_attr($args['name']),
+						esc_attr($optionValue),
 						checked($args['value'], $optionValue, false),
 						wp_kses_post($optionLabel)
 					);
