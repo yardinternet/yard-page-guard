@@ -20,50 +20,49 @@ class Meta
 	public const LAST_REVIEW_DATE = 'ypg_last_review_date';
 	public const LAST_REMINDER_DATE = 'ypg_last_reminder_date';
 
-
 	public function registerMeta(): void
 	{
 		//TODO: set default values
 		$metaFields = [
 			self::POST_CONTENT_OWNER_ID => [
 				'type' => 'integer',
-				'sanitize' => 'absint'
+				'sanitize' => 'absint',
 			],
 			self::POST_CONTENT_OWNER_TYPE => [
 				'type' => 'string',
 				'sanitize' => 'sanitize_text_field', //TODO: sanitize callback should validate against allowed values
-				],
+			],
 			self::REVIEW_DATE_TYPE => [
 				'type' => 'string',
 				'sanitize' => 'sanitize_text_field',
-				'default' => 'default'
-				], // FIXME: sanitize callback should validate against allowed values
+				'default' => 'default',
+			], // FIXME: sanitize callback should validate against allowed values
 			self::REVIEW_DATE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field'
+				'sanitize' => 'sanitize_text_field',
 			],
 			self::REMINDER_TIME_TYPE => [
 				'type' => 'string',
 				'sanitize' => 'sanitize_text_field',
-				'default' => 'default'
+				'default' => 'default',
 			], //FIXME: sanitize callback should validate against allowed values
 			self::REMINDER_TIME_PERIOD => [
 				'type' => 'integer',
 				'sanitize' => 'absint',
-				'default' => 1
+				'default' => 1,
 			],
 			self::REMINDER_TIME_UNIT => [
 				'type' => 'string',
 				'sanitize' => 'sanitize_text_field',
-				'default' => TimeUnit::WEEKS
+				'default' => TimeUnit::WEEKS,
 			], //FIXME: sanitize callback should validate against allowed values
 			self::LAST_REMINDER_DATE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field'
+				'sanitize' => 'sanitize_text_field',
 			], //TODO: sanitize date
 			self::LAST_REVIEW_DATE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field'
+				'sanitize' => 'sanitize_text_field',
 			], // TODO: sanitize date
 		];
 
@@ -71,15 +70,15 @@ class Meta
 			$config = wp_parse_args(
 				$config,
 				[
-					'object_subtype'    => '',
-					'type'              => 'string',
-					'label'             => '',
-					'description'       => '',
-					'default'           => '',
-					'single'            => false,
+					'object_subtype' => '',
+					'type' => 'string',
+					'label' => '',
+					'description' => '',
+					'default' => '',
+					'single' => false,
 					'sanitize_callback' => null,
-					'auth_callback'     => fn() => current_user_can('edit_posts'),
-					'show_in_rest'      => false,
+					'auth_callback' => fn () => current_user_can('edit_posts'),
+					'show_in_rest' => false,
 					'revisions_enabled' => false,
 				]
 			);
