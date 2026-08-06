@@ -14,5 +14,4 @@ class PostMeta
 
 	/** @deprecated */
 	public const POST_CONTENT_OWNER_PHONE_NUMBER = 'ypg_post_content_owner_phone_number';
-
 }
