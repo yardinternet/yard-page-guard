@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Meta;
 
+use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Enums\ReminderTimeType;
 use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Enums\TimeUnit;
@@ -28,44 +29,44 @@ class Meta
 		$metaFields = [
 			self::POST_CONTENT_OWNER_ID => [
 				'type' => 'integer',
-				'sanitize' => 'absint',
+				'sanitize_callback' => 'absint',
 			],
 			self::POST_CONTENT_OWNER_TYPE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field', //TODO: sanitize callback should validate against allowed values
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, ContentOwnerType::cases(), ''),
 			],
 			self::REVIEW_DATE_TYPE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, ReviewDateType::cases(), ReviewDateType::DEFAULT),
 				'default' => ReviewDateType::DEFAULT,
-			], // FIXME: sanitize callback should validate against allowed values
+			],
 			self::REVIEW_DATE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
+				'sanitize_callback' => [$this, 'sanitizeDate'],
 			],
 			self::REMINDER_TIME_TYPE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
 				'default' => ReminderTimeType::DEFAULT,
-			], //FIXME: sanitize callback should validate against allowed values
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, ReminderTimeType::cases(), ReminderTimeType::DEFAULT),
+			],
 			self::REMINDER_TIME_PERIOD => [
 				'type' => 'integer',
-				'sanitize' => 'absint',
+				'sanitize_callback' => 'absint',
 				'default' => 1,
 			],
 			self::REMINDER_TIME_UNIT => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
 				'default' => TimeUnit::WEEKS,
-			], //FIXME: sanitize callback should validate against allowed values
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, TimeUnit::cases(), TimeUnit::WEEKS),
+			],
 			self::LAST_REMINDER_DATE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
-			], //TODO: sanitize date
+				'sanitize_callback' => [$this, 'sanitizeDate'],
+			],
 			self::LAST_REVIEW_DATE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
-			], // TODO: sanitize date
+				'sanitize_callback' => [$this, 'sanitizeDate'],
+			],
 		];
 
 		foreach ($metaFields as $key => $config) {
@@ -86,5 +87,24 @@ class Meta
 			//FIXME: loop over supported post types
 			register_post_meta('', $key, $config);
 		}
+	}
+
+	public function sanitizeEnum(string $value, array $allowedValues, string $defaultValue = ''): string
+	{
+		if (! in_array($value, $allowedValues, true)) {
+			return $defaultValue;
+		}
+
+		return $value;
+	}
+
+	public function sanitizeDate(string $value): string
+	{
+		$date = \DateTime::createFromFormat('Y-m-d', $value);
+		if (! $date) {
+			return '';
+		}
+
+		return $date->format('Y-m-d');
 	}
 }

@@ -98,6 +98,17 @@ class ReviewItem
 		return $permalink;
 	}
 
+	public function isOverdue(): bool
+	{
+		$reviewDate = $this->reviewDate();
+
+		if (null === $reviewDate) {
+			return false;
+		}
+
+		return $reviewDate->format('Y-m-d') < (new \DateTime('now', wp_timezone()))->format('Y-m-d');
+	}
+
 	public function lastReviewDate(): ?\DateTimeInterface
 	{
 		$date = get_post_meta($this->ID(), Meta::LAST_REVIEW_DATE, true);
@@ -184,7 +195,7 @@ class ReviewItem
 		if (false === $date) {
 			return '&mdash;';
 		}
-		if ($date->format('Y-m-d') < (new \DateTime('now', wp_timezone()))->format('Y-m-d')) {
+		if ($this->isOverdue()) {
 			return sprintf(
 				'<span style="color: #bd8600;"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</span>',
 				__('Achterstallig', 'yard-page-guard')
@@ -192,6 +203,11 @@ class ReviewItem
 		} else {
 			return __('Gecontroleerd', 'yard-page-guard');
 		}
+	}
+
+	public function reviewMailSent(): bool
+	{
+		return (bool) get_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT, true);
 	}
 
 	public function setReviewMailSent(): void
