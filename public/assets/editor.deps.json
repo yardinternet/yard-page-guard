@@ -6,5 +6,6 @@
   "wp-data",
   "wp-core-data",
   "wp-element",
+  "wp-date",
   "wp-api-fetch"
 ]

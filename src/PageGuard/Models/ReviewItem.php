@@ -249,15 +249,31 @@ class ReviewItem
 
 	public function setReviewDate(string $type = ReviewDateType::DEFAULT, ?\DateTimeInterface $reviewDate = null): void
 	{
-		update_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, $type);
-		if (ReviewDateType::DEFAULT === $type) {
-			$reviewTimePeriod = get_option(Settings::REVIEW_TIME_PERIOD, 1);
-			$reviewTimeUnit = get_option(Settings::REVIEW_TIME_UNIT, 'weeks');
-
-			$dateTimePeriod = \DateInterval::createFromDateString("{$reviewTimePeriod} {$reviewTimeUnit}");
-			$reviewDate = (new \DateTime('now', wp_timezone()))->add($dateTimePeriod);
+		if (ReviewDateType::DEFAULT === $type || null === $reviewDate) {
+			$type = ReviewDateType::DEFAULT;
+			$reviewDate = $this->defaultReviewDate();
 		}
+
+		update_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, $type);
 		update_post_meta($this->ID(), Meta::REVIEW_DATE, $reviewDate->format('Y-m-d'));
+	}
+
+	public function ensureReviewDate(): void
+	{
+		if (null === $this->contentOwner() || null !== $this->reviewDate()) {
+			return;
+		}
+
+		$this->setReviewDate($this->reviewDateType());
+	}
+
+	private function defaultReviewDate(): \DateTimeInterface
+	{
+		$period = get_option(Settings::REVIEW_TIME_PERIOD, 1);
+		$unit = get_option(Settings::REVIEW_TIME_UNIT, 'weeks');
+
+		return (new \DateTime('now', wp_timezone()))
+			->add(\DateInterval::createFromDateString("{$period} {$unit}"));
 	}
 
 	public function setContentOwner(int $id, string $type): void

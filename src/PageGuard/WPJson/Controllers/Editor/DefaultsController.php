@@ -44,7 +44,7 @@ class DefaultsController
 			'period' => $period,
 			'unit' => $unit,
 			'label' => $this->formatPeriod($period, $unit),
-			'date' => $date,
+			'date' => $date->format('Y-m-d'),
 			'formatted' => wp_date(get_option('date_format', 'd-m-Y'),  $date->getTimestamp()),
 		];
 	}
