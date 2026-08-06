@@ -6,7 +6,7 @@ namespace Yard\PageGuard\WPJson\Controllers\Editor;
 
 use WP_REST_Request;
 use WP_REST_Response;
-use Yard\PageGuard\Meta\ReviewScheduler;
+use Yard\PageGuard\Models\ReviewItem;
 
 /**
  * Marks a post as reviewed from within the editor and returns the resulting
@@ -16,21 +16,19 @@ use Yard\PageGuard\Meta\ReviewScheduler;
 class MarkReviewedController
 {
 	private ReviewStatusController $reviewStatusController;
-	private ReviewScheduler $scheduler;
 
 	public function __construct(
-		?ReviewStatusController $reviewStatusController = null,
-		?ReviewScheduler $scheduler = null
+		?ReviewStatusController $reviewStatusController = null
 	) {
 		$this->reviewStatusController = $reviewStatusController ?? new ReviewStatusController();
-		$this->scheduler = $scheduler ?? new ReviewScheduler();
 	}
 
 	public function handleRequest(WP_REST_Request $request): WP_REST_Response
 	{
 		$postId = (int) $request->get_param('post_id');
 
-		$this->scheduler->markReviewed($postId);
+		$reviewItem = new ReviewItem(get_post($postId));
+		$reviewItem->markAsReviewed();
 
 		return new WP_REST_Response($this->reviewStatusController->getStatus($postId));
 	}

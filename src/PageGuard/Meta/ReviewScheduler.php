@@ -9,6 +9,7 @@ use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Meta;
 
 /**
+ * @deprecated use ReviewItem instead
  * Single owner of a post's review scheduling.
  *
  * The editors only record intent (the *_TYPE fields plus any override), because
