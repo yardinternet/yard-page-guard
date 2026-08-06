@@ -33,11 +33,7 @@ class AdminColumnsController
 		}
 
 		add_filter('manage_edit-ypg_external_content_owner_columns', [$this, 'manageExternalContentOwnerColumns']);
-		/**
-		 * Fill custom email column (see filter above) for external_content_owner taxonomy
-		 */
 		add_filter('manage_ypg_external_content_owner_custom_column', [$this, 'renderExternalContentOwnerColumn'], 10, 3);
-		// TODO: term columns for external_content_owner taxonomy
 	}
 
 	public function addColumns(array $columns): array

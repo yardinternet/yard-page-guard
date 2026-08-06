@@ -66,7 +66,7 @@ class AdminServiceProvider extends ServiceProvider
 	private function getEditorScriptDependencies(): array
 	{
 		$path = $this->plugin->resourcePath('editor.deps.json', 'assets');
-		$deps = file_exists($path) ? json_decode(file_get_contents($path), true) : [];
+		$deps = wp_json_file_decode($path, ['associative' => true]) ?? [];
 
 		return array_values(array_unique(array_merge(['wp-element'], is_array($deps) ? $deps : [])));
 	}
