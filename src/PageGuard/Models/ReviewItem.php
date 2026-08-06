@@ -8,7 +8,6 @@ use WP_Post;
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Enums\ReminderTimeType;
 use Yard\PageGuard\Enums\ReviewDateType;
-use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Token;
@@ -118,12 +117,7 @@ class ReviewItem
 
 	public function lastReviewDateFormatted(?string $format = null): string
 	{
-		if (! $this->lastReviewDate()) {
-			return '&mdash;';
-		}
-		$format = $format ?? get_option('date_format', 'd-m-Y');
-
-		return wp_date($format, $this->lastReviewDate()->getTimestamp());
+		return $this->formatDate($this->lastReviewDate(), $format);
 	}
 
 	public function reviewDate(): ?\DateTimeInterface
@@ -135,12 +129,7 @@ class ReviewItem
 
 	public function reviewDateFormatted(?string $format = null): string
 	{
-		if ($this->reviewDate() === null) {
-			return '&mdash;';
-		}
-		$format = $format ?? get_option('date_format', 'd-m-Y');
-
-		return wp_date($format, $this->reviewDate()->getTimestamp());
+		return $this->formatDate($this->reviewDate(), $format);
 	}
 
 	public function reminderDate(): ?\DateTimeInterface
@@ -152,12 +141,19 @@ class ReviewItem
 
 	public function reminderDateFormatted(?string $format = null): string
 	{
-		if (! $this->reminderDate()) {
-			return '&mdash;';
-		}
-		$format = $format ?? get_option('date_format', 'd-m-Y');
+		return $this->formatDate($this->reminderDate(), $format);
+	}
 
-		return wp_date($format, $this->reminderDate()->getTimestamp());
+	public function lastReminderDate(): ?\DateTimeInterface
+	{
+		$date = get_post_meta($this->ID(), Meta::LAST_REMINDER_DATE, true);
+
+		return \DateTime::createFromFormat('Y-m-d', $date, wp_timezone()) ?: null;
+	}
+
+	public function lastReminderDateFormatted(?string $format = null): string
+	{
+		return $this->formatDate($this->lastReminderDate(), $format);
 	}
 
 	public function contentOwner(): ?ContentOwner
@@ -170,22 +166,13 @@ class ReviewItem
 		$type = get_post_meta($this->ID(), Meta::POST_CONTENT_OWNER_TYPE, true);
 		if (ContentOwnerType::USER === $type) {
 			$user = get_user_by('id',  $id);
-			if ($user) {
-				$name = $user->display_name;
-				$email = $user->user_email;
-			} else {
-				$name = '';
-				$email = '';
-			}
-		} else {
-			// A deleted term returns a WP_Error, which is a TypeError against ContentOwner's string parameter.
-			$name = get_term_field('name', $id, 'ypg_external_content_owner');
-			$name = is_string($name) ? $name : '';
-			$email = get_term_meta($id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true);
-			$email = is_string($email) ? $email : '';
-		}
 
-		return new ContentOwner((int) $id, $name, $email, $type);
+			return $user ? ContentOwner::fromUser($user) : null;
+		} else {
+			$term = get_term($id, 'ypg_external_content_owner');
+
+			return is_a($term, \WP_Term::class) ? ContentOwner::fromTerm($term) : null;
+		}
 	}
 
 	public function status(): string
@@ -289,5 +276,15 @@ class ReviewItem
 			update_post_meta($this->ID(), Meta::REMINDER_TIME_PERIOD, $period);
 			update_post_meta($this->ID(), Meta::REMINDER_TIME_UNIT, $unit);
 		}
+	}
+
+	protected function formatDate(?\DateTimeInterface $date, ?string $format = null): string
+	{
+		if (! $date) {
+			return '&mdash;';
+		}
+		$format = $format ?? get_option('date_format', 'd-m-Y');
+
+		return wp_date($format, $date->getTimestamp());
 	}
 }
