@@ -76,33 +76,12 @@ add_filter('yard::page-guard/admin-roles', function (array $roles): array {
 
 4. Override the login name of the dummy WordPress user whose admin bar is hidden on the review modal:
 
-```php
+````php
 add_filter('yard::page-guard/review-user-login', function (string $login): string {
   return 'ypg_review_user';
 });
-```
+``
 
-5. Disable writing content owner information to internal data fields (Fusion Portal, Fusion PDC, Brave/ACF):
-
-```php
-add_filter('yard::page-guard/enable-internal-data-sync', '__return_false');
-```
-
-6. Fires after content owner information has been written to internal data fields:
-
-```php
-add_action('yard::page-guard/after-internal-data-synced', function (int $postId, string $ownerLink, string $title): void {
-  // your code here
-}, 10, 3);
-```
-
-7. Fires after content owner information has been removed from internal data fields:
-
-```php
-add_action('yard::page-guard/after-internal-data-removed', function (int $postId): void {
-  // your code here
-});
-```
 
 ## Local Development
 
@@ -111,7 +90,7 @@ Inside the `register` method of the `Yard\PageGuard\WPCron\WPCronServiceProvider
 
 ```php
 wp_schedule_event($this->timeToExecute(), 'daily', 'ypg_site_cron');
-```
+````
 
 To make testing easier, first ensure you use the filter below before scheduling the event:
 
