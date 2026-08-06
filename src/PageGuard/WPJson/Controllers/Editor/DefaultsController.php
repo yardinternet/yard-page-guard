@@ -6,8 +6,7 @@ namespace Yard\PageGuard\WPJson\Controllers\Editor;
 
 use WP_REST_Request;
 use WP_REST_Response;
-use Yard\PageGuard\Enums\Options;
-use Yard\PageGuard\Meta\MetaFields;
+use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Date;
 
 /**
@@ -23,12 +22,12 @@ class DefaultsController
 	{
 		return new WP_REST_Response([
 			'review' => $this->period(
-				(int) get_option(Options::REVIEW_TIME_PERIOD, 1),
-				(string) get_option(Options::REVIEW_TIME_UNIT, 'weeks')
+				(int) get_option(Settings::REVIEW_TIME_PERIOD, 1),
+				(string) get_option(Settings::REVIEW_TIME_UNIT, 'weeks')
 			),
 			'reminder' => $this->period(
-				(int) get_option(Options::REMINDER_TIME_PERIOD, 1),
-				(string) get_option(Options::REMINDER_TIME_UNIT, 'weeks')
+				(int) get_option(Settings::REMINDER_TIME_PERIOD, 1),
+				(string) get_option(Settings::REMINDER_TIME_UNIT, 'weeks')
 			),
 		]);
 	}
@@ -38,17 +37,15 @@ class DefaultsController
 	 */
 	private function period(int $period, string $unit): array
 	{
-		$period = max(1, $period);
-		$unit = in_array($unit, MetaFields::TIME_UNITS, true) ? $unit : 'weeks';
-
-		$date = $this->addPeriodToBase(current_time('Y-m-d'), $period, $unit);
+		$reminderInterval = \DateInterval::createFromDateString("{$period} {$unit}");
+		$date = (new \DateTime('now', wp_timezone()))->add($reminderInterval);
 
 		return [
 			'period' => $period,
 			'unit' => $unit,
 			'label' => $this->formatPeriod($period, $unit),
 			'date' => $date,
-			'formatted' => $this->formatDate($date),
+			'formatted' => wp_date(get_option('date_format', 'd-m-Y'),  $date->getTimestamp()),
 		];
 	}
 }

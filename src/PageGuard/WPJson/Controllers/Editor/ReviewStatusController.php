@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\WPJson\Controllers\Editor;
 
+use DateTimeInterface;
 use WP_REST_Request;
 use WP_REST_Response;
-use Yard\PageGuard\Enums\PostMeta;
+use Yard\PageGuard\Meta\Meta;
+use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Traits\Date;
 
 /**
@@ -27,29 +29,25 @@ class ReviewStatusController
 	 */
 	public function getStatus(int $postId): array
 	{
-		$reviewDate = (string) (get_post_meta($postId, PostMeta::REVIEW_DATE, true) ?: '');
-		$reminderDate = (string) (get_post_meta($postId, PostMeta::REMINDER_DATE, true) ?: '');
-		$lastReviewDate = (string) (get_post_meta($postId, PostMeta::LAST_REVIEW_DATE, true) ?: '');
+		$reviewItem = new ReviewItem(get_post($postId));
 
 		return [
-			'reviewDate' => $this->datePayload($reviewDate),
-			'reminderDate' => $this->datePayload($reminderDate),
-			'lastReviewDate' => $this->datePayload($lastReviewDate),
-			'isOverdue' => '' !== $reviewDate && current_time('Y-m-d') > $reviewDate,
-			'reviewMailSent' => (bool) get_post_meta($postId, PostMeta::REVIEW_MAIL_SENT, true),
+			'reviewDate' => $this->datePayload($reviewItem->reviewDate()),
+			'reminderDate' => $this->datePayload($reviewItem->reminderDate()),
+			'lastReviewDate' => $this->datePayload($reviewItem->lastReviewDate()),
+			'isOverdue' => $reviewItem->isOverdue(),
+			'reviewMailSent' => $reviewItem->reviewMailSent(),
 		];
 	}
 
 	/**
 	 * @return array{date: ?string, formatted: ?string}
 	 */
-	private function datePayload(string $date): array
+	private function datePayload(?DateTimeInterface $date): array
 	{
-		$isValid = '' !== $date && $this->isValidDate($date);
-
 		return [
-			'date' => $isValid ? $date : null,
-			'formatted' => $isValid ? $this->formatDate($date) : null,
+			'date' => $date ? $date->format('Y-m-d') : null,
+			'formatted' => $date ? wp_date(get_option('date_format', 'd-m-Y'), $date->getTimestamp()) : null,
 		];
 	}
 }

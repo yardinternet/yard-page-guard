@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Meta;
 
-use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Traits\Date;
-use Yard\PageGuard\Traits\Meta;
 
 /**
  * @deprecated use ReviewItem instead
@@ -24,7 +22,7 @@ class ReviewScheduler
 
 	public function syncForPost(int $postId): void
 	{
-		if (0 === (int) get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_ID, true)) {
+		if (0 === (int) get_post_meta($postId, Meta::POST_CONTENT_OWNER_ID, true)) {
 			$this->clearReviewMeta($postId);
 
 			return;
@@ -41,16 +39,16 @@ class ReviewScheduler
 	public function markReviewed(int $postId): void
 	{
 		// A custom review date is a one-off, so the next cycle returns to the site default.
-		update_post_meta($postId, PostMeta::REVIEW_DATE_TYPE, MetaFields::DATE_TYPE_DEFAULT);
-		update_post_meta($postId, PostMeta::REVIEW_DATE, $this->computeReviewDate($postId));
-		update_post_meta($postId, PostMeta::LAST_REVIEW_DATE, current_time('Y-m-d'));
+		update_post_meta($postId, Meta::REVIEW_DATE_TYPE, MetaFields::DATE_TYPE_DEFAULT);
+		update_post_meta($postId, Meta::REVIEW_DATE, $this->computeReviewDate($postId));
+		update_post_meta($postId, Meta::LAST_REVIEW_DATE, current_time('Y-m-d'));
 
 		// Deprecated, but the overview columns still read it.
-		update_post_meta($postId, PostMeta::IS_VERIFIED, '1');
+		update_post_meta($postId, Meta::IS_VERIFIED, '1');
 
-		delete_post_meta($postId, PostMeta::REVIEW_MAIL_SENT);
-		delete_post_meta($postId, PostMeta::LAST_REMINDER_DATE);
-		delete_post_meta($postId, PostMeta::REMINDER_DATE);
+		delete_post_meta($postId, Meta::REVIEW_MAIL_SENT);
+		delete_post_meta($postId, Meta::LAST_REMINDER_DATE);
+		delete_post_meta($postId, Meta::REMINDER_DATE);
 
 		do_action('yard::page-guard/after-post-reviewed', $postId);
 	}
@@ -62,18 +60,18 @@ class ReviewScheduler
 	 */
 	private function syncReviewDate(int $postId): void
 	{
-		$type = (string) get_post_meta($postId, PostMeta::REVIEW_DATE_TYPE, true);
-		$date = (string) get_post_meta($postId, PostMeta::REVIEW_DATE, true);
+		$type = (string) get_post_meta($postId, Meta::REVIEW_DATE_TYPE, true);
+		$date = (string) get_post_meta($postId, Meta::REVIEW_DATE, true);
 
 		if (MetaFields::DATE_TYPE_CUSTOM === $type && '' !== $date) {
 			return;
 		}
 
 		if (MetaFields::DATE_TYPE_CUSTOM === $type) {
-			update_post_meta($postId, PostMeta::REVIEW_DATE_TYPE, MetaFields::DATE_TYPE_DEFAULT);
+			update_post_meta($postId, Meta::REVIEW_DATE_TYPE, MetaFields::DATE_TYPE_DEFAULT);
 		}
 
-		update_post_meta($postId, PostMeta::REVIEW_DATE, $this->computeReviewDate($postId, false, false));
+		update_post_meta($postId, Meta::REVIEW_DATE, $this->computeReviewDate($postId, false, false));
 	}
 
 	/**
@@ -83,9 +81,9 @@ class ReviewScheduler
 	 */
 	private function syncReminderPeriod(int $postId): void
 	{
-		$type = (string) get_post_meta($postId, PostMeta::REMINDER_TIME_TYPE, true);
-		$period = (int) get_post_meta($postId, PostMeta::REMINDER_TIME_PERIOD, true);
-		$unit = (string) get_post_meta($postId, PostMeta::REMINDER_TIME_UNIT, true);
+		$type = (string) get_post_meta($postId, Meta::REMINDER_TIME_TYPE, true);
+		$period = (int) get_post_meta($postId, Meta::REMINDER_TIME_PERIOD, true);
+		$unit = (string) get_post_meta($postId, Meta::REMINDER_TIME_UNIT, true);
 
 		$isUsableOverride = MetaFields::DATE_TYPE_CUSTOM === $type
 			&& 1 <= $period
@@ -96,10 +94,10 @@ class ReviewScheduler
 		}
 
 		if (MetaFields::DATE_TYPE_CUSTOM === $type) {
-			update_post_meta($postId, PostMeta::REMINDER_TIME_TYPE, MetaFields::DATE_TYPE_DEFAULT);
+			update_post_meta($postId, Meta::REMINDER_TIME_TYPE, MetaFields::DATE_TYPE_DEFAULT);
 		}
 
-		delete_post_meta($postId, PostMeta::REMINDER_TIME_PERIOD);
-		delete_post_meta($postId, PostMeta::REMINDER_TIME_UNIT);
+		delete_post_meta($postId, Meta::REMINDER_TIME_PERIOD);
+		delete_post_meta($postId, Meta::REMINDER_TIME_UNIT);
 	}
 }

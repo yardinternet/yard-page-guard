@@ -503,7 +503,7 @@ class Metabox
 		if ('' === $postContentOwner) {
 			$reviewItem->removeMetaData();
 		} else {
-			$postContentOwnerParts = explode('_', $postContentOwner, 2);
+			$postContentOwnerParts = explode(':', $postContentOwner, 2);
 			$postContentOwnerType = $postContentOwnerParts[0] ?? null;
 			$postContentOwnerId = isset($postContentOwnerParts[1]) ? (int) $postContentOwnerParts[1] : null;
 
@@ -600,7 +600,7 @@ class Metabox
 		]);
 		$wpUsers = array_map(function (\WP_User $user) {
 			return [
-				'id' => sprintf('%s_%s', ContentOwnerType::USER, $user->ID),
+				'id' => sprintf('%s:%s', ContentOwnerType::USER, $user->ID),
 				'name' => $user->display_name,
 			];
 		}, $wpUsers);
@@ -611,7 +611,7 @@ class Metabox
 		]);
 		$externalUsers = array_map(function (\WP_Term $term) {
 			return [
-				'id' => sprintf('%s_%s', ContentOwnerType::EXTERNAL, $term->term_id),
+				'id' => sprintf('%s:%s', ContentOwnerType::EXTERNAL, $term->term_id),
 				'name' => sprintf('%s (extern)', $term->name),
 			];
 		}, $externalUsers);

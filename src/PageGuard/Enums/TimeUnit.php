@@ -10,6 +10,15 @@ class TimeUnit
 	public const WEEKS = 'weeks';
 	public const MONTHS = 'months';
 
+	public static function cases(): array
+	{
+		return [
+			self::DAYS,
+			self::WEEKS,
+			self::MONTHS,
+		];
+	}
+
 	public static function options(): array
 	{
 		return [
