@@ -11,7 +11,6 @@ class VerifyPostController
 {
 	use Text;
 
-
 	/**
 	 * Updates a post's meta so it gets verified and receives its next review date
 	 * Returns a HTML response since it gets handled by htmx on the frontend.

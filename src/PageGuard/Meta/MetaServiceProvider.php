@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Meta;
 
-use WP_Post;
 use Yard\PageGuard\Foundation\ServiceProvider;
 
 class MetaServiceProvider extends ServiceProvider
