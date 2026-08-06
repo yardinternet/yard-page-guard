@@ -61,7 +61,7 @@ class PageGuardListTable extends \WP_List_Table
 			case 'type':
 				return esc_html(get_post_type_labels(get_post_type_object($item->post_type))->singular_name);
 			case 'owner':
-				//TODO: add external/internal owner type to the list table and link to meta/profile
+				//TODO: add external/internal owner type to the list table and link to meta/profile or filter current list table by owner
 				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : __('Niet ingesteld', 'yard-page-guard');
 			case 'last_review':
 				return $reviewItem->lastReviewDateFormatted();
@@ -102,7 +102,9 @@ class PageGuardListTable extends \WP_List_Table
 		$metaQuery = [
 			[
 				'key' => Meta::POST_CONTENT_OWNER_ID,
-				'compare' => 'EXISTS',
+				'compare' => '>',
+				'value' => 0,
+				'type' => 'NUMERIC',
 			],
 		];
 
@@ -229,7 +231,7 @@ class PageGuardListTable extends \WP_List_Table
 		switch ($action) {
 			case 'mark_as_reviewed':
 				foreach ($ids as $id) {
-					$reviewItem = new \Yard\PageGuard\Models\ReviewItem(get_post($id));
+					$reviewItem = new ReviewItem(get_post($id));
 					$reviewItem->markAsReviewed();
 				}
 				add_settings_error(
