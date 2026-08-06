@@ -9,7 +9,6 @@ use DateTimeZone;
 
 trait Date
 {
-
 	/**
 	 * Adds a date period to a base date (provided as Y-m-d string)
 	 */

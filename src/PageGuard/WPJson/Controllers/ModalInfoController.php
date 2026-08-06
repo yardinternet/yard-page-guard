@@ -10,7 +10,6 @@ use Yard\PageGuard\Settings\Settings;
 
 class ModalInfoController
 {
-
 	/**
 	 * Returns post info (only title for now) for Fusion PDC/Pub connections
 	 */

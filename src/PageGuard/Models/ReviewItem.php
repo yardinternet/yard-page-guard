@@ -66,7 +66,6 @@ class ReviewItem
 		return get_post_meta($this->ID(), Meta::REMINDER_TIME_UNIT, true) ?: null;
 	}
 
-
 	public function reviewLink(): string
 	{
 		$permalink = get_permalink($this->ID());

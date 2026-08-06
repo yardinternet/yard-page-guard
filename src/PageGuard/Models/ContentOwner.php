@@ -44,7 +44,7 @@ class ContentOwner
 	public static function fromTerm(\WP_Term $term): self
 	{
 		// TODO: check if term is of type external_content_owner, otherwise throw exception
-		if ($term->taxonomy !== 'ypg_external_content_owner') {
+		if ('ypg_external_content_owner' !== $term->taxonomy) {
 			throw new \InvalidArgumentException("Term is not of type external_content_owner: {$term->taxonomy}");
 		}
 
