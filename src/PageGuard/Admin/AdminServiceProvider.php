@@ -10,12 +10,9 @@ use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
 use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
-use Yard\PageGuard\Traits\Date;
 
 class AdminServiceProvider extends ServiceProvider
 {
-	use Date;
-
 	private AdminSettingsController $adminSettingsController;
 	private AdminOverviewController $adminOverviewController;
 	private AdminColumnsController $adminColumnsController;
@@ -39,11 +36,6 @@ class AdminServiceProvider extends ServiceProvider
 		 * Enqueue the block editor sidebar for the post types this plugin is enabled for
 		 */
 		add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorSidebarAssets']);
-
-		/**
-		 * Enqueue admin scripts where necessary
-		 */
-		add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssetsPerHook']);
 
 		/**
 		 * Replace description column with email for external_content_owner taxonomy
