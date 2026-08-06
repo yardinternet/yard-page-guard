@@ -6,9 +6,8 @@ namespace Yard\PageGuard\WPJson\Controllers\Editor;
 
 use WP_REST_Request;
 use WP_REST_Response;
-use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Models\ContentOwner;
-use Yard\PageGuard\Repositories\ContentOwnerRepository;
+use Yard\PageGuard\Traits\ContentOwners;
 
 /**
  * Returns the assignable content owners for the block editor's owner select.
@@ -19,38 +18,15 @@ use Yard\PageGuard\Repositories\ContentOwnerRepository;
  */
 class ContentOwnersController
 {
-	private ContentOwnerRepository $repository;
-
-	public function __construct(?ContentOwnerRepository $repository = null)
-	{
-		$this->repository = $repository ?? new ContentOwnerRepository();
-	}
+	use ContentOwners;
 
 	public function handleRequest(WP_REST_Request $request): WP_REST_Response
 	{
-		$owners = array_map([$this, 'toResponseItem'], $this->repository->all());
+		$owners = array_map(
+			fn (ContentOwner $owner): array => ['value' => sprintf('%s:%d', $owner->type(), $owner->id()), 'label' => $owner->displayName()],
+			$this->getContentOwners()
+		);
 
 		return new WP_REST_Response($owners);
-	}
-
-	/**
-	 * @return array<string, mixed>
-	 */
-	private function toResponseItem(ContentOwner $owner): array
-	{
-		return [
-			'value' => sprintf('%s:%d', $owner->type(), $owner->id()),
-			'id' => $owner->id(),
-			'type' => $owner->type(),
-			'name' => $owner->name(),
-			'email' => $owner->email(),
-			'label' => ContentOwnerType::EXTERNAL === $owner->type()
-				? sprintf(
-					/* translators: %s: content owner name. */
-					__('%s (extern)', 'yard-page-guard'),
-					$owner->name()
-				)
-				: $owner->name(),
-		];
 	}
 }

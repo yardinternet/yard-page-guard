@@ -10,12 +10,14 @@ use Yard\PageGuard\Enums\TimeUnit;
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Settings\Settings;
+use Yard\PageGuard\Traits\ContentOwners;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\PostTypes;
 
 class Metabox
 {
 	use Date;
+	use ContentOwners;
 	use PostTypes;
 
 	public const NONCE_FIELD = 'ypg_metaboxes_nonce';
@@ -93,9 +95,6 @@ class Metabox
 		$contentOwner = $reviewItem->contentOwner();
 		$contentOwnerId = $contentOwner ? $contentOwner->id() : '';
 		$contentOwnerType = $contentOwner ? $contentOwner->type() : ContentOwnerType::USER;
-
-		$defaultReviewData = $this->formatPeriod((int) get_option(Settings::REVIEW_TIME_PERIOD), get_option(Settings::REVIEW_TIME_UNIT));
-		$defaultReminderData = $this->formatPeriod((int) get_option(Settings::REMINDER_TIME_PERIOD, 1), get_option(Settings::REMINDER_TIME_UNIT));
 		?>
 	<div>
 		<div>
@@ -122,7 +121,11 @@ class Metabox
 						'name' => Meta::REVIEW_DATE_TYPE,
 						'value' => $reviewItem->reviewDateType(),
 						'options' => [
-							'default' => __('Volgens de standaardinstelling', 'yard-page-guard') . sprintf('<code>%s</code>', esc_html($defaultReviewData)),
+							'default' => sprintf(
+								'%s <code>%s</code>',
+								__('Volgens de standaardinstelling', 'yard-page-guard'),
+								esc_html($this->formatPeriod((int) get_option(Settings::REVIEW_TIME_PERIOD), get_option(Settings::REVIEW_TIME_UNIT)))
+							),
 							'custom' => __('Kies eenmalig een afwijkende datum', 'yard-page-guard'),
 						],
 						'label' => __('Wanneer moet de inhoudseigenaar de eerste controlemail ontvangen?', 'yard-page-guard'),
@@ -153,7 +156,11 @@ class Metabox
 						'name' => Meta::REMINDER_TIME_TYPE,
 						'value' => $reviewItem->reminderTimeType(),
 						'options' => [
-							'default' => __('Volgens de standaardinstelling', 'yard-page-guard') . sprintf('<code>%s</code>', esc_html($defaultReminderData)),
+							'default' => sprintf(
+								'%s <code>%s</code>',
+								__('Volgens de standaardinstelling', 'yard-page-guard'),
+								esc_html($this->formatPeriod((int) get_option(Settings::REMINDER_TIME_PERIOD, 1), get_option(Settings::REMINDER_TIME_UNIT)))
+							),
 							'custom' => __('Kies afwijkende periode:', 'yard-page-guard'),
 						],
 						'label' => __('Wanneer moet de herinnneringsmail verstuurd worden als de controle nog niet is afgerond?', 'yard-page-guard'),
@@ -213,7 +220,9 @@ class Metabox
 					'disabled' => true,
 				]
 			);?>
-			<a class="button" href="<?php echo wp_nonce_url(add_query_arg(['action' => 'mark_as_reviewed', 'post_id' => $post->ID], get_edit_post_link($post->ID, 'post.php')), 'mark_as_reviewed'); ?>"><?php esc_html_e('Markeer als gecontroleerd', 'yard-page-guard'); ?></a>
+			<?php if ($reviewItem->reviewDate()) : ?>
+			<a class="button"  href="<?php echo wp_nonce_url(add_query_arg(['action' => 'mark_as_reviewed', 'post_id' => $post->ID], get_edit_post_link($post->ID, 'post.php')), 'mark_as_reviewed'); ?>"><?php esc_html_e('Markeer als gecontroleerd', 'yard-page-guard'); ?></a>
+			<?php endif; ?>
 		</div>
 	</div>
 	<?php
@@ -390,37 +399,5 @@ class Metabox
 
 		wp_redirect(add_query_arg(['post' => $postId, 'action' => 'edit'], admin_url('post.php')));
 		exit;
-	}
-
-	protected function getContentOwnerOptions(): array
-	{
-		$wpUsers = get_users([
-			'capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-		]);
-		$wpUsers = array_map(function (\WP_User $user) {
-			return [
-				'id' => sprintf('%s:%s', ContentOwnerType::USER, $user->ID),
-				'name' => $user->display_name,
-			];
-		}, $wpUsers);
-
-		$externalUsers = get_terms([
-			'taxonomy' => 'ypg_external_content_owner',
-			'hide_empty' => false,
-		]);
-		$externalUsers = array_map(function (\WP_Term $term) {
-			return [
-				'id' => sprintf('%s:%s', ContentOwnerType::EXTERNAL, $term->term_id),
-				'name' => sprintf('%s (extern)', $term->name),
-			];
-		}, $externalUsers);
-
-		$noOwnerOption = [[
-			'id' => '',
-			'name' => __('Geen inhoudseigenaar', 'yard-page-guard'),
-		]];
-		$contentOwnerOptions = array_merge($noOwnerOption, $wpUsers, $externalUsers);
-
-		return array_column($contentOwnerOptions, 'name', 'id');
 	}
 }
