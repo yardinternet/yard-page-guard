@@ -14,7 +14,7 @@ class AdminSettingsController
 	public function init(): void
 	{
 		add_action('admin_menu', [$this, 'addSettingsPage']);
-		add_action('admin_init', [$this, 'registerSettings']);
+		add_action('admin_init', [$this, 'addSettingsFields']);
 	}
 
 	public function addSettingsPage(): void
@@ -28,7 +28,7 @@ class AdminSettingsController
 		);
 	}
 
-	public function registerSettings(): void
+	public function addSettingsFields(): void
 	{
 		add_settings_section(
 			'email',
