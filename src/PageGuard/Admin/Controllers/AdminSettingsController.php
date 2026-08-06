@@ -20,8 +20,8 @@ class AdminSettingsController
 	public function addSettingsPage(): void
 	{
 		add_options_page(
-			__('Inhoudscontrole module', 'yard-page-guard'),
-			__('Inhoudscontrole module', 'yard-page-guard'),
+			__('Inhoudscontrole', 'yard-page-guard'),
+			__('Inhoudscontrole', 'yard-page-guard'),
 			apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
 			self::PAGE_SLUG,
 			[$this, 'renderSettingsPage']

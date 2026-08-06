@@ -30,8 +30,8 @@ class AdminOverviewController
 	public function addOverviewPage(): void
 	{
 		$adminScreen = add_menu_page(
-			__('Inhoudscontrole overzicht', 'yard-page-guard'),
-			__('Inhoudscontrole overzicht', 'yard-page-guard'),
+			__('Inhoudscontrole', 'yard-page-guard'),
+			__('Inhoudscontrole', 'yard-page-guard'),
 			apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
 			'ypg-overview',
 			[$this, 'renderOverviewPage'],
