@@ -13,21 +13,23 @@ if (! defined('ABSPATH')) {
 
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Traits\PostTypes;
 
 class AdminColumnsController
 {
+	use PostTypes;
+
 	public const COLUMN_CONTENT_OWNER = 'ypg_post_content_owner';
 	public const COLUMN_STATUS = 'ypg_status';
 	public const COLUMN_REVIEW_DATE = 'ypg_review_date';
 
 	public function init(): void
 	{
-		foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
+		foreach ($this->getPostTypes() as $postType) {
 			add_filter("manage_{$postType}_posts_columns", [$this, 'addColumns'], 10, 1);
 			add_action("manage_{$postType}_posts_custom_column", [$this, 'renderColumn'], 10, 2);
 			add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
 		}
-
 		// TODO: term columns for external_content_owner taxonomy
 	}
 
@@ -46,7 +48,7 @@ class AdminColumnsController
 
 		switch ($columnName) {
 			case self::COLUMN_CONTENT_OWNER:
-				echo $reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : __('Niet ingesteld', 'yard-page-guard');
+				echo $reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : '&mdash;';
 
 				break;
 

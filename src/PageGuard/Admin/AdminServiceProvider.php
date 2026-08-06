@@ -10,9 +10,12 @@ use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
 use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
+use Yard\PageGuard\Traits\PostTypes;
 
 class AdminServiceProvider extends ServiceProvider
 {
+	use PostTypes;
+
 	private AdminSettingsController $adminSettingsController;
 	private AdminOverviewController $adminOverviewController;
 	private AdminColumnsController $adminColumnsController;
@@ -121,7 +124,7 @@ class AdminServiceProvider extends ServiceProvider
 			return false;
 		}
 
-		return in_array($screen->post_type, apply_filters('yard::page-guard/post-types-to-use', ['page']), true);
+		return in_array($screen->post_type, $this->getPostTypes(), true);
 	}
 
 	public function manageExternalContentOwnerColumns(array $columns): array

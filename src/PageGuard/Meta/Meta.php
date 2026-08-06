@@ -25,7 +25,6 @@ class Meta
 
 	public function registerMeta(): void
 	{
-		//TODO: set default values
 		$metaFields = [
 			self::POST_CONTENT_OWNER_ID => [
 				'type' => 'integer',

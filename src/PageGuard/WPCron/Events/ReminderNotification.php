@@ -11,6 +11,7 @@ use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Email;
+use Yard\PageGuard\Traits\PostTypes;
 use Yard\PageGuard\Traits\Text;
 
 class ReminderNotification extends Event
@@ -18,6 +19,7 @@ class ReminderNotification extends Event
 	use Date;
 	use Text;
 	use Email;
+	use PostTypes;
 
 	protected function execute(): void
 	{
@@ -36,7 +38,7 @@ class ReminderNotification extends Event
 	private function getItems(): array
 	{
 		$args = [
-			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+			'post_type' => $this->getPostTypes(),
 			'posts_per_page' => -1,
 			'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
 			'meta_query' => [
