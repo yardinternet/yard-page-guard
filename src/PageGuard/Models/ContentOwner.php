@@ -13,19 +13,13 @@ class ContentOwner
 	protected string $name;
 	protected string $email;
 	protected string $type;
-
 	protected string $phone;
 
-	/** @deprecated */
-	public function __construct(int $id, string $name, string $email, string $type, string $phone = '')
+	private function __construct(int $id, string $name, string $email, string $type, string $phone = '')
 	{
 		$this->id = $id;
 		$this->name = $name;
 		$this->email = $email;
-		if (! ContentOwnerType::isValid($type)) {
-			throw new \InvalidArgumentException("Invalid content owner type: $type");
-		}
-
 		$this->type = $type;
 		$this->phone = $phone;
 	}
@@ -43,7 +37,7 @@ class ContentOwner
 
 	public static function fromTerm(\WP_Term $term): self
 	{
-		// TODO: check if term is of type external_content_owner, otherwise throw exception
+		// check if term is of type external_content_owner, otherwise throw exception
 		if ('ypg_external_content_owner' !== $term->taxonomy) {
 			throw new \InvalidArgumentException("Term is not of type external_content_owner: {$term->taxonomy}");
 		}
@@ -65,6 +59,11 @@ class ContentOwner
 	public function name(): string
 	{
 		return $this->name;
+	}
+
+	public function displayName(): string
+	{
+		return ContentOwnerType::EXTERNAL === $this->type ? $this->name . ' (extern)' : $this->name;
 	}
 
 	public function email(): string
