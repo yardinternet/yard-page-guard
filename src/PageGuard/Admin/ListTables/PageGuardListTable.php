@@ -6,6 +6,7 @@ namespace Yard\PageGuard\Admin\ListTables;
 
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Traits\PostTypes;
 
 if (! class_exists('WP_List_Table')) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php'; //
@@ -13,6 +14,8 @@ if (! class_exists('WP_List_Table')) {
 
 class PageGuardListTable extends \WP_List_Table
 {
+	use PostTypes;
+
 	public function get_columns()
 	{
 		return [
@@ -60,11 +63,10 @@ class PageGuardListTable extends \WP_List_Table
 			case 'owner':
 				//TODO: add external/internal owner type to the list table and link to meta/profile
 				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : __('Niet ingesteld', 'yard-page-guard');
-
 			case 'last_review':
 				return $reviewItem->lastReviewDateFormatted();
 			case 'last_reminder':
-				return wp_date('d F Y', strtotime(get_post_meta($item->ID, Meta::LAST_REMINDER_DATE, true)));
+				return $reviewItem->lastReminderDateFormatted();
 			case 'next_review':
 				return $reviewItem->reviewDateFormatted();
 			case 'status':
@@ -121,7 +123,7 @@ class PageGuardListTable extends \WP_List_Table
 		}
 
 		$args = [
-			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+			'post_type' => $this->getPostTypes(),
 			'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
 			'posts_per_page' => $per_page,
 			'paged' => $current_page,
@@ -152,7 +154,7 @@ class PageGuardListTable extends \WP_List_Table
 
 		$expiredPosts = get_posts(
 			[
-				'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+				'post_type' => $this->getPostTypes(),
 				'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
 				'meta_query' => [
 					[
@@ -168,7 +170,7 @@ class PageGuardListTable extends \WP_List_Table
 		);
 		$nonExpiredPosts = get_posts(
 			[
-				'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+				'post_type' => $this->getPostTypes(),
 				'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
 				'meta_query' => [
 					[

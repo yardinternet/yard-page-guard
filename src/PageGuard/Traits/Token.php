@@ -9,6 +9,7 @@ use Yard\PageGuard\Settings\Settings;
 
 trait Token
 {
+	use PostTypes;
 	public function generateReviewToken(int $postId, string $contentOwnerEmail, string $reviewDate): string
 	{
 		if ('' === $contentOwnerEmail || '' === $reviewDate) {
@@ -58,7 +59,7 @@ trait Token
 	 */
 	private function handleInternalToken(): ?array
 	{
-		if (! in_array(get_post_type(), apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
+		if (! in_array(get_post_type(), $this->getPostTypes(), true)) {
 			return null;
 		}
 

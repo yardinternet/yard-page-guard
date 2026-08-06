@@ -9,6 +9,7 @@ namespace Yard\PageGuard\Traits;
  */
 trait EditorPermissions
 {
+	use PostTypes;
 	protected function adminCapability(): string
 	{
 		return (string) apply_filters('yard::page-guard/capability/admin', 'edit_pages');
@@ -40,6 +41,6 @@ trait EditorPermissions
 			return false;
 		}
 
-		return in_array($postType, apply_filters('yard::page-guard/post-types-to-use', ['page']), true);
+		return in_array($postType, $this->getPostTypes(), true);
 	}
 }

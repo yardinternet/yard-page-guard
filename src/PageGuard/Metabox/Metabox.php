@@ -10,10 +10,12 @@ use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Traits\PostTypes;
 
 class Metabox
 {
 	use Date;
+	use PostTypes;
 
 	public const NONCE_FIELD = 'ypg_metaboxes_nonce';
 	public const NONCE_ACTION = 'ypg_meta_update';
@@ -24,7 +26,7 @@ class Metabox
 			'yard_page_guard_metabox',
 			__('Inhoudscontrole module', 'yard-page-guard'),
 			[$this, 'renderMetaBox'],
-			apply_filters('yard::page-guard/post-types-to-use', ['page']),
+			$this->getPostTypes(),
 			'side',
 			'high',
 			[ '__back_compat_meta_box' => true ] // Automatically hides this inside Gutenberg
@@ -41,7 +43,7 @@ class Metabox
 			return false;
 		}
 
-		$postTypes = apply_filters('yard::page-guard/post-types-to-use', ['page']);
+		$postTypes = $this->getPostTypes();
 		if (! isset($_POST['post_type']) || ! in_array($_POST['post_type'], $postTypes, true)) {
 			return false;
 		}

@@ -7,7 +7,6 @@ namespace Yard\PageGuard\WPJson\Controllers\Editor;
 use DateTimeInterface;
 use WP_REST_Request;
 use WP_REST_Response;
-use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Traits\Date;
 
