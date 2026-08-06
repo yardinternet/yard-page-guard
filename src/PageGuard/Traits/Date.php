@@ -9,7 +9,6 @@ use DateTimeZone;
 
 trait Date
 {
-
 	public function formatPeriod(int $period, string $unit): string
 	{
 		if ('weeks' === $unit) {
