@@ -6,16 +6,10 @@ namespace Yard\PageGuard\WPJson\Controllers;
 
 use WP_REST_Request;
 use WP_REST_Response;
-use Yard\PageGuard\Enums\Options;
-use Yard\PageGuard\Traits\Date;
-use Yard\PageGuard\Traits\Text;
-use Yard\PageGuard\Traits\Token;
+use Yard\PageGuard\Settings\Settings;
 
 class ModalInfoController
 {
-	use Date;
-	use Text;
-	use Token;
 
 	/**
 	 * Returns post info (only title for now) for Fusion PDC/Pub connections
@@ -23,7 +17,7 @@ class ModalInfoController
 	public function handleRequest(WP_REST_Request $request): WP_REST_Response
 	{
 		$postId = (int) $request->get_param('post_id');
-		$footer = trim(strip_tags(get_option(Options::MODAL_FOOTER_CONTENT, ''))) !== '' ? wpautop(get_option(Options::MODAL_FOOTER_CONTENT, '')) : false;
+		$footer = trim(strip_tags(get_option(Settings::MODAL_FOOTER_CONTENT, ''))) !== '' ? wpautop(get_option(Settings::MODAL_FOOTER_CONTENT, '')) : false;
 
 		return new WP_REST_Response([
 			'id' => $postId,

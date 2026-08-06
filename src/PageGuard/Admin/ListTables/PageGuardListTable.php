@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Admin\ListTables;
 
-use Yard\PageGuard\Enums\Options;
-use Yard\PageGuard\Enums\PostMeta;
-use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Meta\Meta;
+use Yard\PageGuard\Models\ReviewItem;
 
 if (! class_exists('WP_List_Table')) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php'; //
@@ -14,8 +13,6 @@ if (! class_exists('WP_List_Table')) {
 
 class PageGuardListTable extends \WP_List_Table
 {
-	use Date;
-
 	public function get_columns()
 	{
 		return [
@@ -53,26 +50,25 @@ class PageGuardListTable extends \WP_List_Table
 
 	public function column_default($item, $column_name)
 	{
+		$reviewItem = new ReviewItem($item);
+
 		switch ($column_name) {
 			case 'title':
 				return sprintf('<a href="%s">%s</a>', get_edit_post_link($item), $item->post_title);
 			case 'type':
 				return esc_html(get_post_type_labels(get_post_type_object($item->post_type))->singular_name);
 			case 'owner':
-				return get_post_meta($item->ID, PostMeta::POST_CONTENT_OWNER_NAME, true) ?: __('Niet ingesteld', 'yard-page-guard'); //TODO: add external/internal owner type to the list table and link to meta/profile
-			case 'last_review':
-				return wp_date('d F Y', strtotime(get_post_meta($item->ID, PostMeta::LAST_REVIEW_DATE, true)));
-			case 'last_reminder':
-				return wp_date('d F Y', strtotime(get_post_meta($item->ID, PostMeta::LAST_REMINDER_DATE, true)));
-			case 'next_review':
-				return wp_date('d F Y', strtotime(get_post_meta($item->ID, PostMeta::REVIEW_DATE, true)));
-			case 'status':
-				if (get_post_meta($item->ID, PostMeta::REVIEW_DATE, true) < current_time('Y-m-d')) {
-					// TODO: class for styling and translation for "Achterstallig"
-					return '<span style="color: #bd8600;"><span class="dashicons dashicons-warning" aria-hidden="true"></span> Achterstallig</span>';
-				}
+				//TODO: add external/internal owner type to the list table and link to meta/profile
+				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : __('Niet ingesteld', 'yard-page-guard');
 
-				return 'Gecontroleerd'; //TODO: wat als de status onbekend is? (bijvoorbeeld als de meta key niet bestaat)
+			case 'last_review':
+				return $reviewItem->lastReviewDateFormatted();
+			case 'last_reminder':
+				return wp_date('d F Y', strtotime(get_post_meta($item->ID, Meta::LAST_REMINDER_DATE, true)));
+			case 'next_review':
+				return $reviewItem->reviewDateFormatted();
+			case 'status':
+				return $reviewItem->status();
 			default:
 				return '';
 		}
@@ -103,21 +99,21 @@ class PageGuardListTable extends \WP_List_Table
 
 		$metaQuery = [
 			[
-				'key' => PostMeta::POST_CONTENT_OWNER_ID,
+				'key' => Meta::POST_CONTENT_OWNER_ID,
 				'compare' => 'EXISTS',
 			],
 		];
 
 		if (! empty($_GET['status_view']) && 'expired' === $_GET['status_view']) {
 			$metaQuery[] = [
-				'key' => PostMeta::REVIEW_DATE,
+				'key' => Meta::REVIEW_DATE,
 				'value' => current_time('Y-m-d'),
 				'compare' => '<',
 				'type' => 'DATE',
 			];
 		} elseif (! empty($_GET['status_view']) && 'checked' === $_GET['status_view']) {
 			$metaQuery[] = [
-				'key' => PostMeta::REVIEW_DATE,
+				'key' => Meta::REVIEW_DATE,
 				'value' => current_time('Y-m-d'),
 				'compare' => '>=',
 				'type' => 'DATE',
@@ -160,7 +156,7 @@ class PageGuardListTable extends \WP_List_Table
 				'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
 				'meta_query' => [
 					[
-						'key' => PostMeta::REVIEW_DATE,
+						'key' => Meta::REVIEW_DATE,
 						'value' => current_time('Y-m-d'),
 						'compare' => '<',
 						'type' => 'DATE',
@@ -176,10 +172,10 @@ class PageGuardListTable extends \WP_List_Table
 				'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
 				'meta_query' => [
 					[
-						'key' => PostMeta::REVIEW_DATE,
+						'key' => Meta::REVIEW_DATE,
 						'value' => current_time('Y-m-d'),
 						'compare' => '>=',
-						'type' => 'DATETIME',
+						'type' => 'DATE',
 					],
 				],
 				'numberposts' => -1,
@@ -231,12 +227,8 @@ class PageGuardListTable extends \WP_List_Table
 		switch ($action) {
 			case 'mark_as_reviewed':
 				foreach ($ids as $id) {
-					update_post_meta($id, PostMeta::LAST_REVIEW_DATE, current_time('Y-m-d'));
-					//TODO: less convoluted way to calculate the next review date, maybe move to a service class
-					update_post_meta($id, PostMeta::REVIEW_DATE, $this->addPeriodToBase(current_time('Y-m-d'), (int) get_option(Options::REVIEW_TIME_PERIOD, 1), get_option(Options::REVIEW_TIME_UNIT, 'weeks')));
-					delete_post_meta($id, PostMeta::REVIEW_MAIL_SENT);
-					delete_post_meta($id, PostMeta::LAST_REMINDER_DATE);
-					delete_post_meta($id, PostMeta::REMINDER_DATE);
+					$reviewItem = new \Yard\PageGuard\Models\ReviewItem(get_post($id));
+					$reviewItem->markAsReviewed();
 				}
 				add_settings_error(
 					'bulk_action',

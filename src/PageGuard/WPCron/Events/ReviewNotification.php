@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
-use Yard\PageGuard\Enums\Options;
-use Yard\PageGuard\Enums\PostMeta;
+use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
-use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Email;
 use Yard\PageGuard\Traits\Text;
 
 class ReviewNotification extends Event
 {
-	use Date;
 	use Text;
 	use Email;
 
@@ -42,17 +40,17 @@ class ReviewNotification extends Event
 			'meta_query' => [
 				'relation' => 'AND',
 				[
-					'key' => PostMeta::POST_CONTENT_OWNER_EMAIL,
+					'key' => Meta::POST_CONTENT_OWNER_ID,
 					'compare' => 'EXISTS',
 				],
 				[
-					'key' => PostMeta::REVIEW_DATE,
+					'key' => Meta::REVIEW_DATE,
 					'value' => date('Y-m-d'),
 					'compare' => '<=',
 					'type' => 'DATE',
 				],
 				[
-					'key' => PostMeta::REVIEW_MAIL_SENT,
+					'key' => Meta::REVIEW_MAIL_SENT,
 					'compare' => 'NOT EXISTS',
 				],
 			],
@@ -82,7 +80,7 @@ class ReviewNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option(Options::REVIEW_EMAIL_SUBJECT, __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option(Settings::REVIEW_EMAIL_SUBJECT, __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
@@ -90,9 +88,10 @@ class ReviewNotification extends Event
 
 				continue;
 			}
-
+			/** @var ReviewItem $item */
 			foreach ($ownerItems as $item) {
-				$this->updateModuleMeta($item);
+				$item->setReviewMailSent();
+				$item->setReminderDate();
 			}
 		}
 	}
@@ -102,7 +101,7 @@ class ReviewNotification extends Event
 	 */
 	private function getContent(array $items, ContentOwner $owner): string
 	{
-		$content = wpautop(get_option(Options::REVIEW_EMAIL_CONTENT, ''));
+		$content = wpautop(get_option(Settings::REVIEW_EMAIL_CONTENT, ''));
 		$itemList = $this->buildItemListHtml($items);
 
 		$values = [
@@ -113,12 +112,5 @@ class ReviewNotification extends Event
 		$contentHtml = $this->replacePlaceholders($content, $values);
 
 		return $this->wrapHtmlEmail($contentHtml);
-	}
-
-	private function updateModuleMeta(ReviewItem $item): void
-	{
-		update_post_meta($item->ID(), PostMeta::IS_VERIFIED, '0');
-		update_post_meta($item->ID(), PostMeta::REVIEW_MAIL_SENT, '1');
-		update_post_meta($item->ID(), PostMeta::REMINDER_DATE, $this->computeReminderDate($item->ID(), $item->reviewDate()));
 	}
 }

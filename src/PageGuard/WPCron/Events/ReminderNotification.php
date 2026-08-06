@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
-use Yard\PageGuard\Enums\Options;
-use Yard\PageGuard\Enums\PostMeta;
+use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Email;
 use Yard\PageGuard\Traits\Text;
@@ -42,11 +42,11 @@ class ReminderNotification extends Event
 			'meta_query' => [
 				'relation' => 'AND',
 				[
-					'key' => PostMeta::POST_CONTENT_OWNER_EMAIL,
+					'key' => Meta::POST_CONTENT_OWNER_ID,
 					'compare' => 'EXISTS',
 				],
 				[
-					'key' => PostMeta::REMINDER_DATE,
+					'key' => Meta::REMINDER_DATE,
 					'value' => date('Y-m-d'),
 					'compare' => '<=',
 					'type' => 'DATE',
@@ -56,7 +56,7 @@ class ReminderNotification extends Event
 				// This keeps a wrongly-early reminder date from mailing before the
 				// review mail.
 				[
-					'key' => PostMeta::REVIEW_MAIL_SENT,
+					'key' => Meta::REVIEW_MAIL_SENT,
 					'compare' => 'EXISTS',
 				],
 			],
@@ -82,11 +82,11 @@ class ReminderNotification extends Event
 			$owner = $group['owner'];
 			$ownerItems = $group['items'];
 
-			$headers = $this->buildMailHeaders(Options::REMINDER_EMAIL_BCC);
+			$headers = $this->buildMailHeaders(Settings::REMINDER_EMAIL_BCC);
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option(Options::REMINDER_EMAIL_SUBJECT, __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option(Settings::REMINDER_EMAIL_SUBJECT, __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
@@ -96,8 +96,10 @@ class ReminderNotification extends Event
 			}
 
 			if (! defined('WP_CLI') || ! WP_CLI) {
+				/** @var ReviewItem $item */
 				foreach ($ownerItems as $item) {
-					$this->updateModuleMeta($item);
+					$item->setLastReminderDate($item->reminderDate());
+					$item->setReminderDate();
 				}
 			}
 		}
@@ -108,7 +110,7 @@ class ReminderNotification extends Event
 	 */
 	private function getContent(array $items, ContentOwner $owner): string
 	{
-		$content = wpautop(get_option(Options::REMINDER_EMAIL_CONTENT, ''));
+		$content = wpautop(get_option(Settings::REMINDER_EMAIL_CONTENT, ''));
 		$itemList = $this->buildItemListHtml($items, true);
 
 		$values = [
@@ -119,11 +121,5 @@ class ReminderNotification extends Event
 		$contentHtml = $this->replacePlaceholders($content, $values);
 
 		return $this->wrapHtmlEmail($contentHtml);
-	}
-
-	private function updateModuleMeta(ReviewItem $item): void
-	{
-		update_post_meta($item->ID(), PostMeta::LAST_REMINDER_DATE, date('Y-m-d'));
-		update_post_meta($item->ID(), PostMeta::REMINDER_DATE, $this->computeReminderDate($item->ID(), $item->reviewDate()));
 	}
 }

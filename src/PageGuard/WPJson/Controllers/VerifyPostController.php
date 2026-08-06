@@ -5,16 +5,11 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPJson\Controllers;
 
 use WP_REST_Request;
-use Yard\PageGuard\Enums\PostMeta;
-use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Text;
-use Yard\PageGuard\Traits\Token;
 
 class VerifyPostController
 {
-	use Date;
 	use Text;
-	use Token;
 
 	/**
 	 * Updates a post's meta so it gets verified and receives its next review date
@@ -24,29 +19,15 @@ class VerifyPostController
 	{
 		$postId = (int) $request->get_param('post_id');
 
-		$newReviewDate = $this->computeReviewDate($postId);
-		$updatedReviewDate = update_post_meta($postId, PostMeta::REVIEW_DATE, $newReviewDate);
-
-		$updatedVerifiedStatus = update_post_meta($postId, PostMeta::IS_VERIFIED, '1');
-		$updatedLastReviewDate = update_post_meta($postId, PostMeta::LAST_REVIEW_DATE, date('Y-m-d'));
-
-		delete_post_meta($postId, PostMeta::REVIEW_MAIL_SENT);
-		delete_post_meta($postId, PostMeta::LAST_REMINDER_DATE);
+		$reviewItem = new \Yard\PageGuard\Models\ReviewItem(get_post($postId));
+		$reviewItem->markAsReviewed();
 
 		header('Content-Type: text/html; charset=utf-8');
 		header('Access-Control-Allow-Origin: *');
 		header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
 		http_response_code(200); # HTML needs to be returned properly, so no 500 in case of an error.
 
-		if ($updatedReviewDate && $updatedVerifiedStatus && $updatedLastReviewDate) {
-			echo self::getSuccessResponse();
-
-			exit();
-		}
-
-		trigger_error("[yard-page-guard] Failed to process review for post ID: $postId", E_USER_WARNING);
-		echo self::getErrorResponse();
-
+		echo self::getSuccessResponse();
 		exit();
 	}
 
