@@ -11,6 +11,8 @@ use Yard\PageGuard\Enums\TimeUnit;
 
 class Meta
 {
+	private const DATE_PATTERN = '^(\d{4}-\d{2}-\d{2})?$';
+
 	public const POST_CONTENT_OWNER_ID = 'ypg_post_content_owner_id';
 	public const POST_CONTENT_OWNER_TYPE = 'ypg_post_content_owner_type';
 	public const REVIEW_DATE_TYPE = 'ypg_review_date_type';
@@ -34,21 +36,46 @@ class Meta
 			self::POST_CONTENT_OWNER_TYPE => [
 				'type' => 'string',
 				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, ContentOwnerType::cases(), ''),
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'enum' => array_merge([''], ContentOwnerType::cases()),
+					],
+				],
+				'default' => '',
 			],
 			self::REVIEW_DATE_TYPE => [
 				'type' => 'string',
 				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, ReviewDateType::cases(), ReviewDateType::DEFAULT),
 				'default' => ReviewDateType::DEFAULT,
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'enum' => ReviewDateType::cases(),
+					],
+				],
 			],
 			self::REVIEW_DATE => [
 				'type' => 'string',
 				'default' => '',
 				'sanitize_callback' => [$this, 'sanitizeDate'],
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'pattern' => self::DATE_PATTERN,
+					],
+				],
 			],
 			self::REMINDER_TIME_TYPE => [
 				'type' => 'string',
 				'default' => ReminderTimeType::DEFAULT,
 				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, ReminderTimeType::cases(), ReminderTimeType::DEFAULT),
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'enum' => ReminderTimeType::cases(),
+					],
+				],
 			],
 			self::REMINDER_TIME_PERIOD => [
 				'type' => 'integer',
@@ -69,6 +96,12 @@ class Meta
 				'type' => 'string',
 				'default' => '',
 				'sanitize_callback' => [$this, 'sanitizeDate'],
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'pattern' => self::DATE_PATTERN,
+					],
+				],
 			],
 		];
 
