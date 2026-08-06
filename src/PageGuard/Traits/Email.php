@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Traits;
 
-use Yard\PageGuard\Enums\Options;
 use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Settings\Settings;
 
 trait Email
 {
-	use Date;
-
 	/**
 	 * Group ReviewItems by ContentOwner email.
 	 *
@@ -49,8 +47,8 @@ trait Email
 	{
 		$headers = ['Content-Type: text/html; charset=UTF-8'];
 
-		$from_name = get_option(Options::EMAIL_FROM_NAME, get_bloginfo('name'));
-		$from_email = get_option(Options::EMAIL_FROM_ADDRESS, $_SERVER['HTTP_HOST']);
+		$from_name = get_option(Settings::EMAIL_FROM_NAME, get_bloginfo('name'));
+		$from_email = get_option(Settings::EMAIL_FROM_ADDRESS, $_SERVER['HTTP_HOST']);
 
 		if (! empty($from_name) && ! empty($from_email) && is_email($from_email)) {
 			$headers[] = 'From: ' . sprintf('"%s" <%s>', $from_name, $from_email);
@@ -78,7 +76,7 @@ trait Email
 		foreach ($items as $item) {
 			$title = esc_html($item->title());
 			$link = esc_url($item->reviewLink());
-			$date = esc_html($item->reviewDate());
+			$date = esc_html($item->reviewDateFormatted());
 
 			$content = $appendDate
 				? sprintf('<a href="%s">%s</a> — %s %s', $link, $title, __('gepland voor', 'yard-page-guard'), $date)

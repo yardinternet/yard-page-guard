@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Meta;
 
+use Yard\PageGuard\Enums\ReminderTimeType;
+use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Enums\TimeUnit;
 
 class Meta
@@ -35,7 +37,7 @@ class Meta
 			self::REVIEW_DATE_TYPE => [
 				'type' => 'string',
 				'sanitize' => 'sanitize_text_field',
-				'default' => 'default',
+				'default' => ReviewDateType::DEFAULT,
 			], // FIXME: sanitize callback should validate against allowed values
 			self::REVIEW_DATE => [
 				'type' => 'string',
@@ -44,7 +46,7 @@ class Meta
 			self::REMINDER_TIME_TYPE => [
 				'type' => 'string',
 				'sanitize' => 'sanitize_text_field',
-				'default' => 'default',
+				'default' => ReminderTimeType::DEFAULT,
 			], //FIXME: sanitize callback should validate against allowed values
 			self::REMINDER_TIME_PERIOD => [
 				'type' => 'integer',
@@ -74,7 +76,6 @@ class Meta
 					'type' => 'string',
 					'label' => '',
 					'description' => '',
-					'default' => '',
 					'single' => false,
 					'sanitize_callback' => null,
 					'auth_callback' => fn () => current_user_can('edit_posts'),
@@ -82,7 +83,8 @@ class Meta
 					'revisions_enabled' => false,
 				]
 			);
-			register_post_meta('page', $key, $config);
+			//FIXME: loop over supported post types
+			register_post_meta('', $key, $config);
 		}
 	}
 }

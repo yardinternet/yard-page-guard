@@ -5,22 +5,20 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Frontend;
 
 use WP_User;
-use Yard\PageGuard\Enums\Options;
 use Yard\PageGuard\Foundation\ServiceProvider;
+use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\ReviewUser;
-use Yard\PageGuard\Traits\Token;
 
 class FrontendServiceProvider extends ServiceProvider
 {
 	use ReviewUser;
-	use Token;
 
 	public function register(): void
 	{
 		add_action('template_redirect', [new ReviewModal(), 'render'], 5, 0);
 		add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendAssets']);
 
-		if (get_option(Options::SHOW_INTERNAL_DATA_ON_REVIEW, false)) {
+		if (get_option(Settings::SHOW_INTERNAL_DATA_ON_REVIEW, false)) {
 			add_filter('show_admin_bar', [$this, 'disableAdminBarForReviewUsers'], 10, 1);
 		}
 	}

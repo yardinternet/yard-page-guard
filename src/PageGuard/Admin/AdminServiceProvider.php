@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Admin;
 
-use WP_Query;
+use Yard\PageGuard\Admin\Controllers\AdminColumnsController;
 use Yard\PageGuard\Admin\Controllers\AdminOverviewController;
 use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
-use Yard\PageGuard\Enums\ContentOwnerType;
-use Yard\PageGuard\Enums\PostMeta;
 use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
-use Yard\PageGuard\Traits\Date;
 
 class AdminServiceProvider extends ServiceProvider
 {
-	use Date;
-
 	private AdminSettingsController $adminSettingsController;
 	private AdminOverviewController $adminOverviewController;
+	private AdminColumnsController $adminColumnsController;
 
 	public function __construct(Plugin $plugin)
 	{
@@ -27,28 +23,19 @@ class AdminServiceProvider extends ServiceProvider
 
 		$this->adminSettingsController = new AdminSettingsController();
 		$this->adminOverviewController = new AdminOverviewController();
+		$this->adminColumnsController = new AdminColumnsController();
 	}
 
 	public function register(): void
 	{
 		$this->adminSettingsController->init();
 		$this->adminOverviewController->init();
-
-		add_action('enqueue_block_editor_assets', [$this, 'enqueueAdminAssets']);
+		$this->adminColumnsController->init();
 
 		/**
 		 * Enqueue admin scripts where necessary
 		 */
 		add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssetsPerHook']);
-
-		/**
-		 * Add post type overview columns
-		 */
-		foreach (apply_filters('yard::page-guard/post-types-to-use', ['page']) as $postType) {
-			add_filter("manage_{$postType}_posts_columns", [$this, 'manageCustomColumns']);
-			add_action("manage_{$postType}_posts_custom_column", [$this, 'fillCustomColumns'], 10, 2);
-			add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
-		}
 
 		/**
 		 * Replace description column with email for external_content_owner taxonomy
@@ -69,11 +56,6 @@ class AdminServiceProvider extends ServiceProvider
 
 			return $content;
 		}, 10, 3);
-
-		/**
-		 * Handle custom column sorting
-		 */
-		add_action('pre_get_posts', [$this, 'sortCustomColumns']);
 	}
 
 	public function enqueueAdminAssets(): void
@@ -130,94 +112,5 @@ class AdminServiceProvider extends ServiceProvider
 		}
 
 		return $orderedColumns;
-	}
-
-	public function manageCustomColumns(array $columns): array
-	{
-		$columns['ypg_post_content_owner'] = __('Eigenaar', 'yard-page-guard');
-		$columns['ypg_is_verified'] = __('Status', 'yard-page-guard');
-		$columns['ypg_review_date'] = __('Volgende herzieningsdatum', 'yard-page-guard');
-
-		return $columns;
-	}
-
-	public function fillCustomColumns(string $column, int $postId): void
-	{
-		if ('ypg_post_content_owner' === $column) {
-			$contentOwner = get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_NAME, true);
-
-			if (false === $contentOwner || '' === $contentOwner) {
-				echo __('Niet ingesteld', 'yard-page-guard');
-			} else {
-				echo $contentOwner . (get_post_meta($postId, PostMeta::POST_CONTENT_OWNER_TYPE, true) === ContentOwnerType::EXTERNAL ? ' (' . __('Extern', 'yard-page-guard') . ')' : '');
-			}
-		}
-
-		$reviewDate = get_post_meta($postId, PostMeta::REVIEW_DATE, true);
-
-		if ('ypg_is_verified' === $column) {
-			$isVerified = (bool) get_post_meta($postId, PostMeta::IS_VERIFIED, true);
-			echo $isVerified ? __('Gecontroleerd', 'yard-page-guard') : ($reviewDate && date('Y-m-d') > $reviewDate ? __('Achterstallig', 'yard-page-guard') : __('N.v.t.', 'yard-page-guard'));
-		}
-
-		if ('ypg_review_date' === $column) {
-			echo $reviewDate ? "<span class='review-date-wrapper' data-date='$reviewDate'>{$this->formatDate($reviewDate)}</span>" : __('Niet ingesteld', 'yard-page-guard');
-		}
-	}
-
-	public function makeCustomColumnsSortable(array $columns): array
-	{
-		$columns['ypg_is_verified'] = PostMeta::IS_VERIFIED;
-		$columns['ypg_review_date'] = PostMeta::REVIEW_DATE;
-
-		return $columns;
-	}
-
-	public function sortCustomColumns(WP_Query $query): void
-	{
-		if (! is_admin() || ! $query->is_main_query()) {
-			return;
-		}
-
-		$orderby = $query->get('orderby');
-		$order = $query->get('order');
-
-		if ('ypg_is_verified' === $orderby) {
-			$query->set('meta_query', [
-				'relation' => 'OR',
-				[
-					'key' => PostMeta::IS_VERIFIED,
-					'compare' => 'EXISTS',
-				],
-				[
-					'key' => PostMeta::IS_VERIFIED,
-					'compare' => 'NOT EXISTS',
-				],
-			]);
-			$query->set('orderby', [
-				'meta_value' => $order,
-				'date' => 'DESC',
-			]);
-		}
-
-		if ('ypg_review_date' === $orderby) {
-			$query->set('meta_query', [
-				'relation' => 'OR',
-				[
-					'key' => PostMeta::REVIEW_DATE,
-					'compare' => 'EXISTS',
-					'type' => 'DATE',
-				],
-				[
-					'key' => PostMeta::REVIEW_DATE,
-					'compare' => 'NOT EXISTS',
-					'type' => 'DATE',
-				],
-			]);
-			$query->set('orderby', [
-				'meta_value' => $order,
-				'date' => 'DESC',
-			]);
-		}
 	}
 }
