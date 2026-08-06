@@ -16,6 +16,9 @@ class PageGuardListTable extends \WP_List_Table
 {
 	use PostTypes;
 
+	public const ACTION_MARK_AS_REVIEWED = 'mark_as_reviewed';
+	public const ACTION_TRANSFER_OWNERSHIP = 'transfer_ownership';
+
 	public function get_columns()
 	{
 		return [
@@ -62,7 +65,7 @@ class PageGuardListTable extends \WP_List_Table
 				return esc_html(get_post_type_labels(get_post_type_object($item->post_type))->singular_name);
 			case 'owner':
 				//TODO: add external/internal owner type to the list table and link to meta/profile or filter current list table by owner
-				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : __('Niet ingesteld', 'yard-page-guard');
+				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->displayName() : __('Niet ingesteld', 'yard-page-guard');
 			case 'last_review':
 				return $reviewItem->lastReviewDateFormatted();
 			case 'last_reminder':
@@ -79,8 +82,8 @@ class PageGuardListTable extends \WP_List_Table
 	public function get_bulk_actions()
 	{
 		return [
-			'mark_as_reviewed' => __('Markeer als gecontroleerd', 'yard-page-guard'),
-			//'transfer_ownership' => __('Eigendom overdragen', 'yard-page-guard'),
+			self::ACTION_MARK_AS_REVIEWED => __('Markeer als gecontroleerd', 'yard-page-guard'),
+			//self::ACTION_TRANSFER_OWNERSHIP => __('Eigenaarschap overdragen', 'yard-page-guard'),
 			//'set_review_date' => __('Stel herzieningsdatum in', 'yard-page-guard'),
 		];
 	}
@@ -229,7 +232,7 @@ class PageGuardListTable extends \WP_List_Table
 		}
 
 		switch ($action) {
-			case 'mark_as_reviewed':
+			case self::ACTION_MARK_AS_REVIEWED:
 				foreach ($ids as $id) {
 					$reviewItem = new ReviewItem(get_post($id));
 					$reviewItem->markAsReviewed();
@@ -250,7 +253,7 @@ class PageGuardListTable extends \WP_List_Table
 				);
 
 				break;
-			case 'transfer_ownership':
+			case self::ACTION_TRANSFER_OWNERSHIP:
 			case 'set_review_date':
 				// TODO: implement bulk actions for transferring ownership and setting review date
 				break;
