@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Metabox;
 
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Enums\TimeUnit;
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ReviewItem;
@@ -148,12 +149,11 @@ class Metabox
 		$ownerEmail = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->email() : '';
 		$ownerPhone = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->phone() : '';
 
-		$title = __('Inhoudscontrole module', 'yard-page-guard');
-		$label = __('Inhoudseigenaar', 'yard-page-guard') . ': ';
+		$title = __('Inhoudscontrole', 'yard-page-guard');
 
 		$ownerLink = sprintf(
-			'%s <a href="mailto:%s">%s</a>',
-			$label,
+			'%s: <a href="mailto:%s">%s</a>',
+			__('Inhoudseigenaar', 'yard-page-guard'),
 			esc_attr($ownerEmail),
 			esc_html($ownerName)
 		);
@@ -337,9 +337,8 @@ class Metabox
 		$contentOwnerId = $contentOwner ? $contentOwner->id() : '';
 		$contentOwnerType = $contentOwner ? $contentOwner->type() : ContentOwnerType::USER;
 
-		//TODO: better
-		$defaultReviewData = get_post_meta($post->ID, Meta::REVIEW_DATE, true) ?: $this->addPeriodToBase(date('Y-m-d'), (int) get_option(Settings::REMINDER_TIME_PERIOD, 1), get_option(Settings::REMINDER_TIME_UNIT, 'weeks'));
-		$defaultReminderData = get_option(Settings::REMINDER_TIME_PERIOD, 1) . ' ' . get_option(Settings::REMINDER_TIME_UNIT, 'weeks');
+		$defaultReviewData = $this->formatPeriod((int) get_option(Settings::REVIEW_TIME_PERIOD), get_option(Settings::REVIEW_TIME_UNIT));
+		$defaultReminderData = $this->formatPeriod((int) get_option(Settings::REMINDER_TIME_PERIOD, 1), get_option(Settings::REMINDER_TIME_UNIT));
 		?>
 	<div>
 		<div>
@@ -348,7 +347,7 @@ class Metabox
 			<?php echo $this->renderInput([
 				'type' => 'select',
 				'name' => Meta::POST_CONTENT_OWNER_ID,
-				'value' => sprintf('%s_%s', $contentOwnerType, $contentOwnerId),
+				'value' => sprintf('%s:%s', $contentOwnerType, $contentOwnerId),
 				'options' => $this->getContentOwnerOptions(),
 			]); ?>
 		</div>
@@ -428,15 +427,36 @@ class Metabox
 			<h4><?php esc_html_e('Status', 'yard-page-guard'); ?></h4>
 			<?php echo $this->renderInput(
 				[
-					'type' => 'date',
-					'name' => Meta::LAST_REVIEW_DATE,
-					'value' => $reviewItem->lastReviewDate() ? $reviewItem->lastReviewDate()->format('Y-m-d') : '',
-					'label' => __('Wanneer voor het laatst gecontroleerd?', 'yard-page-guard'),
+					'type' => 'text',
+					'name' => 'ypg_status',
+					'value' => $reviewItem->status(),
+					'label' => __('Status van de inhoudscontrole', 'yard-page-guard'),
 					'readonly' => true,
 					'disabled' => true,
 				]
 			);?>
-			<button type="button" class="button" onclick="alert('Action Triggered!')"><?php esc_html_e('Markeer als gecontroleerd', 'yard-page-guard'); ?></button>
+			<?php echo $this->renderInput(
+				[
+					'type' => 'text',
+					'name' => Meta::REVIEW_DATE,
+					'value' => $reviewItem->reviewDateFormatted(),
+					'label' => __('Volgende herzieningsdatum', 'yard-page-guard'),
+					'readonly' => true,
+					'disabled' => true,
+				]
+			);?>
+
+			<?php echo $this->renderInput(
+				[
+					'type' => 'text',
+					'name' => Meta::LAST_REVIEW_DATE,
+					'value' => $reviewItem->lastReviewDateFormatted(),
+					'label' => __('Laatst gecontroleerd', 'yard-page-guard'),
+					'readonly' => true,
+					'disabled' => true,
+				]
+			);?>
+			<a class="button" href="<?php echo wp_nonce_url(add_query_arg(['action' => 'mark_as_reviewed', 'post_id' => $post->ID], get_edit_post_link($post->ID, 'post.php')), 'mark_as_reviewed'); ?>"><?php esc_html_e('Markeer als gecontroleerd', 'yard-page-guard'); ?></a>
 		</div>
 	</div>
 	<?php
@@ -516,7 +536,9 @@ class Metabox
 			$reminderTimeUnit = sanitize_text_field($_POST[Meta::REMINDER_TIME_UNIT] ?? null);
 
 			$reviewItem->setContentOwner($postContentOwnerId, $postContentOwnerType);
-			$reviewItem->setReviewDate($reviewDateType, \DateTime::createFromFormat('Y-m-d', $reviewDate)?: null);
+			if (ReviewDateType::CUSTOM === $reviewDateType || null === $reviewItem->reviewDate()) {
+				$reviewItem->setReviewDate($reviewDateType, \DateTime::createFromFormat('Y-m-d', $reviewDate)?: null);
+			}
 			$reviewItem->setReminderTime($reminderTimeType, $reminderTimePeriod, $reminderTimeUnit);
 		}
 	}
@@ -593,6 +615,24 @@ class Metabox
 			default:
 				return '';
 		}
+	}
+
+	public function handleMarkAsReviewed(): void
+	{
+		if (! isset($_GET['post_id']) || ! isset($_GET['_wpnonce']) || ! wp_verify_nonce($_GET['_wpnonce'], 'mark_as_reviewed')) {
+			wp_die(__('Ongeldige aanvraag.', 'yard-page-guard'));
+		}
+
+		$postId = (int) $_GET['post_id'];
+		if (! current_user_can(apply_filters('yard::page-guard/capability/admin', 'edit_pages'), $postId)) {
+			wp_die(__('Je hebt geen toestemming om deze actie uit te voeren.', 'yard-page-guard'));
+		}
+
+		$reviewItem = new ReviewItem(get_post($postId));
+		$reviewItem->markAsReviewed();
+
+		wp_redirect(add_query_arg(['post' => $postId, 'action' => 'edit'], admin_url('post.php')));
+		exit;
 	}
 
 	protected function getContentOwnerOptions(): array
