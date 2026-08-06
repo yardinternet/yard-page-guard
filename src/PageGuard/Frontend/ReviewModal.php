@@ -3,6 +3,7 @@
 namespace Yard\PageGuard\Frontend;
 
 use WP_User;
+use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\ReviewUser;
 use Yard\PageGuard\Traits\Token;
 
@@ -29,7 +30,7 @@ class ReviewModal
 			$this->displayInfo = $this->handleInternalToken();
 		}
 
-		if (null !== $this->displayInfo && ! is_user_logged_in() && get_option('ypg_show_internal_data_on_review', false)) {
+		if (null !== $this->displayInfo && ! is_user_logged_in() && get_option(Settings::SHOW_INTERNAL_DATA_ON_REVIEW, false)) {
 			$this->loginReviewUser();
 		}
 	}
