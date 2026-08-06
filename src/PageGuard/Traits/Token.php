@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Traits;
 
 use RuntimeException;
+use Yard\PageGuard\Settings\Settings;
 
 trait Token
 {
@@ -29,11 +30,11 @@ trait Token
 	private function generateKeyedHash(string $data): string
 	{
 		if (defined('YPG_AUTH_SALT')) {
-			$salt = (string) YPG_AUTH_SALT;
+			$salt = (string) \YPG_AUTH_SALT;
 		} elseif (isset($_ENV['YPG_AUTH_SALT'])) {
 			$salt = (string) $_ENV['YPG_AUTH_SALT'];
 		} elseif (defined('AUTH_SALT')) {
-			$salt = (string) AUTH_SALT;
+			$salt = (string) \AUTH_SALT;
 		} else {
 			$salt = (string) ($_ENV['AUTH_SALT'] ?? '');
 		}
@@ -65,22 +66,24 @@ trait Token
 			return null;
 		}
 
-		$contentOwnerEmail = get_post_meta(get_the_ID(), 'ypg_post_content_owner_email', true) ?: '';
-		$reviewDate = get_post_meta(get_the_ID(), 'ypg_review_date', true) ?: '';
+		$reviewItem = new \Yard\PageGuard\Models\ReviewItem(get_post());
 
-		if ('' === $contentOwnerEmail || '' === $reviewDate) {
+		$contentOwnerEmail = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->email() : '';
+		$reviewDate = $reviewItem->reviewDate();
+
+		if ('' === $contentOwnerEmail || null === $reviewDate) {
 			return null;
 		}
 
 		try {
-			if (! $this->verifyReviewToken(get_the_ID(), $contentOwnerEmail, $reviewDate, sanitize_text_field(($_GET['ypg_review_token'] ?? '')))) {
+			if (! $this->verifyReviewToken(get_the_ID(), $contentOwnerEmail, $reviewDate->format('Y-m-d'), sanitize_text_field(($_GET['ypg_review_token'] ?? '')))) {
 				return null;
 			}
 		} catch (RuntimeException $e) {
 			return null;
 		}
 
-		$footer = trim(strip_tags(get_option('ypg_modal_footer_content', ''))) !== '' ? wpautop(get_option('ypg_modal_footer_content', '')) : false;
+		$footer = trim(strip_tags(get_option(Settings::MODAL_FOOTER_CONTENT, ''))) !== '' ? wpautop(get_option(Settings::MODAL_FOOTER_CONTENT, '')) : false;
 
 		return [
 			'id' => get_the_ID(),
