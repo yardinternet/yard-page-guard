@@ -30,6 +30,7 @@ class Meta
 			self::POST_CONTENT_OWNER_ID => [
 				'type' => 'integer',
 				'sanitize_callback' => 'absint',
+				'default' => 0,
 			],
 			self::POST_CONTENT_OWNER_TYPE => [
 				'type' => 'string',
@@ -42,6 +43,7 @@ class Meta
 			],
 			self::REVIEW_DATE => [
 				'type' => 'string',
+				'default' => '',
 				'sanitize_callback' => [$this, 'sanitizeDate'],
 			],
 			self::REMINDER_TIME_TYPE => [
@@ -61,10 +63,12 @@ class Meta
 			],
 			self::LAST_REMINDER_DATE => [
 				'type' => 'string',
+				'default' => '',
 				'sanitize_callback' => [$this, 'sanitizeDate'],
 			],
 			self::LAST_REVIEW_DATE => [
 				'type' => 'string',
+				'default' => '',
 				'sanitize_callback' => [$this, 'sanitizeDate'],
 			],
 		];
@@ -77,10 +81,10 @@ class Meta
 					'type' => 'string',
 					'label' => '',
 					'description' => '',
-					'single' => false,
-					'sanitize_callback' => null,
+					'single' => true,
+					//'sanitize_callback' => null,
 					'auth_callback' => fn () => current_user_can('edit_posts'),
-					'show_in_rest' => false,
+					'show_in_rest' => true,
 					'revisions_enabled' => false,
 				]
 			);
