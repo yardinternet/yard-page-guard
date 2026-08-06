@@ -16,6 +16,7 @@ import { __ } from '@wordpress/i18n';
 import Section from '../components/section.jsx';
 import { useEditorPost } from '../hooks/use-editor-post';
 import { useMarkReviewed } from '../hooks/use-mark-reviewed';
+import { useNextReviewDate } from '../hooks/use-next-review-date';
 import { useReviewStatus } from '../hooks/use-review-status';
 
 const StatusSection = () => {
@@ -33,7 +34,7 @@ const StatusSection = () => {
 	const isBlocked = isNew || isDirty || isSaving;
 
 	const lastReviewed = status?.lastReviewDate?.formatted;
-	const nextReview = status?.reviewDate?.formatted;
+	const nextReview = useNextReviewDate();
 
 	const blockedHelp = isNew
 		? __( 'Publiceer of sla deze pagina eerst op.', 'yard-page-guard' )
@@ -65,17 +66,18 @@ const StatusSection = () => {
 						</Text>
 					</VStack>
 
-					{ nextReview && (
-						<VStack spacing={ 0 }>
-							<Text variant="muted">
-								{ __(
-									'Volgende herzieningsdatum',
-									'yard-page-guard'
-								) }
-							</Text>
-							<Text>{ nextReview }</Text>
-						</VStack>
-					) }
+					<VStack spacing={ 0 }>
+						<Text variant="muted">
+							{ __(
+								'Volgende herzieningsdatum',
+								'yard-page-guard'
+							) }
+						</Text>
+						<Text>
+							{ nextReview ||
+								__( 'Nog niet ingesteld', 'yard-page-guard' ) }
+						</Text>
+					</VStack>
 				</VStack>
 			) }
 

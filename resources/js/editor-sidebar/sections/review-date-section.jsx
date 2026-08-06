@@ -23,7 +23,7 @@ const ReviewDateSection = () => {
 	const date = meta[ META_REVIEW_DATE ] || '';
 
 	const onChangeType = ( nextType ) => {
-		// Clearing date makes ReviewScheduler resolve site default.
+		// Clearing the date is what makes the backend resolve the site default on save.
 		updateMeta(
 			DATE_TYPE_CUSTOM === nextType
 				? { [ META_REVIEW_DATE_TYPE ]: nextType }
@@ -34,7 +34,7 @@ const ReviewDateSection = () => {
 		);
 	};
 
-	const defaultLabel = defaultSettingLabel( defaults?.review, '' === date );
+	const defaultLabel = defaultSettingLabel( defaults?.review );
 
 	return (
 		<Section>
@@ -62,7 +62,7 @@ const ReviewDateSection = () => {
 
 			{ DATE_TYPE_CUSTOM === type && (
 				<DatePicker
-					currentDate={ date || null }
+					currentDate={ date || defaults?.review?.date || null }
 					onChange={ ( nextDate ) =>
 						updateMeta( {
 							[ META_REVIEW_DATE ]: toYmd( nextDate ),

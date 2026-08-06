@@ -1,4 +1,9 @@
 /**
+ * WordPress dependencies
+ */
+import { dateI18n, getSettings } from '@wordpress/date';
+
+/**
  * Local getters on purpose: `toISOString()` shifts to UTC, off by a day part of every day.
  *
  * @param {Date|string} value
@@ -21,3 +26,10 @@ export const toYmd = ( value ) => {
  * @return {string} Today in Y-m-d
  */
 export const todayYmd = () => toYmd( new Date() );
+
+/**
+ * @param {string} ymd A Y-m-d date.
+ * @return {string} The date in the site's display format, or an empty string.
+ */
+export const formatSiteDate = ( ymd ) =>
+	ymd ? dateI18n( getSettings().formats.date, ymd ) : '';
