@@ -192,9 +192,9 @@ class Metabox
 			<?php echo $this->renderInput(
 				[
 					'type' => 'text',
-					'name' => 'ypg_status',
-					'value' => $reviewItem->status(),
-					'label' => __('Status van de inhoudscontrole', 'yard-page-guard'),
+					'name' => Meta::LAST_REVIEW_DATE,
+					'value' => $reviewItem->lastReviewDateFormatted(),
+					'label' => __('Laatst gecontroleerd', 'yard-page-guard'),
 					'readonly' => true,
 					'disabled' => true,
 				]
@@ -210,16 +210,7 @@ class Metabox
 				]
 			);?>
 
-			<?php echo $this->renderInput(
-				[
-					'type' => 'text',
-					'name' => Meta::LAST_REVIEW_DATE,
-					'value' => $reviewItem->lastReviewDateFormatted(),
-					'label' => __('Laatst gecontroleerd', 'yard-page-guard'),
-					'readonly' => true,
-					'disabled' => true,
-				]
-			);?>
+
 			<?php if ($reviewItem->reviewDate()) : ?>
 			<a class="button"  href="<?php echo wp_nonce_url(add_query_arg(['action' => 'mark_as_reviewed', 'post_id' => $post->ID], get_edit_post_link($post->ID, 'post.php')), 'mark_as_reviewed'); ?>"><?php esc_html_e('Markeer als gecontroleerd', 'yard-page-guard'); ?></a>
 			<?php endif; ?>
