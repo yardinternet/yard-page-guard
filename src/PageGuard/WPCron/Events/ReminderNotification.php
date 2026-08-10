@@ -116,7 +116,7 @@ class ReminderNotification extends Event
 		$itemList = $this->buildItemListHtml($items, true);
 
 		$values = [
-			$owner->salutation(),
+			$owner->name(),
 			$itemList,
 		];
 

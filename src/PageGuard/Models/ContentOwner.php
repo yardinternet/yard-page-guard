@@ -80,23 +80,4 @@ class ContentOwner
 	{
 		return $this->type;
 	}
-
-	/**
-	 * Returns the owner's salutation with capitalized name parts.
-	 */
-	public function salutation(): string
-	{
-		$name = $this->firstName() ?: $this->name;
-		$nameParts = explode(' ', $name);
-		$capitalizedParts = array_map('ucfirst', $nameParts);
-
-		return implode(' ', $capitalizedParts);
-	}
-
-	public function firstName(): string
-	{
-		$nameParts = explode(' ', $this->name);
-
-		return isset($nameParts[0]) ? $nameParts[0] : '';
-	}
 }
