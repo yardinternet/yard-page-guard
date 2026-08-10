@@ -28,12 +28,9 @@ class VerifyPostController
 		http_response_code(200); # HTML needs to be returned properly, so no 500 in case of an error.
 
 		// update_post_meta() returns false when the value did not change, so check the resulting state instead.
-		$isReviewed = current_time('Y-m-d') === (string) get_post_meta($postId, PostMeta::LAST_REVIEW_DATE, true)
-			&& '' !== (string) get_post_meta($postId, PostMeta::REVIEW_DATE, true);
-
-		if ($isReviewed) {
+		if (current_time('Y-m-d') === $reviewItem->lastReviewDate()->format('Y-m-d')
+			&& null !== $reviewItem->reviewDate()) {
 			echo self::getSuccessResponse();
-
 			exit();
 		}
 
