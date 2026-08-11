@@ -5,15 +5,24 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Metabox;
 
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Enums\TimeUnit;
 use Yard\PageGuard\Meta\Meta;
+use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Settings\Settings;
+use Yard\PageGuard\Traits\ContentOwners;
 use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Traits\PostTypes;
 
 class Metabox
 {
 	use Date;
+	use ContentOwners;
+	use PostTypes;
+
+	public const NONCE_FIELD = 'ypg_metaboxes_nonce';
+	public const NONCE_ACTION = 'ypg_meta_update';
 
 	public function addMetaboxes(): void
 	{
@@ -21,7 +30,7 @@ class Metabox
 			'yard_page_guard_metabox',
 			__('Inhoudscontrole module', 'yard-page-guard'),
 			[$this, 'renderMetaBox'],
-			apply_filters('yard::page-guard/post-types-to-use', ['page']),
+			$this->getPostTypes(),
 			'side',
 			'high',
 			[ '__back_compat_meta_box' => true ] // Automatically hides this inside Gutenberg
@@ -30,12 +39,7 @@ class Metabox
 
 	private function shouldSave(int $postId): bool
 	{
-		// Check save location
-		if (isset($_POST['ypg_metaboxes_nonce'])) {
-			if (! wp_verify_nonce($_POST['ypg_metaboxes_nonce'], basename(__FILE__))) {
-				return false;
-			}
-		} else {
+		if (! isset($_POST[self::NONCE_FIELD]) || ! wp_verify_nonce($_POST[self::NONCE_FIELD], self::NONCE_ACTION)) {
 			return false;
 		}
 
@@ -43,7 +47,7 @@ class Metabox
 			return false;
 		}
 
-		$postTypes = apply_filters('yard::page-guard/post-types-to-use', ['page']);
+		$postTypes = $this->getPostTypes();
 		if (! isset($_POST['post_type']) || ! in_array($_POST['post_type'], $postTypes, true)) {
 			return false;
 		}
@@ -83,250 +87,6 @@ class Metabox
 		return (int) $contentOwnerId === $currentUser->ID && ContentOwnerType::USER === $contentOwnerType;
 	}
 
-	public function handleInternalData(int $postId): void
-	{
-		if (! $this->shouldSave($postId)) {
-			return;
-		}
-
-		if (! isset($_POST['ypg_post_content_owner'])) {
-			return;
-		}
-
-		$reviewItem = new ReviewItem(get_post($postId));
-
-		$contentOwnerName = trim((string) ($reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : ''));
-
-		//FIXME: this can be based on the content owner type and id instead of the name, but for now this is the easiest way to check if the content owner is set or not
-		if ('' === $contentOwnerName) {
-			$this->removeInternalData($postId);
-
-			return;
-		}
-
-		$internalDataSyncEnabled = (bool) apply_filters('yard::page-guard/enable-internal-data-sync', $this->owcInternalDataPluginsActive());
-
-		if (! $internalDataSyncEnabled) {
-			return;
-		}
-
-		$this->addInternalData($postId);
-	}
-
-	private function owcInternalDataPluginsActive(): bool
-	{
-		static $cached = null;
-
-		if (null !== $cached) {
-			return $cached;
-		}
-
-		if (! function_exists('is_plugin_active') && defined('ABSPATH')) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-
-		if (function_exists('is_plugin_active')) {
-			if (is_plugin_active('pdc-internal-products/pdc-internal-products.php') || is_plugin_active('openpub-internal-data/pub-internal-products.php')) {
-				return $cached = true;
-			}
-		}
-
-		foreach (get_declared_classes() as $class) {
-			if (strpos($class, 'Yard\\OWC\\') === 0) {
-				return $cached = true;
-			}
-		}
-
-		return $cached = false;
-	}
-
-	private function addInternalData(int $postId): void
-	{
-		$reviewItem = new ReviewItem(get_post($postId));
-
-		$ownerName = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : '';
-		$ownerEmail = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->email() : '';
-		$ownerPhone = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->phone() : '';
-
-		$title = __('Inhoudscontrole module', 'yard-page-guard');
-		$label = __('Inhoudseigenaar', 'yard-page-guard') . ': ';
-
-		$ownerLink = sprintf(
-			'%s <a href="mailto:%s">%s</a>',
-			$label,
-			esc_attr($ownerEmail),
-			esc_html($ownerName)
-		);
-
-		if ('' !== $ownerPhone) {
-			$telNumber = $this->formatPhoneForTel($ownerPhone);
-			$phoneDisplay = null !== $telNumber
-				? sprintf('<a href="tel:%s">%s</a>', esc_attr($telNumber), esc_html($ownerPhone))
-				: esc_html($ownerPhone);
-			$ownerLink .= sprintf(' (%s)', $phoneDisplay);
-		}
-
-		/**
-		 * Fusion portal internal information
-		 */
-		if (! metadata_exists('post', $postId, '_ys_post_information_internal_title')) {
-			update_post_meta($postId, '_ys_post_information_internal_title', $title);
-		}
-
-		if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
-			$currentValue = get_post_meta($postId, '_ys_post_information_internal', true);
-
-			if (strpos($currentValue, 'mailto:') !== false) {
-				$newValue = preg_replace(
-					'/<p>\s*Inhoudseigenaar.*?<a href="mailto:.*?<\/a>(\s*\(.*?\))?\s*<\/p>|Inhoudseigenaar.*?<a href="mailto:.*?<\/a>(\s*\(.*?\))?/i',
-					$ownerLink,
-					$currentValue
-				);
-			} else {
-				$newValue = empty($currentValue)
-					? $ownerLink
-					: $currentValue . $ownerLink;
-			}
-
-			update_post_meta($postId, '_ys_post_information_internal', $newValue);
-		} else {
-			update_post_meta($postId, '_ys_post_information_internal', $ownerLink);
-		}
-
-		/**
-		 * Fusion PDC internal information
-		 */
-		$key = '_owc_pdc_internaldata';
-		$current = get_post_meta($postId, $key, true);
-		$current = is_array($current) ? $current : [];
-
-		$newValue = [
-			'internaldata_key' => $title,
-			'internaldata_value' => $ownerLink,
-		];
-
-		$updated = false;
-		foreach ($current as $i => $row) {
-			if (($row['internaldata_key'] ?? '') === $title) {
-				$current[$i] = $newValue;
-				$updated = true;
-
-				break;
-			}
-		}
-
-		if (! $updated) {
-			$current[] = $newValue;
-		}
-
-		update_post_meta($postId, $key, $current);
-
-		/**
-		 * Brave internal information
-		 */
-		if (function_exists('get_field') && function_exists('update_field')) {
-			$rows = get_field('internal_information', $postId);
-			$rows = is_array($rows) ? $rows : [];
-
-			$updated = false;
-			foreach ($rows as $i => $row) {
-				if (($row['internal_information_title'] ?? '') === $title) {
-					$rows[$i]['internal_information_content'] = $ownerLink;
-					$updated = true;
-
-					break;
-				}
-			}
-
-			if (! $updated) {
-				$rows[] = [
-					'internal_information_title' => $title,
-					'internal_information_content' => $ownerLink,
-				];
-			}
-
-			update_field('internal_information', $rows, $postId);
-		}
-
-		do_action('yard::page-guard/after-internal-data-synced', $postId, $ownerLink, $title);
-	}
-
-	private function removeInternalData(int $postId): void
-	{
-		$newTitle = __('Inhoudscontrole module', 'yard-page-guard');
-
-		/**
-		 * Remove entry from single meta fields (fusion portal)
-		 */
-		if (metadata_exists('post', $postId, '_ys_post_information_internal_title')) {
-			$currentTitle = get_post_meta($postId, '_ys_post_information_internal_title', true);
-
-			if ($currentTitle === $newTitle) {
-				delete_post_meta($postId, '_ys_post_information_internal_title');
-			}
-		}
-
-		if (metadata_exists('post', $postId, '_ys_post_information_internal')) {
-			$value = get_post_meta($postId, '_ys_post_information_internal', true);
-
-			// Remove the Inhoudseigenaar block (email link + optional phone link)
-			$value = preg_replace(
-				'/<p>\s*Inhoudseigenaar.*?<a href="mailto:.*?<\/a>(\s*\(.*?\))?\s*<\/p>|Inhoudseigenaar.*?<a href="mailto:.*?<\/a>(\s*\(.*?\))?/i',
-				'',
-				$value
-			);
-
-			update_post_meta($postId, '_ys_post_information_internal', $value);
-		}
-
-		/**
-		 * Remove entry from Fusion PDC repeater
-		 */
-		$pdcKey = '_owc_pdc_internaldata';
-		$pdcEntries = get_post_meta($postId, $pdcKey, true);
-
-		if (is_array($pdcEntries)) {
-			$pdcEntries = array_values(array_filter($pdcEntries, function ($entry) use ($newTitle) {
-				return ! (isset($entry['internaldata_key']) && $entry['internaldata_key'] === $newTitle);
-			}));
-
-			update_post_meta($postId, $pdcKey, $pdcEntries);
-		}
-
-		/**
-		 * Remove entry from Brave ACF repeater "internal_information"
-		 */
-		if (function_exists('get_field') && function_exists('update_field')) {
-			$acfRows = get_field('internal_information', $postId);
-
-			if (is_array($acfRows)) {
-				$acfRows = array_values(array_filter($acfRows, function ($row) use ($newTitle) {
-					return ! (isset($row['internal_information_title']) &&
-							  $row['internal_information_title'] === $newTitle);
-				}));
-
-				update_field('internal_information', $acfRows, $postId);
-			}
-		}
-
-		do_action('yard::page-guard/after-internal-data-removed', $postId);
-	}
-
-	private function formatPhoneForTel(string $phone): ?string
-	{
-		$cleaned = preg_replace('/[\s\-\.\(\)]/', '', $phone);
-
-		if (str_starts_with($cleaned, '0')) {
-			$cleaned = '+31' . substr($cleaned, 1);
-		}
-
-		if (preg_match('/^\+\d{7,15}$/', $cleaned)) {
-			return $cleaned;
-		}
-
-		return null;
-	}
-
 	public function renderMetaBox(\WP_Post $post)
 	{
 		wp_nonce_field('ypg_meta_update', 'ypg_metaboxes_nonce');
@@ -334,12 +94,6 @@ class Metabox
 		$reviewItem = new ReviewItem($post);
 
 		$contentOwner = $reviewItem->contentOwner();
-		$contentOwnerId = $contentOwner ? $contentOwner->id() : '';
-		$contentOwnerType = $contentOwner ? $contentOwner->type() : ContentOwnerType::USER;
-
-		//TODO: better
-		$defaultReviewData = get_post_meta($post->ID, Meta::REVIEW_DATE, true) ?: $this->addPeriodToBase(date('Y-m-d'), (int) get_option(Settings::REMINDER_TIME_PERIOD, 1), get_option(Settings::REMINDER_TIME_UNIT, 'weeks'));
-		$defaultReminderData = get_option(Settings::REMINDER_TIME_PERIOD, 1) . ' ' . get_option(Settings::REMINDER_TIME_UNIT, 'weeks');
 		?>
 	<div>
 		<div>
@@ -348,7 +102,7 @@ class Metabox
 			<?php echo $this->renderInput([
 				'type' => 'select',
 				'name' => Meta::POST_CONTENT_OWNER_ID,
-				'value' => sprintf('%s_%s', $contentOwnerType, $contentOwnerId),
+				'value' => $contentOwner ? $contentOwner->combinedId() : '',
 				'options' => $this->getContentOwnerOptions(),
 			]); ?>
 		</div>
@@ -366,7 +120,11 @@ class Metabox
 						'name' => Meta::REVIEW_DATE_TYPE,
 						'value' => $reviewItem->reviewDateType(),
 						'options' => [
-							'default' => __('Volgens de standaardinstelling', 'yard-page-guard') . sprintf('<code>%s</code>', esc_html($defaultReviewData)),
+							'default' => sprintf(
+								'%s <code>%s</code>',
+								__('Volgens de standaardinstelling', 'yard-page-guard'),
+								esc_html($this->formatPeriod((int) get_option(Settings::REVIEW_TIME_PERIOD), get_option(Settings::REVIEW_TIME_UNIT)))
+							),
 							'custom' => __('Kies eenmalig een afwijkende datum', 'yard-page-guard'),
 						],
 						'label' => __('Wanneer moet de inhoudseigenaar de eerste controlemail ontvangen?', 'yard-page-guard'),
@@ -397,7 +155,11 @@ class Metabox
 						'name' => Meta::REMINDER_TIME_TYPE,
 						'value' => $reviewItem->reminderTimeType(),
 						'options' => [
-							'default' => __('Volgens de standaardinstelling', 'yard-page-guard') . sprintf('<code>%s</code>', esc_html($defaultReminderData)),
+							'default' => sprintf(
+								'%s <code>%s</code>',
+								__('Volgens de standaardinstelling', 'yard-page-guard'),
+								esc_html($this->formatPeriod((int) get_option(Settings::REMINDER_TIME_PERIOD, 1), get_option(Settings::REMINDER_TIME_UNIT)))
+							),
 							'custom' => __('Kies afwijkende periode:', 'yard-page-guard'),
 						],
 						'label' => __('Wanneer moet de herinnneringsmail verstuurd worden als de controle nog niet is afgerond?', 'yard-page-guard'),
@@ -428,15 +190,29 @@ class Metabox
 			<h4><?php esc_html_e('Status', 'yard-page-guard'); ?></h4>
 			<?php echo $this->renderInput(
 				[
-					'type' => 'date',
+					'type' => 'text',
 					'name' => Meta::LAST_REVIEW_DATE,
-					'value' => $reviewItem->lastReviewDate() ? $reviewItem->lastReviewDate()->format('Y-m-d') : '',
-					'label' => __('Wanneer voor het laatst gecontroleerd?', 'yard-page-guard'),
+					'value' => $reviewItem->lastReviewDateFormatted(),
+					'label' => __('Laatst gecontroleerd', 'yard-page-guard'),
 					'readonly' => true,
 					'disabled' => true,
 				]
 			);?>
-			<button type="button" class="button" onclick="alert('Action Triggered!')"><?php esc_html_e('Markeer als gecontroleerd', 'yard-page-guard'); ?></button>
+			<?php echo $this->renderInput(
+				[
+					'type' => 'text',
+					'name' => Meta::REVIEW_DATE,
+					'value' => $reviewItem->reviewDateFormatted(),
+					'label' => __('Volgende herzieningsdatum', 'yard-page-guard'),
+					'readonly' => true,
+					'disabled' => true,
+				]
+			);?>
+
+
+			<?php if ($reviewItem->reviewDate()) : ?>
+			<a class="button"  href="<?php echo wp_nonce_url(add_query_arg(['action' => 'mark_as_reviewed', 'post_id' => $post->ID], get_edit_post_link($post->ID, 'post.php')), 'mark_as_reviewed'); ?>"><?php esc_html_e('Markeer als gecontroleerd', 'yard-page-guard'); ?></a>
+			<?php endif; ?>
 		</div>
 	</div>
 	<?php
@@ -502,13 +278,13 @@ class Metabox
 		$reviewItem = new ReviewItem($post);
 
 		$postContentOwner = sanitize_text_field($_POST[Meta::POST_CONTENT_OWNER_ID] ?? '');
-		if ('' === $postContentOwner) {
+		$postContentOwnerParts = explode(ContentOwner::COMBINED_ID_SEPARATOR, $postContentOwner, 2);
+		$postContentOwnerType = $postContentOwnerParts[0] ?? null;
+		$postContentOwnerId = isset($postContentOwnerParts[1]) ? (int) $postContentOwnerParts[1] : null;
+
+		if (null === $postContentOwnerType || null === $postContentOwnerId) {
 			$reviewItem->removeMetaData();
 		} else {
-			$postContentOwnerParts = explode('_', $postContentOwner, 2);
-			$postContentOwnerType = $postContentOwnerParts[0] ?? null;
-			$postContentOwnerId = isset($postContentOwnerParts[1]) ? (int) $postContentOwnerParts[1] : null;
-
 			$reviewDateType = sanitize_text_field($_POST[Meta::REVIEW_DATE_TYPE] ?? '');
 			$reviewDate = sanitize_text_field($_POST[Meta::REVIEW_DATE] ?? '');
 			$reminderTimeType = sanitize_text_field($_POST[Meta::REMINDER_TIME_TYPE] ?? null);
@@ -516,12 +292,13 @@ class Metabox
 			$reminderTimeUnit = sanitize_text_field($_POST[Meta::REMINDER_TIME_UNIT] ?? null);
 
 			$reviewItem->setContentOwner($postContentOwnerId, $postContentOwnerType);
-			$reviewItem->setReviewDate($reviewDateType, \DateTime::createFromFormat('Y-m-d', $reviewDate)?: null);
+			if (ReviewDateType::CUSTOM === $reviewDateType || null === $reviewItem->reviewDate()) {
+				$reviewItem->setReviewDate($reviewDateType, \DateTime::createFromFormat('Y-m-d', $reviewDate)?: null);
+			}
 			$reviewItem->setReminderTime($reminderTimeType, $reminderTimePeriod, $reminderTimeUnit);
 		}
 	}
 
-	// TODO: move to to trait?
 	protected function renderInput(array $args): string
 	{
 		$args = wp_parse_args($args, [
@@ -580,8 +357,8 @@ class Metabox
 				foreach ($args['options'] as $optionValue => $optionLabel) {
 					$radioHtml .= sprintf(
 						'<label style="display: block; margin-bottom: 5px;"><input type="radio" name="%1$s" value="%2$s" %3$s/>%4$s</label>',
-						$args['name'],
-						$optionValue,
+						esc_attr($args['name']),
+						esc_attr($optionValue),
 						checked($args['value'], $optionValue, false),
 						wp_kses_post($optionLabel)
 					);
@@ -596,35 +373,21 @@ class Metabox
 		}
 	}
 
-	protected function getContentOwnerOptions(): array
+	public function handleMarkAsReviewed(): void
 	{
-		$wpUsers = get_users([
-			'capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-		]);
-		$wpUsers = array_map(function (\WP_User $user) {
-			return [
-				'id' => sprintf('%s_%s', ContentOwnerType::USER, $user->ID),
-				'name' => $user->display_name,
-			];
-		}, $wpUsers);
+		if (! isset($_GET['post_id']) || ! isset($_GET['_wpnonce']) || ! wp_verify_nonce($_GET['_wpnonce'], 'mark_as_reviewed')) {
+			wp_die(__('Ongeldige aanvraag.', 'yard-page-guard'));
+		}
 
-		$externalUsers = get_terms([
-			'taxonomy' => 'ypg_external_content_owner',
-			'hide_empty' => false,
-		]);
-		$externalUsers = array_map(function (\WP_Term $term) {
-			return [
-				'id' => sprintf('%s_%s', ContentOwnerType::EXTERNAL, $term->term_id),
-				'name' => sprintf('%s (extern)', $term->name),
-			];
-		}, $externalUsers);
+		$postId = (int) $_GET['post_id'];
+		if (! current_user_can(apply_filters('yard::page-guard/capability/admin', 'edit_pages'), $postId)) {
+			wp_die(__('Je hebt geen toestemming om deze actie uit te voeren.', 'yard-page-guard'));
+		}
 
-		$noOwnerOption = [[
-			'id' => '',
-			'name' => __('Geen inhoudseigenaar', 'yard-page-guard'),
-		]];
-		$contentOwnerOptions = array_merge($noOwnerOption, $wpUsers, $externalUsers);
+		$reviewItem = new ReviewItem(get_post($postId));
+		$reviewItem->markAsReviewed();
 
-		return array_column($contentOwnerOptions, 'name', 'id');
+		wp_redirect(add_query_arg(['post' => $postId, 'action' => 'edit'], admin_url('post.php')));
+		exit;
 	}
 }

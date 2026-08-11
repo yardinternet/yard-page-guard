@@ -14,21 +14,21 @@ class AdminSettingsController
 	public function init(): void
 	{
 		add_action('admin_menu', [$this, 'addSettingsPage']);
-		add_action('admin_init', [$this, 'registerSettings']);
+		add_action('admin_init', [$this, 'addSettingsFields']);
 	}
 
 	public function addSettingsPage(): void
 	{
 		add_options_page(
-			__('Inhoudscontrole module', 'yard-page-guard'),
-			__('Inhoudscontrole module', 'yard-page-guard'),
+			__('Inhoudscontrole', 'yard-page-guard'),
+			__('Inhoudscontrole', 'yard-page-guard'),
 			apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
 			self::PAGE_SLUG,
 			[$this, 'renderSettingsPage']
 		);
 	}
 
-	public function registerSettings(): void
+	public function addSettingsFields(): void
 	{
 		add_settings_section(
 			'email',

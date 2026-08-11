@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Meta;
 
+use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Enums\ReminderTimeType;
 use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Enums\TimeUnit;
 
 class Meta
 {
+	private const DATE_PATTERN = '^(\d{4}-\d{2}-\d{2})?$';
+
 	public const POST_CONTENT_OWNER_ID = 'ypg_post_content_owner_id';
 	public const POST_CONTENT_OWNER_TYPE = 'ypg_post_content_owner_type';
 	public const REVIEW_DATE_TYPE = 'ypg_review_date_type';
@@ -24,48 +27,82 @@ class Meta
 
 	public function registerMeta(): void
 	{
-		//TODO: set default values
 		$metaFields = [
 			self::POST_CONTENT_OWNER_ID => [
 				'type' => 'integer',
-				'sanitize' => 'absint',
+				'sanitize_callback' => 'absint',
+				'default' => 0,
 			],
 			self::POST_CONTENT_OWNER_TYPE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field', //TODO: sanitize callback should validate against allowed values
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, ContentOwnerType::cases(), ''),
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'enum' => array_merge([''], ContentOwnerType::cases()),
+					],
+				],
+				'default' => '',
 			],
 			self::REVIEW_DATE_TYPE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, ReviewDateType::cases(), ReviewDateType::DEFAULT),
 				'default' => ReviewDateType::DEFAULT,
-			], // FIXME: sanitize callback should validate against allowed values
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'enum' => ReviewDateType::cases(),
+					],
+				],
+			],
 			self::REVIEW_DATE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
+				'default' => '',
+				'sanitize_callback' => [$this, 'sanitizeDate'],
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'pattern' => self::DATE_PATTERN,
+					],
+				],
 			],
 			self::REMINDER_TIME_TYPE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
 				'default' => ReminderTimeType::DEFAULT,
-			], //FIXME: sanitize callback should validate against allowed values
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, ReminderTimeType::cases(), ReminderTimeType::DEFAULT),
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'enum' => ReminderTimeType::cases(),
+					],
+				],
+			],
 			self::REMINDER_TIME_PERIOD => [
 				'type' => 'integer',
-				'sanitize' => 'absint',
+				'sanitize_callback' => 'absint',
 				'default' => 1,
 			],
 			self::REMINDER_TIME_UNIT => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
 				'default' => TimeUnit::WEEKS,
-			], //FIXME: sanitize callback should validate against allowed values
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, TimeUnit::cases(), TimeUnit::WEEKS),
+			],
 			self::LAST_REMINDER_DATE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
-			], //TODO: sanitize date
+				'default' => '',
+				'sanitize_callback' => [$this, 'sanitizeDate'],
+			],
 			self::LAST_REVIEW_DATE => [
 				'type' => 'string',
-				'sanitize' => 'sanitize_text_field',
-			], // TODO: sanitize date
+				'default' => '',
+				'sanitize_callback' => [$this, 'sanitizeDate'],
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'pattern' => self::DATE_PATTERN,
+					],
+				],
+			],
 		];
 
 		foreach ($metaFields as $key => $config) {
@@ -76,15 +113,34 @@ class Meta
 					'type' => 'string',
 					'label' => '',
 					'description' => '',
-					'single' => false,
-					'sanitize_callback' => null,
+					'single' => true,
+					//'sanitize_callback' => null,
 					'auth_callback' => fn () => current_user_can('edit_posts'),
-					'show_in_rest' => false,
+					'show_in_rest' => true,
 					'revisions_enabled' => false,
 				]
 			);
 			//FIXME: loop over supported post types
 			register_post_meta('', $key, $config);
 		}
+	}
+
+	public function sanitizeEnum(string $value, array $allowedValues, string $defaultValue = ''): string
+	{
+		if (! in_array($value, $allowedValues, true)) {
+			return $defaultValue;
+		}
+
+		return $value;
+	}
+
+	public function sanitizeDate(string $value): string
+	{
+		$date = \DateTime::createFromFormat('Y-m-d', $value);
+		if (! $date) {
+			return '';
+		}
+
+		return $date->format('Y-m-d');
 	}
 }

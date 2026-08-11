@@ -1,0 +1,16 @@
+.ypg-editor-sidebar {
+	padding: 16px;
+}
+
+.ypg-editor-sidebar-toggle-button {
+	width: 100%;
+	justify-content: center !important;
+}
+
+.ypg-section-heading {
+	margin-bottom: 0 !important;
+}
+
+.ypg-reminder-unit-select {
+	width: 100%;
+}

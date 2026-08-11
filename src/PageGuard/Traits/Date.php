@@ -4,26 +4,30 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Traits;
 
-use DateTime;
-use DateTimeZone;
+use Yard\PageGuard\Enums\TimeUnit;
+use Yard\PageGuard\Settings\Settings;
 
 trait Date
 {
-	/**
-	 * Adds a date period to a base date (provided as Y-m-d string)
-	 */
-	public function addPeriodToBase(string $base, int $period, string $unit): string
+	public function formatPeriod(int $period, string $unit): string
 	{
-		$date = new DateTime($base, new DateTimeZone(wp_timezone_string()));
-
-		if ('weeks' === $unit) {
-			$date->modify("+{$period} weeks");
-		} elseif ('months' === $unit) {
-			$date->modify("+{$period} months");
-		} else {
-			$date->modify("+{$period} days");
+		switch ($unit) {
+			case TimeUnit::WEEKS:
+				return sprintf(_n('%d week', '%d weken', $period, 'yard-page-guard'), $period);
+			case TimeUnit::MONTHS:
+				return sprintf(_n('%d maand', '%d maanden', $period, 'yard-page-guard'), $period);
+			case TimeUnit::DAYS:
+			default:
+				return sprintf(_n('%d dag', '%d dagen', $period, 'yard-page-guard'), $period);
 		}
+	}
 
-		return $date->format('Y-m-d');
+	public function defaultReviewDate(): \DateTimeInterface
+	{
+		$period = get_option(Settings::REVIEW_TIME_PERIOD);
+		$unit = get_option(Settings::REVIEW_TIME_UNIT);
+
+		return (new \DateTime('now', wp_timezone()))
+			->add(\DateInterval::createFromDateString("{$period} {$unit}"));
 	}
 }

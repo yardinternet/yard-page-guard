@@ -8,13 +8,14 @@ use WP_Post;
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Enums\ReminderTimeType;
 use Yard\PageGuard\Enums\ReviewDateType;
-use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Settings\Settings;
+use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Token;
 
 class ReviewItem
 {
+	use Date;
 	use Token;
 
 	protected WP_Post $item;
@@ -24,46 +25,34 @@ class ReviewItem
 		$this->item = $post;
 	}
 
+	public function post(): WP_Post
+	{
+		return $this->item;
+	}
+
 	public function ID(): int
 	{
 		return $this->item->ID;
 	}
 
-	public function title(): string
-	{
-		return $this->item->post_title;
-	}
-
-	public function postAuthor(): string
-	{
-		return $this->item->post_author;
-	}
-
-	public function postType(): string
-	{
-		return $this->item->post_type;
-	}
-
 	public function reviewDateType(): string
 	{
-		return get_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, true) ?: ReviewDateType::DEFAULT;
+		return get_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, true);
 	}
 
 	public function reminderTimeType(): string
 	{
-		return get_post_meta($this->ID(), Meta::REMINDER_TIME_TYPE, true) ?: ReminderTimeType::DEFAULT;
+		return get_post_meta($this->ID(), Meta::REMINDER_TIME_TYPE, true);
 	}
 
-	public function reminderTimePeriod(): ?int
+	public function reminderTimePeriod(): int
 	{
-		$period = get_post_meta($this->ID(), Meta::REMINDER_TIME_PERIOD, true);
-
-		return '' !== $period ? (int) $period : null;
+		return (int) get_post_meta($this->ID(), Meta::REMINDER_TIME_PERIOD, true);
 	}
 
 	public function reminderTimeUnit(): ?string
 	{
-		return get_post_meta($this->ID(), Meta::REMINDER_TIME_UNIT, true) ?: null;
+		return get_post_meta($this->ID(), Meta::REMINDER_TIME_UNIT, true);
 	}
 
 	public function reviewLink(): string
@@ -74,28 +63,27 @@ class ReviewItem
 			return '';
 		}
 
-		$ownerEmail = $this->contentOwner() ? $this->contentOwner()->email() : '';
-		$reviewDate = $this->reviewDateFormatted('Y-m-d');
+		$originSite = get_home_url();
+		$reviewToken = $this->generateToken($this, $originSite);
+		$permalink = add_query_arg('ypg_review_token', rawurlencode($reviewToken), $permalink); //TODO: constantes voor query args
 
-		try {
-			$token = $this->generateReviewToken($this->ID(), $ownerEmail, $reviewDate);
-		} catch (\RuntimeException $e) {
-			return $permalink;
-		}
-
-		$permalink = add_query_arg('ypg_review_token', $token, $permalink);
-
-		$home = home_url();
-
-		if (strpos($home, 'pdc') !== false) {
-			$permalink = add_query_arg('external', 'pdc', $permalink);
-			$permalink = add_query_arg('post_id', $this->ID(), $permalink);
-		} elseif (strpos($home, 'pub') !== false) {
-			$permalink = add_query_arg('external', 'pub', $permalink);
-			$permalink = add_query_arg('post_id', $this->ID(), $permalink);
+		if (wp_parse_url($permalink, PHP_URL_HOST) === wp_parse_url($originSite, PHP_URL_HOST)) {
+			$permalink = add_query_arg('ypg_origin', rawurlencode($originSite), $permalink);
+			$permalink = add_query_arg('ypg_post_id', $this->ID(), $permalink);
 		}
 
 		return $permalink;
+	}
+
+	public function isOverdue(): bool
+	{
+		$reviewDate = $this->reviewDate();
+
+		if (null === $reviewDate) {
+			return false;
+		}
+
+		return $reviewDate->format('Y-m-d') < (new \DateTime('now', wp_timezone()))->format('Y-m-d');
 	}
 
 	public function lastReviewDate(): ?\DateTimeInterface
@@ -107,12 +95,7 @@ class ReviewItem
 
 	public function lastReviewDateFormatted(?string $format = null): string
 	{
-		if (! $this->lastReviewDate()) {
-			return '&mdash;';
-		}
-		$format = $format ?? get_option('date_format', 'd-m-Y');
-
-		return wp_date($format, $this->lastReviewDate()->getTimestamp());
+		return $this->formatDate($this->lastReviewDate(), $format);
 	}
 
 	public function reviewDate(): ?\DateTimeInterface
@@ -124,12 +107,7 @@ class ReviewItem
 
 	public function reviewDateFormatted(?string $format = null): string
 	{
-		if ($this->reviewDate() === null) {
-			return '&mdash;';
-		}
-		$format = $format ?? get_option('date_format', 'd-m-Y');
-
-		return wp_date($format, $this->reviewDate()->getTimestamp());
+		return $this->formatDate($this->reviewDate(), $format);
 	}
 
 	public function reminderDate(): ?\DateTimeInterface
@@ -141,12 +119,19 @@ class ReviewItem
 
 	public function reminderDateFormatted(?string $format = null): string
 	{
-		if (! $this->reminderDate()) {
-			return '&mdash;';
-		}
-		$format = $format ?? get_option('date_format', 'd-m-Y');
+		return $this->formatDate($this->reminderDate(), $format);
+	}
 
-		return wp_date($format, $this->reminderDate()->getTimestamp());
+	public function lastReminderDate(): ?\DateTimeInterface
+	{
+		$date = get_post_meta($this->ID(), Meta::LAST_REMINDER_DATE, true);
+
+		return \DateTime::createFromFormat('Y-m-d', $date, wp_timezone()) ?: null;
+	}
+
+	public function lastReminderDateFormatted(?string $format = null): string
+	{
+		return $this->formatDate($this->lastReminderDate(), $format);
 	}
 
 	public function contentOwner(): ?ContentOwner
@@ -159,19 +144,13 @@ class ReviewItem
 		$type = get_post_meta($this->ID(), Meta::POST_CONTENT_OWNER_TYPE, true);
 		if (ContentOwnerType::USER === $type) {
 			$user = get_user_by('id',  $id);
-			if ($user) {
-				$name = $user->display_name;
-				$email = $user->user_email;
-			} else {
-				$name = '';
-				$email = '';
-			}
-		} else {
-			$name = get_term_field('name', $id, 'ypg_external_content_owner');
-			$email = get_term_meta($id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true);
-		}
 
-		return new ContentOwner((int) $id, $name, $email, $type);
+			return $user ? ContentOwner::fromUser($user) : null;
+		} else {
+			$term = get_term($id, 'ypg_external_content_owner');
+
+			return is_a($term, \WP_Term::class) ? ContentOwner::fromTerm($term) : null;
+		}
 	}
 
 	public function status(): string
@@ -181,7 +160,7 @@ class ReviewItem
 		if (false === $date) {
 			return '&mdash;';
 		}
-		if ($date->format('Y-m-d') < (new \DateTime('now', wp_timezone()))->format('Y-m-d')) {
+		if ($this->isOverdue()) {
 			return sprintf(
 				'<span style="color: #bd8600;"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</span>',
 				__('Achterstallig', 'yard-page-guard')
@@ -191,12 +170,17 @@ class ReviewItem
 		}
 	}
 
+	public function reviewMailSent(): bool
+	{
+		return (bool) get_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT, true);
+	}
+
 	public function setReviewMailSent(): void
 	{
 		update_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT, '1');
 	}
 
-	public function markAsReviewed(): void
+	public function markAsReviewed(): bool
 	{
 		update_post_meta($this->ID(), Meta::LAST_REVIEW_DATE, current_time('Y-m-d'));
 		update_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, ReviewDateType::DEFAULT);
@@ -205,6 +189,9 @@ class ReviewItem
 		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT);
 		delete_post_meta($this->ID(), Meta::LAST_REMINDER_DATE);
 		delete_post_meta($this->ID(), Meta::REMINDER_DATE);
+
+		// TODO: do a more comprehensive check to see if the post was actually updated, and return false if not
+		return $this->lastReviewDate()->format('Y-m-d') === (new \DateTime('now', wp_timezone()))->format('Y-m-d');
 	}
 
 	public function removeMetaData(): void
@@ -243,15 +230,22 @@ class ReviewItem
 
 	public function setReviewDate(string $type = ReviewDateType::DEFAULT, ?\DateTimeInterface $reviewDate = null): void
 	{
-		update_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, $type);
-		if (ReviewDateType::DEFAULT === $type) {
-			$reviewTimePeriod = get_option(Settings::REVIEW_TIME_PERIOD, 1);
-			$reviewTimeUnit = get_option(Settings::REVIEW_TIME_UNIT, 'weeks');
-
-			$dateTimePeriod = \DateInterval::createFromDateString("{$reviewTimePeriod} {$reviewTimeUnit}");
-			$reviewDate = (new \DateTime('now', wp_timezone()))->add($dateTimePeriod);
+		if (ReviewDateType::DEFAULT === $type || null === $reviewDate) {
+			$type = ReviewDateType::DEFAULT;
+			$reviewDate = $this->defaultReviewDate();
 		}
+
+		update_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, $type);
 		update_post_meta($this->ID(), Meta::REVIEW_DATE, $reviewDate->format('Y-m-d'));
+	}
+
+	public function ensureReviewDate(): void
+	{
+		if (null === $this->contentOwner() || null !== $this->reviewDate()) {
+			return;
+		}
+
+		$this->setReviewDate($this->reviewDateType());
 	}
 
 	public function setContentOwner(int $id, string $type): void
@@ -270,5 +264,15 @@ class ReviewItem
 			update_post_meta($this->ID(), Meta::REMINDER_TIME_PERIOD, $period);
 			update_post_meta($this->ID(), Meta::REMINDER_TIME_UNIT, $unit);
 		}
+	}
+
+	protected function formatDate(?\DateTimeInterface $date, ?string $format = null): string
+	{
+		if (! $date) {
+			return '&mdash;';
+		}
+		$format = $format ?? get_option('date_format', 'd-m-Y');
+
+		return wp_date($format, $date->getTimestamp());
 	}
 }

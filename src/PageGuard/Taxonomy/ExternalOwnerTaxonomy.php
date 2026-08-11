@@ -4,12 +4,15 @@ namespace Yard\PageGuard\Taxonomy;
 
 use WP_Term;
 use Yard\PageGuard\Enums\TermMeta;
+use Yard\PageGuard\Traits\PostTypes;
 
 class ExternalOwnerTaxonomy
 {
+	use PostTypes;
+
 	public function register(): void
 	{
-		register_taxonomy('ypg_external_content_owner', apply_filters('yard::page-guard/post-types-to-use', ['page']), [
+		register_taxonomy('ypg_external_content_owner', $this->getPostTypes(), [
 			'labels' => [
 				'name' => __('Externe inhoudseigenaren', 'yard-page-guard'),
 				'singular_name' => __('Externe inhoudseigenaar', 'yard-page-guard'),

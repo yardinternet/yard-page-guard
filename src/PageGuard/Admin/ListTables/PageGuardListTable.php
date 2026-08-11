@@ -6,6 +6,7 @@ namespace Yard\PageGuard\Admin\ListTables;
 
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Traits\PostTypes;
 
 if (! class_exists('WP_List_Table')) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php'; //
@@ -13,6 +14,11 @@ if (! class_exists('WP_List_Table')) {
 
 class PageGuardListTable extends \WP_List_Table
 {
+	use PostTypes;
+
+	public const ACTION_MARK_AS_REVIEWED = 'mark_as_reviewed';
+	public const ACTION_TRANSFER_OWNERSHIP = 'transfer_ownership';
+
 	public function get_columns()
 	{
 		return [
@@ -58,13 +64,12 @@ class PageGuardListTable extends \WP_List_Table
 			case 'type':
 				return esc_html(get_post_type_labels(get_post_type_object($item->post_type))->singular_name);
 			case 'owner':
-				//TODO: add external/internal owner type to the list table and link to meta/profile
-				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : __('Niet ingesteld', 'yard-page-guard');
-
+				//TODO: add external/internal owner type to the list table and link to meta/profile or filter current list table by owner
+				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->displayName() : __('Niet ingesteld', 'yard-page-guard');
 			case 'last_review':
 				return $reviewItem->lastReviewDateFormatted();
 			case 'last_reminder':
-				return wp_date('d F Y', strtotime(get_post_meta($item->ID, Meta::LAST_REMINDER_DATE, true)));
+				return $reviewItem->lastReminderDateFormatted();
 			case 'next_review':
 				return $reviewItem->reviewDateFormatted();
 			case 'status':
@@ -77,8 +82,8 @@ class PageGuardListTable extends \WP_List_Table
 	public function get_bulk_actions()
 	{
 		return [
-			'mark_as_reviewed' => __('Markeer als gecontroleerd', 'yard-page-guard'),
-			//'transfer_ownership' => __('Eigendom overdragen', 'yard-page-guard'),
+			self::ACTION_MARK_AS_REVIEWED => __('Markeer als gecontroleerd', 'yard-page-guard'),
+			//self::ACTION_TRANSFER_OWNERSHIP => __('Eigenaarschap overdragen', 'yard-page-guard'),
 			//'set_review_date' => __('Stel herzieningsdatum in', 'yard-page-guard'),
 		];
 	}
@@ -100,7 +105,9 @@ class PageGuardListTable extends \WP_List_Table
 		$metaQuery = [
 			[
 				'key' => Meta::POST_CONTENT_OWNER_ID,
-				'compare' => 'EXISTS',
+				'compare' => '>',
+				'value' => 0,
+				'type' => 'NUMERIC',
 			],
 		];
 
@@ -121,7 +128,7 @@ class PageGuardListTable extends \WP_List_Table
 		}
 
 		$args = [
-			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+			'post_type' => $this->getPostTypes(),
 			'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
 			'posts_per_page' => $per_page,
 			'paged' => $current_page,
@@ -152,7 +159,7 @@ class PageGuardListTable extends \WP_List_Table
 
 		$expiredPosts = get_posts(
 			[
-				'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+				'post_type' => $this->getPostTypes(),
 				'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
 				'meta_query' => [
 					[
@@ -168,7 +175,7 @@ class PageGuardListTable extends \WP_List_Table
 		);
 		$nonExpiredPosts = get_posts(
 			[
-				'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+				'post_type' => $this->getPostTypes(),
 				'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
 				'meta_query' => [
 					[
@@ -225,9 +232,9 @@ class PageGuardListTable extends \WP_List_Table
 		}
 
 		switch ($action) {
-			case 'mark_as_reviewed':
+			case self::ACTION_MARK_AS_REVIEWED:
 				foreach ($ids as $id) {
-					$reviewItem = new \Yard\PageGuard\Models\ReviewItem(get_post($id));
+					$reviewItem = new ReviewItem(get_post($id));
 					$reviewItem->markAsReviewed();
 				}
 				add_settings_error(
@@ -246,7 +253,7 @@ class PageGuardListTable extends \WP_List_Table
 				);
 
 				break;
-			case 'transfer_ownership':
+			case self::ACTION_TRANSFER_OWNERSHIP:
 			case 'set_review_date':
 				// TODO: implement bulk actions for transferring ownership and setting review date
 				break;

@@ -32,14 +32,16 @@ class Settings
 				'default' => 1,
 			],
 			self::REVIEW_TIME_UNIT => [
-				'default' => TimeUnit::DAYS, //FIXME: sanitize callback should validate against allowed values
+				'default' => TimeUnit::DAYS,
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, TimeUnit::cases(), TimeUnit::DAYS),
 			],
 			self::REMINDER_TIME_PERIOD => [
 				'sanitize_callback' => 'absint',
 				'default' => 1,
 			],
 			self::REMINDER_TIME_UNIT => [
-				'default' => TimeUnit::WEEKS, //FIXME: sanitize callback should validate against allowed values
+				'default' => TimeUnit::WEEKS,
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, TimeUnit::cases(), TimeUnit::WEEKS),
 			],
 			self::EMAIL_FROM_NAME => [
 				'sanitize_callback' => 'sanitize_text_field',
@@ -59,9 +61,12 @@ class Settings
 			self::REMINDER_EMAIL_SUBJECT => [
 				'sanitize_callback' => 'sanitize_text_field',
 			],
-			self::MODAL_FOOTER_CONTENT => [],
+			self::MODAL_FOOTER_CONTENT => [
+				'default' => '',
+			],
 			self::SHOW_INTERNAL_DATA_ON_REVIEW => [
 				'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
+				'default' => 0,
 			],
 		];
 
@@ -80,5 +85,10 @@ class Settings
 
 			register_setting(self::OPTION_GROUP, $key, $config);
 		}
+	}
+
+	public function sanitizeEnum(string $value, array $allowedValues, string $default): string
+	{
+		return in_array($value, $allowedValues, true) ? $value : $default;
 	}
 }

@@ -7,12 +7,14 @@ namespace Yard\PageGuard\Admin;
 use Yard\PageGuard\Admin\Controllers\AdminColumnsController;
 use Yard\PageGuard\Admin\Controllers\AdminOverviewController;
 use Yard\PageGuard\Admin\Controllers\AdminSettingsController;
-use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Foundation\Plugin;
 use Yard\PageGuard\Foundation\ServiceProvider;
+use Yard\PageGuard\Traits\PostTypes;
 
 class AdminServiceProvider extends ServiceProvider
 {
+	use PostTypes;
+
 	private AdminSettingsController $adminSettingsController;
 	private AdminOverviewController $adminOverviewController;
 	private AdminColumnsController $adminColumnsController;
@@ -32,85 +34,55 @@ class AdminServiceProvider extends ServiceProvider
 		$this->adminOverviewController->init();
 		$this->adminColumnsController->init();
 
-		/**
-		 * Enqueue admin scripts where necessary
-		 */
-		add_action('admin_enqueue_scripts', [$this, 'enqueueAdminAssetsPerHook']);
-
-		/**
-		 * Replace description column with email for external_content_owner taxonomy
-		 */
-		add_filter('manage_edit-ypg_external_content_owner_columns', [$this, 'manageExternalContentOwnerColumns']);
-
-		/**
-		 * Fill custom email column (see filter above) for external_content_owner taxonomy
-		 */
-		add_filter('manage_ypg_external_content_owner_custom_column', function (string $content, string $columnName, int $termId) {
-			if ('email' === $columnName) {
-				$content = get_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true);
-			}
-
-			if ('phone_number' === $columnName) {
-				$content = get_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true);
-			}
-
-			return $content;
-		}, 10, 3);
+		add_action('enqueue_block_editor_assets', [$this, 'enqueueEditorSidebarAssets']);
 	}
 
-	public function enqueueAdminAssets(): void
+	public function enqueueEditorSidebarAssets(): void
 	{
+		if (! $this->isEditorForEnabledPostType()) {
+			return;
+		}
+
+		$handle = 'ypg-editor-sidebar';
+
 		wp_enqueue_style(
-			'ypg-editor-styles',
-			$this->plugin->resourceUrl('admin.css'),
+			$handle,
+			$this->plugin->resourceUrl('editor-sidebar.css'),
 			[],
-			filemtime($this->plugin->resourcePath('admin.css')),
+			filemtime($this->plugin->resourcePath('editor-sidebar.css')),
 		);
 
 		wp_enqueue_script(
-			'ypg-editor-scripts',
-			$this->plugin->resourceUrl('admin.js'),
-			['wp-dom-ready'],
-			filemtime($this->plugin->resourcePath('admin.js')),
+			$handle,
+			$this->plugin->resourceUrl('editor-sidebar.js'),
+			$this->getEditorScriptDependencies(),
+			filemtime($this->plugin->resourcePath('editor-sidebar.js')),
+			['in_footer' => true],
 		);
+
+		wp_set_script_translations($handle, 'yard-page-guard', $this->plugin->rootPath . '/languages');
 	}
 
-	public function enqueueAdminAssetsPerHook(string $hook): void
+	private function getEditorScriptDependencies(): array
 	{
-		// Settings & overview page
-		if ('settings_page_page-guard-settings' === $hook || 'toplevel_page_ypg-overview' === $hook) {
-			$this->enqueueAdminAssets();
-		}
+		$path = $this->plugin->resourcePath('editor.deps.json', 'assets');
+		$deps = wp_json_file_decode($path, ['associative' => true]) ?? [];
 
-		// External content owner term list & detail page
-		if (('edit-tags.php' === $hook || 'term.php' === $hook) && isset($_GET['taxonomy']) && 'ypg_external_content_owner' === $_GET['taxonomy']) {
-			$this->enqueueAdminAssets();
-		}
-
-		// Edit post page
-		if ('edit.php' === $hook && isset($_GET['post_type'])) {
-			if (in_array($_GET['post_type'], apply_filters('yard::page-guard/post-types-to-use', ['page']), true)) {
-				$this->enqueueAdminAssets();
-			}
-		}
+		return array_values(array_unique(array_merge(['wp-element'], is_array($deps) ? $deps : [])));
 	}
 
-	public function manageExternalContentOwnerColumns(array $columns): array
+	private function isEditorForEnabledPostType(): bool
 	{
-		unset($columns['description']);
-		unset($columns['slug']);
-		unset($columns['posts']); // 'posts' is the key for the count column
-
-		$orderedColumns = [];
-		foreach ($columns as $key => $value) {
-			$orderedColumns[$key] = $value;
-
-			if ('name' === $key) {
-				$orderedColumns['email'] = __('Email', 'yard-page-guard');
-				$orderedColumns['phone_number'] = __('Telefoonnummer', 'yard-page-guard');
-			}
+		if (! function_exists('get_current_screen')) {
+			return false;
 		}
 
-		return $orderedColumns;
+		$screen = get_current_screen();
+
+		if (! $screen instanceof \WP_Screen || ! $screen->is_block_editor()) {
+			return false;
+		}
+
+		return in_array($screen->post_type, $this->getPostTypes(), true);
 	}
 }
