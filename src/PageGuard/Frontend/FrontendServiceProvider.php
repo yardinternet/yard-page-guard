@@ -15,17 +15,37 @@ class FrontendServiceProvider extends ServiceProvider
 
 	public function register(): void
 	{
-		add_action('template_redirect', [new ReviewModal(), 'render'], 5, 0);
 		add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendAssets']);
+		add_action('wp_body_open', [$this, 'renderBodyOpen'], 5, 0);
 
 		if (get_option(Settings::SHOW_INTERNAL_DATA_ON_REVIEW, false)) {
 			add_filter('show_admin_bar', [$this, 'disableAdminBarForReviewUsers'], 10, 1);
 		}
 	}
 
+	public function isReview(): bool
+	{
+		return isset($_GET['ypg_review_token']) && strlen(trim($_GET['ypg_review_token'])) > 0;
+	}
+
+	public function renderBodyOpen(): void
+	{
+		if (! $this->isReview()) {
+			return;
+		}
+
+		printf(
+			'<div id="%s" data-review-token="%s" data-origin="%s" data-post-id="%s"></div>',
+			'ypg-review-modal', //TODO: id naar constante verplaatsen
+			esc_attr(rawurldecode($_GET['ypg_review_token'] ?? '')),
+			esc_attr(rawurldecode($_GET['ypg_origin'] ?? '')),
+			esc_attr(intval($_GET['ypg_post_id'] ?? 0)),
+		);
+	}
+
 	public function enqueueFrontendAssets(): void
 	{
-		if (! isset($_GET['ypg_review_token'])) {
+		if (! $this->isReview()) {
 			return;
 		}
 

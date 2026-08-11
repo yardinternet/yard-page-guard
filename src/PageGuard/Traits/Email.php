@@ -74,7 +74,7 @@ trait Email
 		$list = '<ul>';
 
 		foreach ($items as $item) {
-			$title = esc_html($item->title());
+			$title = esc_html($item->post()->post_title);
 			$link = esc_url($item->reviewLink());
 			$date = esc_html($item->reviewDateFormatted());
 

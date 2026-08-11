@@ -61,9 +61,12 @@ class Settings
 			self::REMINDER_EMAIL_SUBJECT => [
 				'sanitize_callback' => 'sanitize_text_field',
 			],
-			self::MODAL_FOOTER_CONTENT => [],
+			self::MODAL_FOOTER_CONTENT => [
+				'default' => '',
+			],
 			self::SHOW_INTERNAL_DATA_ON_REVIEW => [
 				'sanitize_callback' => fn ($value) => ! empty($value) ? 1 : 0,
+				'default' => 0,
 			],
 		];
 
