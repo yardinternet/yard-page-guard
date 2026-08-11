@@ -10,7 +10,7 @@ use Yard\PageGuard\Settings\Settings;
 
 class FrontEndController extends WP_REST_Controller
 {
-	protected $namespace = 'yard-page-guard/v1';
+	protected $namespace = 'yard/page-guard/v2';
 
 	public function register_routes(): void
 	{

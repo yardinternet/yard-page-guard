@@ -10,8 +10,6 @@ use Yard\PageGuard\WPJson\Controllers\FrontEndController;
 
 class WPJsonServiceProvider extends ServiceProvider
 {
-	public const NAMESPACE = 'yard-page-guard/v1';
-
 	/** @var \WP_REST_Controller[] */
 	protected array $controllers = [];
 	protected EditorController $editorController;
