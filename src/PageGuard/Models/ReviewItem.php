@@ -10,10 +10,12 @@ use Yard\PageGuard\Enums\ReminderTimeType;
 use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Settings\Settings;
+use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Token;
 
 class ReviewItem
 {
+	use Date;
 	use Token;
 
 	protected WP_Post $item;
@@ -244,15 +246,6 @@ class ReviewItem
 		}
 
 		$this->setReviewDate($this->reviewDateType());
-	}
-
-	private function defaultReviewDate(): \DateTimeInterface
-	{
-		$period = get_option(Settings::REVIEW_TIME_PERIOD, 1);
-		$unit = get_option(Settings::REVIEW_TIME_UNIT, 'weeks');
-
-		return (new \DateTime('now', wp_timezone()))
-			->add(\DateInterval::createFromDateString("{$period} {$unit}"));
 	}
 
 	public function setContentOwner(int $id, string $type): void
