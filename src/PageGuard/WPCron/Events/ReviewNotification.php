@@ -10,6 +10,7 @@ use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Email;
+use Yard\PageGuard\Traits\PostStatusses;
 use Yard\PageGuard\Traits\PostTypes;
 use Yard\PageGuard\Traits\Text;
 
@@ -18,6 +19,7 @@ class ReviewNotification extends Event
 	use PostTypes;
 	use Text;
 	use Email;
+	use PostStatusses;
 
 	protected function execute(): void
 	{
@@ -38,7 +40,7 @@ class ReviewNotification extends Event
 		$args = [
 			'post_type' => $this->getPostTypes(),
 			'posts_per_page' => -1,
-			'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
+			'post_status' => $this->postStatussesToUse(),
 			'meta_query' => [
 				'relation' => 'AND',
 				[
