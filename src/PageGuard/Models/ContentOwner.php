@@ -9,6 +9,7 @@ use Yard\PageGuard\Enums\TermMeta;
 
 class ContentOwner
 {
+	public const COMBINED_ID_SEPARATOR = ':';
 	protected int $id; // Not unique (either WP user ID or external user tax term ID)
 	protected string $name;
 	protected string $email;
@@ -49,6 +50,11 @@ class ContentOwner
 			ContentOwnerType::EXTERNAL,
 			get_term_meta($term->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true) ?: ''
 		);
+	}
+
+	public function combinedId(): string
+	{
+		return $this->type . self::COMBINED_ID_SEPARATOR . $this->id;
 	}
 
 	public function id(): int

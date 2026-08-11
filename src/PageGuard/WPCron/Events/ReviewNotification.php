@@ -51,10 +51,10 @@ class ReviewNotification extends Event
 					'compare' => '<=',
 					'type' => 'DATE',
 				],
-				// [
-				// 	'key' => Meta::REVIEW_MAIL_SENT,
-				// 	'compare' => 'NOT EXISTS',
-				// ],
+				[
+					'key' => Meta::REVIEW_MAIL_SENT,
+					'compare' => 'NOT EXISTS',
+				],
 			],
 			// Performance
 			'no_found_rows' => true,

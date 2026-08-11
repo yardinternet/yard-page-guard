@@ -8,6 +8,7 @@ use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Enums\TimeUnit;
 use Yard\PageGuard\Meta\Meta;
+use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\ContentOwners;
@@ -93,8 +94,6 @@ class Metabox
 		$reviewItem = new ReviewItem($post);
 
 		$contentOwner = $reviewItem->contentOwner();
-		$contentOwnerId = $contentOwner ? $contentOwner->id() : '';
-		$contentOwnerType = $contentOwner ? $contentOwner->type() : ContentOwnerType::USER;
 		?>
 	<div>
 		<div>
@@ -103,7 +102,7 @@ class Metabox
 			<?php echo $this->renderInput([
 				'type' => 'select',
 				'name' => Meta::POST_CONTENT_OWNER_ID,
-				'value' => sprintf('%s:%s', $contentOwnerType, $contentOwnerId),
+				'value' => $contentOwner ? $contentOwner->combinedId() : '',
 				'options' => $this->getContentOwnerOptions(),
 			]); ?>
 		</div>
@@ -279,13 +278,13 @@ class Metabox
 		$reviewItem = new ReviewItem($post);
 
 		$postContentOwner = sanitize_text_field($_POST[Meta::POST_CONTENT_OWNER_ID] ?? '');
-		if ('' === $postContentOwner) {
+		$postContentOwnerParts = explode(ContentOwner::COMBINED_ID_SEPARATOR, $postContentOwner, 2);
+		$postContentOwnerType = $postContentOwnerParts[0] ?? null;
+		$postContentOwnerId = isset($postContentOwnerParts[1]) ? (int) $postContentOwnerParts[1] : null;
+
+		if (null === $postContentOwnerType || null === $postContentOwnerId) {
 			$reviewItem->removeMetaData();
 		} else {
-			$postContentOwnerParts = explode(':', $postContentOwner, 2);
-			$postContentOwnerType = $postContentOwnerParts[0] ?? null;
-			$postContentOwnerId = isset($postContentOwnerParts[1]) ? (int) $postContentOwnerParts[1] : null;
-
 			$reviewDateType = sanitize_text_field($_POST[Meta::REVIEW_DATE_TYPE] ?? '');
 			$reviewDate = sanitize_text_field($_POST[Meta::REVIEW_DATE] ?? '');
 			$reminderTimeType = sanitize_text_field($_POST[Meta::REMINDER_TIME_TYPE] ?? null);

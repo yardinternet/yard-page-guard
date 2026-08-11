@@ -23,46 +23,34 @@ class ReviewItem
 		$this->item = $post;
 	}
 
+	public function post(): WP_Post
+	{
+		return $this->item;
+	}
+
 	public function ID(): int
 	{
 		return $this->item->ID;
 	}
 
-	public function title(): string
-	{
-		return $this->item->post_title;
-	}
-
-	public function postAuthor(): string
-	{
-		return $this->item->post_author;
-	}
-
-	public function postType(): string
-	{
-		return $this->item->post_type;
-	}
-
 	public function reviewDateType(): string
 	{
-		return get_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, true) ?: ReviewDateType::DEFAULT;
+		return get_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, true);
 	}
 
 	public function reminderTimeType(): string
 	{
-		return get_post_meta($this->ID(), Meta::REMINDER_TIME_TYPE, true) ?: ReminderTimeType::DEFAULT;
+		return get_post_meta($this->ID(), Meta::REMINDER_TIME_TYPE, true);
 	}
 
-	public function reminderTimePeriod(): ?int
+	public function reminderTimePeriod(): int
 	{
-		$period = get_post_meta($this->ID(), Meta::REMINDER_TIME_PERIOD, true);
-
-		return '' !== $period ? (int) $period : null;
+		return (int) get_post_meta($this->ID(), Meta::REMINDER_TIME_PERIOD, true);
 	}
 
 	public function reminderTimeUnit(): ?string
 	{
-		return get_post_meta($this->ID(), Meta::REMINDER_TIME_UNIT, true) ?: null;
+		return get_post_meta($this->ID(), Meta::REMINDER_TIME_UNIT, true);
 	}
 
 	public function reviewLink(): string
@@ -73,25 +61,13 @@ class ReviewItem
 			return '';
 		}
 
-		$ownerEmail = $this->contentOwner() ? $this->contentOwner()->email() : '';
-		$reviewDate = $this->reviewDateFormatted('Y-m-d');
+		$originSite = get_home_url();
+		$reviewToken = $this->generateToken($this, $originSite);
+		$permalink = add_query_arg('ypg_review_token', rawurlencode($reviewToken), $permalink); //TODO: constantes voor query args
 
-		try {
-			$token = $this->generateReviewToken($this->ID(), $ownerEmail, $reviewDate);
-		} catch (\RuntimeException $e) {
-			return $permalink;
-		}
-
-		$permalink = add_query_arg('ypg_review_token', $token, $permalink);
-
-		$home = home_url();
-
-		if (strpos($home, 'pdc') !== false) {
-			$permalink = add_query_arg('external', 'pdc', $permalink);
-			$permalink = add_query_arg('post_id', $this->ID(), $permalink);
-		} elseif (strpos($home, 'pub') !== false) {
-			$permalink = add_query_arg('external', 'pub', $permalink);
-			$permalink = add_query_arg('post_id', $this->ID(), $permalink);
+		if (wp_parse_url($permalink, PHP_URL_HOST) === wp_parse_url($originSite, PHP_URL_HOST)) {
+			$permalink = add_query_arg('ypg_origin', rawurlencode($originSite), $permalink);
+			$permalink = add_query_arg('ypg_post_id', $this->ID(), $permalink);
 		}
 
 		return $permalink;
@@ -202,7 +178,7 @@ class ReviewItem
 		update_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT, '1');
 	}
 
-	public function markAsReviewed(): void
+	public function markAsReviewed(): bool
 	{
 		update_post_meta($this->ID(), Meta::LAST_REVIEW_DATE, current_time('Y-m-d'));
 		update_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, ReviewDateType::DEFAULT);
@@ -211,6 +187,9 @@ class ReviewItem
 		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT);
 		delete_post_meta($this->ID(), Meta::LAST_REMINDER_DATE);
 		delete_post_meta($this->ID(), Meta::REMINDER_DATE);
+
+		// TODO: do a more comprehensive check to see if the post was actually updated, and return false if not
+		return $this->lastReviewDate()->format('Y-m-d') === (new \DateTime('now', wp_timezone()))->format('Y-m-d');
 	}
 
 	public function removeMetaData(): void
