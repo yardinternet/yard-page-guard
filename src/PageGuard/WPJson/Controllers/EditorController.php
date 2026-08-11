@@ -20,7 +20,7 @@ class EditorController extends WP_REST_Controller
 	use EditorPermissions;
 	use ContentOwners;
 
-	protected $namespace = 'yard-page-guard/v1';
+	protected $namespace = 'yard/page-guard/v2';
 
 	protected string $base = 'editor';
 

@@ -1,4 +1,4 @@
-const NAMESPACE = '/yard-page-guard/v1';
+const NAMESPACE = '/yard/page-guard/v2';
 
 export const CONTENT_OWNERS = `${ NAMESPACE }/editor/content-owners`;
 export const DEFAULTS = `${ NAMESPACE }/editor/defaults`;
