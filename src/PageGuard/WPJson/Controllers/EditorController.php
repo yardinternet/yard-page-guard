@@ -91,12 +91,12 @@ class EditorController extends WP_REST_Controller
 	{
 		return new WP_REST_Response([
 			'review' => $this->period(
-				(int) get_option(Settings::REVIEW_TIME_PERIOD, 1),
-				(string) get_option(Settings::REVIEW_TIME_UNIT, 'weeks')
+				(int) get_option(Settings::REVIEW_TIME_PERIOD),
+				(string) get_option(Settings::REVIEW_TIME_UNIT)
 			),
 			'reminder' => $this->period(
-				(int) get_option(Settings::REMINDER_TIME_PERIOD, 1),
-				(string) get_option(Settings::REMINDER_TIME_UNIT, 'weeks')
+				(int) get_option(Settings::REMINDER_TIME_PERIOD),
+				(string) get_option(Settings::REMINDER_TIME_UNIT)
 			),
 		]);
 	}
