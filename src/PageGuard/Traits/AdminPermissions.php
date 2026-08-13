@@ -7,7 +7,7 @@ namespace Yard\PageGuard\Traits;
 /**
  * Capability checks shared by the block editor REST endpoints.
  */
-trait EditorPermissions
+trait AdminPermissions
 {
 	use PostTypes;
 	protected function adminCapability(): string

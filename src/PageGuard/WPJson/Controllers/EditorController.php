@@ -10,14 +10,14 @@ use WP_REST_Response;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Settings\Settings;
+use Yard\PageGuard\Traits\AdminPermissions;
 use Yard\PageGuard\Traits\ContentOwners;
 use Yard\PageGuard\Traits\Date;
-use Yard\PageGuard\Traits\EditorPermissions;
 
 class EditorController extends WP_REST_Controller
 {
 	use Date;
-	use EditorPermissions;
+	use AdminPermissions;
 	use ContentOwners;
 
 	protected $namespace = 'yard/page-guard/v2';

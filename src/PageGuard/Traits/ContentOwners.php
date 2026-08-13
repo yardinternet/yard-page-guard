@@ -8,11 +8,13 @@ use Yard\PageGuard\Models\ContentOwner;
 
 trait ContentOwners
 {
+	use AdminPermissions;
+
 	/** @return ContentOwner[] */
 	protected function getContentOwners(): array
 	{
 		$wpUsers = get_users([
-			'capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+			'capability' => $this->adminCapability(),
 		]);
 
 		$externalUsers = get_terms([
