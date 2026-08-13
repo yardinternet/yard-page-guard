@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Admin\ListTables;
 
+use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Meta\Meta;
+use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Traits\ContentOwners;
+use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Traits\PostStatusses;
 use Yard\PageGuard\Traits\PostTypes;
 
 if (! class_exists('WP_List_Table')) {
@@ -14,10 +19,14 @@ if (! class_exists('WP_List_Table')) {
 
 class PageGuardListTable extends \WP_List_Table
 {
+	use Date;
 	use PostTypes;
+	use PostStatusses;
+	use ContentOwners;
 
 	public const ACTION_MARK_AS_REVIEWED = 'mark_as_reviewed';
 	public const ACTION_TRANSFER_OWNERSHIP = 'transfer_ownership';
+	public const ACTION_SET_REVIEW_DATE = 'set_review_date';
 
 	public function get_columns()
 	{
@@ -83,8 +92,6 @@ class PageGuardListTable extends \WP_List_Table
 	{
 		return [
 			self::ACTION_MARK_AS_REVIEWED => __('Markeer als gecontroleerd', 'yard-page-guard'),
-			//self::ACTION_TRANSFER_OWNERSHIP => __('Eigenaarschap overdragen', 'yard-page-guard'),
-			//'set_review_date' => __('Stel herzieningsdatum in', 'yard-page-guard'),
 		];
 	}
 
@@ -129,7 +136,7 @@ class PageGuardListTable extends \WP_List_Table
 
 		$args = [
 			'post_type' => $this->getPostTypes(),
-			'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
+			'post_status' => $this->postStatussesToUse(),
 			'posts_per_page' => $per_page,
 			'paged' => $current_page,
 			'orderby' => $orderby,
@@ -148,7 +155,41 @@ class PageGuardListTable extends \WP_List_Table
 
 	protected function extra_tablenav($which)
 	{
-		// TODO: add inputs for bulk actions like transfer ownership and set review date
+		if ('top' !== $which) {
+			// FIXME: duplicate buttons and use marryControls to link them
+			return;
+		}
+		$newContentOwnerId = 'new_content_owner';
+		$newContentOwnerButtonId = 'set_content_owner';
+		$newReviewDateId = 'new_review_date';
+		$newReviewDateButtonId = 'set_review_date';
+
+		?>
+		<div class="alignleft actions">
+			<label class="screen-reader-text" for="<?php echo $newContentOwnerId; ?>">
+			<?php _e('Eigenaar veranderen naar&hellip;', 'yard-page-guard');?>
+			</label>
+			<select name="<?php echo $newContentOwnerId; ?>" id="<?php echo $newContentOwnerId; ?>">
+				<option value=""><?php _e('Eigenaar veranderen naar&hellip;', 'yard-page-guard'); ?></option>
+				<?php
+				foreach ($this->getContentOwners() as $owner) {
+					printf(
+						'<option value="%s">%s</option>',
+						esc_attr($owner->combinedId()),
+						esc_html($owner->displayName())
+					);
+				}?>
+			</select>
+			<?php submit_button(__('Change'), '', $newContentOwnerButtonId, false);	?>
+
+			<label class="screen-reader-text" for="<?php echo $newReviewDateId; ?>">
+			<?php _e('Herzieningsdatum instellen op&hellip;', 'yard-page-guard');?>
+			</label>
+			<input type="date" name="new_review_date" id="<?php echo $newReviewDateId; ?>" value="<?php echo esc_attr($this->defaultReviewDate()->format('Y-m-d')); ?>" min="<?php echo esc_attr(current_time('Y-m-d')); ?>" />
+			<?php submit_button(__('Herzieningsdatum instellen'), '', $newReviewDateButtonId, false);	?>
+		</div>
+
+	<?php
 	}
 
 	protected function get_views()
@@ -160,7 +201,7 @@ class PageGuardListTable extends \WP_List_Table
 		$expiredPosts = get_posts(
 			[
 				'post_type' => $this->getPostTypes(),
-				'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
+				'post_status' => $this->postStatussesToUse(),
 				'meta_query' => [
 					[
 						'key' => Meta::REVIEW_DATE,
@@ -176,7 +217,7 @@ class PageGuardListTable extends \WP_List_Table
 		$nonExpiredPosts = get_posts(
 			[
 				'post_type' => $this->getPostTypes(),
-				'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
+				'post_status' => $this->postStatussesToUse(),
 				'meta_query' => [
 					[
 						'key' => Meta::REVIEW_DATE,
@@ -217,6 +258,18 @@ class PageGuardListTable extends \WP_List_Table
 		return $views;
 	}
 
+	public function current_action()
+	{
+		if (isset($_REQUEST['set_content_owner']) && isset($_REQUEST['new_content_owner']) && ! empty($_REQUEST['new_content_owner'])) {
+			return self::ACTION_TRANSFER_OWNERSHIP;
+		}
+		if (isset($_REQUEST['set_review_date']) && isset($_REQUEST['new_review_date']) && ! empty($_REQUEST['new_review_date'])) {
+			return self::ACTION_SET_REVIEW_DATE;
+		}
+
+		return parent::current_action();
+	}
+
 	public function process_bulk_action()
 	{
 		$action = $this->current_action();
@@ -228,6 +281,13 @@ class PageGuardListTable extends \WP_List_Table
 		$ids = isset($_POST['bulk_edit']) ? array_map('intval', $_POST['bulk_edit']) : [];
 
 		if (count($ids) === 0) {
+			add_settings_error(
+				'bulk_action',
+				'bulk_action',
+				__('Geen pagina\'s geselecteerd.', 'yard-page-guard'),
+				'warning'
+			);
+
 			return;
 		}
 
@@ -242,8 +302,8 @@ class PageGuardListTable extends \WP_List_Table
 					'bulk_action',
 					sprintf(
 						_n(
-							'%d post gemarkeerd als gecontroleerd.',
-							'%d posts gemarkeerd als gecontroleerd.',
+							'%d pagina gemarkeerd als gecontroleerd.',
+							'%d pagina\'s gemarkeerd als gecontroleerd.',
 							count($ids),
 							'yard-page-guard'
 						),
@@ -254,8 +314,72 @@ class PageGuardListTable extends \WP_List_Table
 
 				break;
 			case self::ACTION_TRANSFER_OWNERSHIP:
-			case 'set_review_date':
-				// TODO: implement bulk actions for transferring ownership and setting review date
+				$newContentOwner = ContentOwner::fromCombinedId(sanitize_text_field($_REQUEST['new_content_owner']));
+				if (! $newContentOwner) {
+					add_settings_error(
+						'bulk_action',
+						'bulk_action',
+						__('Ongeldige inhoudseigenaar geselecteerd.', 'yard-page-guard'),
+						'error'
+					);
+
+					return;
+				}
+
+				foreach ($ids as $id) {
+					$reviewItem = new ReviewItem(get_post($id));
+					$reviewItem->setContentOwner($newContentOwner->id(), $newContentOwner->type());
+				}
+				add_settings_error(
+					'bulk_action',
+					'bulk_action',
+					sprintf(
+						_n(
+							'%d pagina overgedragen naar <code>%s</code>.',
+							'%d pagina\'s overgedragen naar <code>%s</code>.',
+							count($ids),
+							'yard-page-guard'
+						),
+						count($ids),
+						$newContentOwner->displayName()
+					),
+					'success'
+				);
+
+				break;
+			case self::ACTION_SET_REVIEW_DATE:
+				$newReviewDate = sanitize_text_field($_REQUEST['new_review_date']);
+				$newReviewDate = \DateTime::createFromFormat('Y-m-d', $newReviewDate);
+				if (! $newReviewDate) {
+					add_settings_error(
+						'bulk_action',
+						'bulk_action',
+						__('Ongeldige herzieningsdatum geselecteerd.', 'yard-page-guard'),
+						'error'
+					);
+
+					return;
+				}
+				foreach ($ids as $id) {
+					$reviewItem = new ReviewItem(get_post($id));
+					$reviewItem->setReviewDate(ReviewDateType::CUSTOM, $newReviewDate);
+				}
+				add_settings_error(
+					'bulk_action',
+					'bulk_action',
+					sprintf(
+						_n(
+							'%d pagina herzieningsdatum ingesteld op <code>%s</code>.',
+							'%d pagina\'s herzieningsdatum ingesteld op <code>%s</code>.',
+							count($ids),
+							'yard-page-guard'
+						),
+						count($ids),
+						$newReviewDate->format('Y-m-d')
+					),
+					'success'
+				);
+
 				break;
 		}
 	}
