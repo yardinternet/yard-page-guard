@@ -6,6 +6,7 @@ namespace Yard\PageGuard\Models;
 
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Enums\TermMeta;
+use Yard\PageGuard\Taxonomy\ExternalOwnerTaxonomy;
 
 class ContentOwner
 {
@@ -38,7 +39,7 @@ class ContentOwner
 			return self::fromUser($user);
 		}
 		if (ContentOwnerType::EXTERNAL === $type) {
-			$term = get_term((int) $id, 'ypg_external_content_owner');
+			$term = get_term((int) $id, ExternalOwnerTaxonomy::TAXONOMY);
 			if (! $term || is_wp_error($term)) {
 				return null;
 			}
@@ -63,7 +64,7 @@ class ContentOwner
 	public static function fromTerm(\WP_Term $term): self
 	{
 		// check if term is of type external_content_owner, otherwise throw exception
-		if ('ypg_external_content_owner' !== $term->taxonomy) {
+		if (ExternalOwnerTaxonomy::TAXONOMY !== $term->taxonomy) {
 			throw new \InvalidArgumentException("Term is not of type external_content_owner: {$term->taxonomy}");
 		}
 

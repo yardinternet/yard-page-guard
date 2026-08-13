@@ -12,6 +12,7 @@ if (! defined('ABSPATH')) {
 }
 
 use Yard\PageGuard\Admin\ListTables\PageGuardListTable;
+use Yard\PageGuard\Taxonomy\ExternalOwnerTaxonomy;
 use Yard\PageGuard\Traits\AdminPermissions;
 
 class AdminOverviewController
@@ -57,7 +58,7 @@ class AdminOverviewController
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
 			$this->adminCapability(),
-			'edit-tags.php?taxonomy=ypg_external_content_owner',
+			'edit-tags.php?taxonomy=' . ExternalOwnerTaxonomy::TAXONOMY,
 		);
 	}
 

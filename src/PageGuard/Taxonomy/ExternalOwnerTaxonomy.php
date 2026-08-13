@@ -4,15 +4,19 @@ namespace Yard\PageGuard\Taxonomy;
 
 use WP_Term;
 use Yard\PageGuard\Enums\TermMeta;
+use Yard\PageGuard\Traits\AdminPermissions;
 use Yard\PageGuard\Traits\PostTypes;
 
 class ExternalOwnerTaxonomy
 {
+	public const TAXONOMY = 'ypg_external_content_owner';
+
+	use AdminPermissions;
 	use PostTypes;
 
 	public function register(): void
 	{
-		register_taxonomy('ypg_external_content_owner', $this->getPostTypes(), [
+		register_taxonomy(self::TAXONOMY, $this->getPostTypes(), [
 			'labels' => [
 				'name' => __('Externe inhoudseigenaren', 'yard-page-guard'),
 				'singular_name' => __('Externe inhoudseigenaar', 'yard-page-guard'),
@@ -35,15 +39,11 @@ class ExternalOwnerTaxonomy
 			'meta_box_cb' => false,
 			'show_in_menu' => false,
 			'hierarchical' => false,
-			'rewrite' => [
-				'slug' => 'ypg-external-content-owner',
-				'with_front' => false,
-			],
 			'capabilities' => [
-				'manage_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-				'edit_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-				'delete_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-				'assign_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+				'manage_terms' => $this->adminCapability(),
+				'edit_terms' => $this->adminCapability(),
+				'delete_terms' => $this->adminCapability(),
+				'assign_terms' => $this->adminCapability(),
 			],
 		]);
 	}
@@ -124,7 +124,7 @@ class ExternalOwnerTaxonomy
 	 */
 	public function preventDuplicateEmailOnInsert($term, string $taxonomy)
 	{
-		if ('ypg_external_content_owner' !== $taxonomy) {
+		if (ExternalOwnerTaxonomy::TAXONOMY !== $taxonomy) {
 			return $term;
 		}
 
@@ -146,7 +146,7 @@ class ExternalOwnerTaxonomy
 	 */
 	public function preventDuplicateEmailOnUpdate(array $data, int $termId, string $taxonomy, array $args)
 	{
-		if ('ypg_external_content_owner' !== $taxonomy) {
+		if (ExternalOwnerTaxonomy::TAXONOMY !== $taxonomy) {
 			return $data;
 		}
 
@@ -181,13 +181,13 @@ class ExternalOwnerTaxonomy
 		// Force the slug to be based on the email address.
 		$slug = sanitize_title($email);
 
-		remove_action('created_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10);
-		remove_action('edited_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10);
+		remove_action('created_' . ExternalOwnerTaxonomy::TAXONOMY, [$this, 'handleSaveMeta'], 10);
+		remove_action('edited_' . ExternalOwnerTaxonomy::TAXONOMY, [$this, 'handleSaveMeta'], 10);
 
-		wp_update_term($termId, 'ypg_external_content_owner', ['slug' => $slug]);
+		wp_update_term($termId, ExternalOwnerTaxonomy::TAXONOMY, ['slug' => $slug]);
 
-		add_action('created_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10, 1);
-		add_action('edited_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10, 1);
+		add_action('created_' . ExternalOwnerTaxonomy::TAXONOMY, [$this, 'handleSaveMeta'], 10, 1);
+		add_action('edited_' . ExternalOwnerTaxonomy::TAXONOMY, [$this, 'handleSaveMeta'], 10, 1);
 	}
 
 	/**
@@ -215,7 +215,7 @@ class ExternalOwnerTaxonomy
 		}
 
 		$existingTerms = get_terms([
-			'taxonomy' => 'ypg_external_content_owner',
+			'taxonomy' => ExternalOwnerTaxonomy::TAXONOMY,
 			'hide_empty' => false,
 			'meta_key' => TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL,
 			'meta_value' => $email,

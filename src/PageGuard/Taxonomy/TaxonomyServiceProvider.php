@@ -14,12 +14,12 @@ class TaxonomyServiceProvider extends ServiceProvider
 			$externalOwnerTaxonomy = new ExternalOwnerTaxonomy();
 
 			$externalOwnerTaxonomy->register();
-			add_action('ypg_external_content_owner_add_form_fields', [$externalOwnerTaxonomy, 'addInsertEmailFormField']);
-			add_action('ypg_external_content_owner_edit_form_fields', [$externalOwnerTaxonomy, 'addUpdateEmailFormField']);
-			add_action('ypg_external_content_owner_add_form_fields', [$externalOwnerTaxonomy, 'addInsertPhoneNumberFormField']);
-			add_action('ypg_external_content_owner_edit_form_fields', [$externalOwnerTaxonomy, 'addUpdatePhoneNumberFormField']);
-			add_action('created_ypg_external_content_owner', [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 1);
-			add_action('edited_ypg_external_content_owner', [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 1);
+			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_add_form_fields', [$externalOwnerTaxonomy, 'addInsertEmailFormField']);
+			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_edit_form_fields', [$externalOwnerTaxonomy, 'addUpdateEmailFormField']);
+			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_add_form_fields', [$externalOwnerTaxonomy, 'addInsertPhoneNumberFormField']);
+			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_edit_form_fields', [$externalOwnerTaxonomy, 'addUpdatePhoneNumberFormField']);
+			add_action('created_' . ExternalOwnerTaxonomy::TAXONOMY, [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 1);
+			add_action('edited_' . ExternalOwnerTaxonomy::TAXONOMY, [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 1);
 			add_filter('pre_insert_term', [$externalOwnerTaxonomy, 'preventDuplicateEmailOnInsert'], 10, 2);
 			add_filter('wp_update_term_data', [$externalOwnerTaxonomy, 'preventDuplicateEmailOnUpdate'], 10, 4);
 		});

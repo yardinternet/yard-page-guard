@@ -10,6 +10,7 @@ use Yard\PageGuard\Enums\ReminderTimeType;
 use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Settings\Settings;
+use Yard\PageGuard\Taxonomy\ExternalOwnerTaxonomy;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Token;
 
@@ -147,7 +148,7 @@ class ReviewItem
 
 			return $user ? ContentOwner::fromUser($user) : null;
 		} else {
-			$term = get_term($id, 'ypg_external_content_owner');
+			$term = get_term($id, ExternalOwnerTaxonomy::TAXONOMY);
 
 			return is_a($term, \WP_Term::class) ? ContentOwner::fromTerm($term) : null;
 		}
