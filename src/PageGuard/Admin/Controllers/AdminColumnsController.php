@@ -14,6 +14,7 @@ if (! defined('ABSPATH')) {
 use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Taxonomy\ExternalOwnerTaxonomy;
 use Yard\PageGuard\Traits\PostTypes;
 
 class AdminColumnsController
@@ -32,8 +33,9 @@ class AdminColumnsController
 			add_filter("manage_edit-{$postType}_sortable_columns", [$this, 'makeCustomColumnsSortable']);
 		}
 
-		add_filter('manage_edit-ypg_external_content_owner_columns', [$this, 'manageExternalContentOwnerColumns']);
-		add_filter('manage_ypg_external_content_owner_custom_column', [$this, 'renderExternalContentOwnerColumn'], 10, 3);
+		//TODO: misschien in een aparte controller zetten, want dit is niet echt een column voor een post type
+		add_filter('manage_edit-' . ExternalOwnerTaxonomy::TAXONOMY . '_columns', [$this, 'manageExternalContentOwnerColumns']);
+		add_filter('manage_' . ExternalOwnerTaxonomy::TAXONOMY . '_custom_column', [$this, 'renderExternalContentOwnerColumn'], 10, 3);
 	}
 
 	public function addColumns(array $columns): array

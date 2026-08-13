@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Traits;
 
 use Yard\PageGuard\Models\ContentOwner;
+use Yard\PageGuard\Taxonomy\ExternalOwnerTaxonomy;
 
 trait ContentOwners
 {
@@ -18,7 +19,7 @@ trait ContentOwners
 		]);
 
 		$externalUsers = get_terms([
-			'taxonomy' => 'ypg_external_content_owner',
+			'taxonomy' => ExternalOwnerTaxonomy::TAXONOMY,
 			'hide_empty' => false,
 		]);
 
