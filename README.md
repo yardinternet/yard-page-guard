@@ -13,7 +13,7 @@ Assign content owners to WordPress pages (or other post types), allowing them to
 
 1. Install this package with Composer:
 
-```
+```shell
 composer require plugin/yard-page-guard
 ```
 
