@@ -25,6 +25,30 @@ class ContentOwner
 		$this->phone = $phone;
 	}
 
+	public static function fromCombinedId(string $combinedId): ?self
+	{
+		[$type, $id] = explode(self::COMBINED_ID_SEPARATOR, $combinedId, 2);
+
+		if (ContentOwnerType::USER === $type) {
+			$user = get_user_by('id', (int) $id);
+			if (! $user) {
+				return null;
+			}
+
+			return self::fromUser($user);
+		}
+		if (ContentOwnerType::EXTERNAL === $type) {
+			$term = get_term((int) $id, 'ypg_external_content_owner');
+			if (! $term || is_wp_error($term)) {
+				return null;
+			}
+
+			return self::fromTerm($term);
+		} else {
+			return null;
+		}
+	}
+
 	public static function fromUser(\WP_User $user): self
 	{
 		return new self(

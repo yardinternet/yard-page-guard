@@ -11,12 +11,14 @@ use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Settings\Settings;
+use Yard\PageGuard\Traits\AdminPermissions;
 use Yard\PageGuard\Traits\ContentOwners;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\PostTypes;
 
 class Metabox
 {
+	use AdminPermissions;
 	use Date;
 	use ContentOwners;
 	use PostTypes;
@@ -52,7 +54,7 @@ class Metabox
 			return false;
 		}
 
-		if (! current_user_can(apply_filters('yard::page-guard/capability/admin', 'edit_pages'), $postId)) {
+		if (! current_user_can($this->adminCapability(), $postId)) {
 			return false;
 		}
 
@@ -66,8 +68,9 @@ class Metabox
 	private function currentUserHasAccess(int $postId): bool
 	{
 		$post = get_post($postId);
-		$contentOwnerId = get_post_meta($postId, Meta::POST_CONTENT_OWNER_ID, true) ?: '';
-		$contentOwnerType = get_post_meta($postId, Meta::POST_CONTENT_OWNER_TYPE, true);
+		$reviewItem = new ReviewItem($post);
+		$contentOwner = $reviewItem->contentOwner();
+
 		$currentUser = wp_get_current_user();
 
 		// Make admin roles filterable
@@ -78,13 +81,13 @@ class Metabox
 		if (
 			0 === strlen($post->post_name)
 			|| count(array_intersect($adminRoles, (array) $currentUser->roles)) > 0
-			|| '' === $contentOwnerId
+			|| '' === $contentOwner->id()
 			|| $currentUser->ID === $post->post_author
 		) {
 			return true;
 		}
 
-		return (int) $contentOwnerId === $currentUser->ID && ContentOwnerType::USER === $contentOwnerType;
+		return (int) $contentOwner->id() === $currentUser->ID && ContentOwnerType::USER === $contentOwner->type();
 	}
 
 	public function renderMetaBox(\WP_Post $post)
@@ -271,18 +274,16 @@ class Metabox
 			return;
 		}
 
-		if (! current_user_can(apply_filters('yard::page-guard/capability/admin', 'edit_pages'), $postId)) {
+		if (! current_user_can($this->adminCapability(), $postId)) {
 			return;
 		}
 
 		$reviewItem = new ReviewItem($post);
 
 		$postContentOwner = sanitize_text_field($_POST[Meta::POST_CONTENT_OWNER_ID] ?? '');
-		$postContentOwnerParts = explode(ContentOwner::COMBINED_ID_SEPARATOR, $postContentOwner, 2);
-		$postContentOwnerType = $postContentOwnerParts[0] ?? null;
-		$postContentOwnerId = isset($postContentOwnerParts[1]) ? (int) $postContentOwnerParts[1] : null;
+		$contentOwner = ContentOwner::fromCombinedId($postContentOwner);
 
-		if (null === $postContentOwnerType || null === $postContentOwnerId) {
+		if (null === $contentOwner) {
 			$reviewItem->removeMetaData();
 		} else {
 			$reviewDateType = sanitize_text_field($_POST[Meta::REVIEW_DATE_TYPE] ?? '');
@@ -291,7 +292,7 @@ class Metabox
 			$reminderTimePeriod = isset($_POST[Meta::REMINDER_TIME_PERIOD]) ? intval($_POST[Meta::REMINDER_TIME_PERIOD]) : null;
 			$reminderTimeUnit = sanitize_text_field($_POST[Meta::REMINDER_TIME_UNIT] ?? null);
 
-			$reviewItem->setContentOwner($postContentOwnerId, $postContentOwnerType);
+			$reviewItem->setContentOwner($contentOwner->id(), $contentOwner->type());
 			if (ReviewDateType::CUSTOM === $reviewDateType || null === $reviewItem->reviewDate()) {
 				$reviewItem->setReviewDate($reviewDateType, \DateTime::createFromFormat('Y-m-d', $reviewDate)?: null);
 			}
@@ -380,7 +381,7 @@ class Metabox
 		}
 
 		$postId = (int) $_GET['post_id'];
-		if (! current_user_can(apply_filters('yard::page-guard/capability/admin', 'edit_pages'), $postId)) {
+		if (! current_user_can($this->adminCapability(), $postId)) {
 			wp_die(__('Je hebt geen toestemming om deze actie uit te voeren.', 'yard-page-guard'));
 		}
 

@@ -12,9 +12,12 @@ if (! defined('ABSPATH')) {
 }
 
 use Yard\PageGuard\Admin\ListTables\PageGuardListTable;
+use Yard\PageGuard\Traits\AdminPermissions;
 
 class AdminOverviewController
 {
+	use AdminPermissions;
+
 	public function init(): void
 	{
 		add_action('admin_menu', [$this, 'addOverviewPage']);
@@ -32,7 +35,7 @@ class AdminOverviewController
 		$adminScreen = add_menu_page(
 			__('Inhoudscontrole', 'yard-page-guard'),
 			__('Inhoudscontrole', 'yard-page-guard'),
-			apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+			$this->adminCapability(),
 			'ypg-overview',
 			[$this, 'renderOverviewPage'],
 			'dashicons-visibility',
@@ -53,7 +56,7 @@ class AdminOverviewController
 			'ypg-overview',
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
-			apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+			$this->adminCapability(),
 			'edit-tags.php?taxonomy=ypg_external_content_owner',
 		);
 	}

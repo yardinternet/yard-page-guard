@@ -6,9 +6,12 @@ namespace Yard\PageGuard\Admin\Controllers;
 
 use Yard\PageGuard\Enums\TimeUnit;
 use Yard\PageGuard\Settings\Settings;
+use Yard\PageGuard\Traits\AdminPermissions;
 
 class AdminSettingsController
 {
+	use AdminPermissions;
+
 	public const PAGE_SLUG = 'page-guard-settings';
 
 	public function init(): void
@@ -22,7 +25,7 @@ class AdminSettingsController
 		add_options_page(
 			__('Inhoudscontrole', 'yard-page-guard'),
 			__('Inhoudscontrole', 'yard-page-guard'),
-			apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+			$this->adminCapability(),
 			self::PAGE_SLUG,
 			[$this, 'renderSettingsPage']
 		);
@@ -230,7 +233,7 @@ class AdminSettingsController
 		);
 
 		// FIXME: this is a hack to make sure the settings page is only accessible to users with the correct capability. The settings are registered on init, so they can be accessed via the REST API, but we don't want that. We should find a better way to do this.
-		add_filter('option_page_capability_ypg_settings', fn () => apply_filters('yard::page-guard/capability/admin', 'edit_pages'));
+		add_filter('option_page_capability_ypg_settings', fn () => $this->adminCapability());
 	}
 	public function renderSettingsPage(): void
 	{
