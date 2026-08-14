@@ -49,19 +49,24 @@ class FrontendServiceProvider extends ServiceProvider
 			return;
 		}
 
+		$handle = 'ypg-frontend';
+
 		wp_enqueue_style(
-			'ypg-frontend-styles',
+			$handle,
 			$this->plugin->resourceUrl('frontend.css'),
 			[],
 			filemtime($this->plugin->resourcePath('frontend.css')),
 		);
 
 		wp_enqueue_script(
-			'ypg-frontend-scripts',
+			$handle,
 			$this->plugin->resourceUrl('frontend.js'),
-			['wp-element'],
+			['wp-element', 'wp-i18n'],
 			filemtime($this->plugin->resourcePath('frontend.js')),
+			['in_footer' => true],
 		);
+
+		wp_set_script_translations($handle, 'yard-page-guard', $this->plugin->rootPath . '/languages');
 	}
 
 	public function disableAdminBarForReviewUsers(bool $showAdminBar): bool

@@ -41,7 +41,7 @@ class FrontEndController extends WP_REST_Controller
 		if (! $post instanceof \WP_Post) {
 			return new \WP_Error(
 				'ypg_post_not_found',
-				__('Post niet gevonden.', 'yard-page-guard'),
+				__('Deze pagina kon niet gevonden worden.', 'yard-page-guard'),
 				['status' => \WP_Http::NOT_FOUND]
 			);
 		}
@@ -50,7 +50,7 @@ class FrontEndController extends WP_REST_Controller
 		if (! $reviewItem->verifyToken($reviewItem, home_url(), $reviewToken)) {
 			return new \WP_Error(
 				'ypg_invalid_token',
-				__('Ongeldige review token.', 'yard-page-guard'),
+				__('Deze controlelink is niet meer geldig. Mogelijk is de pagina al gecontroleerd.', 'yard-page-guard'),
 				['status' => \WP_Http::CONFLICT]
 			);
 		}
@@ -97,13 +97,13 @@ class FrontEndController extends WP_REST_Controller
 		if (! $reviewItem->markAsReviewed()) {
 			return new \WP_Error(
 				'ypg_review_not_marked',
-				__('De post kon niet gemarkeerd worden als gecontroleerd.', 'yard-page-guard'),
+				__('De pagina kon niet als gecontroleerd worden gemarkeerd.', 'yard-page-guard'),
 				['status' => \WP_Http::CONFLICT]
 			);
 		}
 
 		return new \WP_REST_Response([
-			'message' => __('Post gemarkeerd als gecontroleerd.', 'yard-page-guard'),
+			'message' => __('De pagina is succesvol gecontroleerd!', 'yard-page-guard'),
 		], \WP_Http::OK);
 	}
 }
