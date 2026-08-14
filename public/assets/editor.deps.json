@@ -5,7 +5,7 @@
   "wp-i18n",
   "wp-data",
   "wp-core-data",
-  "wp-date",
   "wp-element",
+  "wp-date",
   "wp-api-fetch"
 ]

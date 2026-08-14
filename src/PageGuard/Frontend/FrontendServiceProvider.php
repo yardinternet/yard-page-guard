@@ -56,17 +56,10 @@ class FrontendServiceProvider extends ServiceProvider
 			filemtime($this->plugin->resourcePath('frontend.css')),
 		);
 
-		wp_enqueue_style(
-			'ypg-frontend-fonts',
-			'https://use.typekit.net/ozu4txi.css',
-			[],
-			null
-		);
-
 		wp_enqueue_script(
 			'ypg-frontend-scripts',
 			$this->plugin->resourceUrl('frontend.js'),
-			[],
+			['wp-element'],
 			filemtime($this->plugin->resourcePath('frontend.js')),
 		);
 	}
