@@ -35,10 +35,10 @@ class FrontendServiceProvider extends ServiceProvider
 		}
 
 		printf(
-			'<div id="%s" data-review-token="%s" data-origin="%s" data-post-id="%s"></div>',
+			'<div id="%s" data-review-token="%s" data-modal-info-endpoint="%s" data-post-id="%s"></div>',
 			'ypg-review-modal', //TODO: id naar constante verplaatsen
 			esc_attr(rawurldecode($_GET['ypg_review_token'] ?? '')),
-			esc_attr(rawurldecode($_GET['ypg_origin'] ?? '')),
+			esc_attr(rawurldecode($_GET['ypg_modal_info_endpoint'] ?? '')),
 			esc_attr(intval($_GET['ypg_post_id'] ?? 0)),
 		);
 	}

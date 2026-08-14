@@ -68,10 +68,8 @@ class ReviewItem
 		$reviewToken = $this->generateToken($this, $originSite);
 		$permalink = add_query_arg('ypg_review_token', rawurlencode($reviewToken), $permalink); //TODO: constantes voor query args
 
-		if (wp_parse_url($permalink, PHP_URL_HOST) === wp_parse_url($originSite, PHP_URL_HOST)) {
-			$permalink = add_query_arg('ypg_origin', rawurlencode($originSite), $permalink);
-			$permalink = add_query_arg('ypg_post_id', $this->ID(), $permalink);
-		}
+		$permalink = add_query_arg('ypg_modal_info_endpoint', get_rest_url(null, 'yard/page-guard/v2/verify-post'), $permalink);
+		$permalink = add_query_arg('ypg_post_id', $this->ID(), $permalink);
 
 		return $permalink;
 	}
