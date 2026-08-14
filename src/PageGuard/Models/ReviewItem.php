@@ -68,7 +68,7 @@ class ReviewItem
 		$reviewToken = $this->generateToken($this, $originSite);
 		$permalink = add_query_arg('ypg_review_token', rawurlencode($reviewToken), $permalink); //TODO: constantes voor query args
 
-		$permalink = add_query_arg('ypg_modal_info_endpoint', get_rest_url(null, 'yard/page-guard/v2/verify-post'), $permalink);
+		$permalink = add_query_arg('ypg_modal_info_endpoint', get_rest_url(null, 'yard/page-guard/v2/modal-info'), $permalink);
 		$permalink = add_query_arg('ypg_post_id', $this->ID(), $permalink);
 
 		return $permalink;

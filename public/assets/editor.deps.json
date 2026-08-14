@@ -1,11 +1,11 @@
 [
+  "wp-element",
   "wp-components",
   "wp-editor",
   "wp-plugins",
   "wp-i18n",
   "wp-data",
   "wp-core-data",
-  "wp-element",
   "wp-date",
   "wp-api-fetch"
 ]
