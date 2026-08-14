@@ -39,7 +39,7 @@ class AdminOverviewController
 			$this->adminCapability(),
 			'ypg-overview',
 			[$this, 'renderOverviewPage'],
-			'dashicons-visibility',
+			'dashicons-shield',
 			20
 		);
 
