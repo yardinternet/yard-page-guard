@@ -121,6 +121,7 @@ class ReviewItem
 		return $this->formatDate($this->reminderDate(), $format);
 	}
 
+	/** @deprecated Use reminderMailSentDate() instead */
 	public function lastReminderDate(): ?\DateTimeInterface
 	{
 		$date = get_post_meta($this->ID(), Meta::LAST_REMINDER_DATE, true);
@@ -128,9 +129,22 @@ class ReviewItem
 		return \DateTime::createFromFormat('Y-m-d', $date, wp_timezone()) ?: null;
 	}
 
+	/** @deprecated Use reminderMailSentDateFormatted() instead */
 	public function lastReminderDateFormatted(?string $format = null): string
 	{
 		return $this->formatDate($this->lastReminderDate(), $format);
+	}
+
+	public function reminderMailSentDate(): ?\DateTimeInterface
+	{
+		$date = get_post_meta($this->ID(), Meta::REMINDER_MAIL_SENT_DATE, true);
+
+		return \DateTime::createFromFormat('Y-m-d', $date, wp_timezone()) ?: null;
+	}
+
+	public function reminderMailSentDateFormatted(?string $format = null): string
+	{
+		return $this->formatDate($this->reminderMailSentDate(), $format);
 	}
 
 	public function contentOwner(): ?ContentOwner
@@ -154,29 +168,35 @@ class ReviewItem
 
 	public function status(): string
 	{
-		$date = get_post_meta($this->ID(), Meta::REVIEW_DATE, true);
-		$date = \DateTime::createFromFormat('Y-m-d', $date, wp_timezone());
-		if (false === $date) {
-			return '&mdash;';
-		}
 		if ($this->isOverdue()) {
 			return sprintf(
 				'<span style="color: #bd8600;"><span class="dashicons dashicons-warning" aria-hidden="true"></span> %s</span>',
 				__('Achterstallig', 'yard-page-guard')
 			);
+		}
+		if (null === $this->lastReviewDate()) {
+			return __('Ingesteld', 'yard-page-guard');
 		} else {
 			return __('Gecontroleerd', 'yard-page-guard');
 		}
 	}
 
-	public function reviewMailSent(): bool
+	public function reviewMailSentDate(): ?\DateTimeInterface
 	{
-		return (bool) get_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT, true);
+		$date = get_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT_DATE, true);
+
+		return \DateTime::createFromFormat('Y-m-d', $date, wp_timezone()) ?: null;
 	}
 
-	public function setReviewMailSent(): void
+	public function reviewMailSentDateFormatted(?string $format = null): string
 	{
-		update_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT, '1');
+		return $this->formatDate($this->reviewMailSentDate(), $format);
+	}
+
+	public function resetSentEmails(): void
+	{
+		delete_post_meta($this->ID(), Meta::REMINDER_MAIL_SENT_DATE);
+		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT_DATE);
 	}
 
 	public function markAsReviewed(): bool
@@ -185,8 +205,8 @@ class ReviewItem
 		update_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, ReviewDateType::DEFAULT);
 		$this->setReviewDate();
 
-		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT);
-		delete_post_meta($this->ID(), Meta::LAST_REMINDER_DATE);
+		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT_DATE);
+		delete_post_meta($this->ID(), Meta::REMINDER_MAIL_SENT_DATE);
 		delete_post_meta($this->ID(), Meta::REMINDER_DATE);
 
 		// TODO: do a more comprehensive check to see if the post was actually updated, and return false if not
@@ -203,14 +223,14 @@ class ReviewItem
 		delete_post_meta($this->ID(), Meta::REMINDER_TIME_PERIOD);
 		delete_post_meta($this->ID(), Meta::REMINDER_TIME_UNIT);
 		delete_post_meta($this->ID(), Meta::REMINDER_DATE);
-		delete_post_meta($this->ID(), Meta::LAST_REMINDER_DATE);
 		delete_post_meta($this->ID(), Meta::LAST_REVIEW_DATE);
-		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT);
+		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT_DATE);
+		delete_post_meta($this->ID(), Meta::REMINDER_MAIL_SENT_DATE);
 	}
 
-	public function setLastReminderDate(\DateTimeInterface $date): void
+	public function setReminderMailSentDate(\DateTimeInterface $date): void
 	{
-		update_post_meta($this->ID(), Meta::LAST_REMINDER_DATE, $date->format('Y-m-d'));
+		update_post_meta($this->ID(), Meta::REMINDER_MAIL_SENT_DATE, $date->format('Y-m-d'));
 	}
 
 	public function setReminderDate(): void

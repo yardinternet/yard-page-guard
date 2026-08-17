@@ -21,9 +21,15 @@ class Meta
 	public const REMINDER_TIME_TYPE = 'ypg_reminder_time_type';
 	public const REMINDER_TIME_PERIOD = 'ypg_reminder_time_period';
 	public const REMINDER_TIME_UNIT = 'ypg_reminder_time_unit';
+	/** @deprecated */
 	public const REVIEW_MAIL_SENT = 'ypg_review_mail_sent';
+	public const REVIEW_MAIL_SENT_DATE = 'ypg_review_mail_sent_date';
 	public const LAST_REVIEW_DATE = 'ypg_last_review_date';
+
+	/** @deprecated */
 	public const LAST_REMINDER_DATE = 'ypg_last_reminder_date';
+
+	public const REMINDER_MAIL_SENT_DATE = 'ypg_reminder_mail_sent_date';
 
 	public function registerMeta(): void
 	{
@@ -87,12 +93,29 @@ class Meta
 				'default' => TimeUnit::WEEKS,
 				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, TimeUnit::cases(), TimeUnit::WEEKS),
 			],
-			self::LAST_REMINDER_DATE => [
+			self::LAST_REVIEW_DATE => [
 				'type' => 'string',
 				'default' => '',
 				'sanitize_callback' => [$this, 'sanitizeDate'],
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'pattern' => self::DATE_PATTERN,
+					],
+				],
 			],
-			self::LAST_REVIEW_DATE => [
+			self::REVIEW_MAIL_SENT_DATE => [
+				'type' => 'string',
+				'default' => '',
+				'sanitize_callback' => [$this, 'sanitizeDate'],
+				'show_in_rest' => [
+					'schema' => [
+						'type' => 'string',
+						'pattern' => self::DATE_PATTERN,
+					],
+				],
+			],
+			self::REMINDER_MAIL_SENT_DATE => [
 				'type' => 'string',
 				'default' => '',
 				'sanitize_callback' => [$this, 'sanitizeDate'],

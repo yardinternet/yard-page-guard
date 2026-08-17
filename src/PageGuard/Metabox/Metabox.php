@@ -14,6 +14,7 @@ use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\AdminPermissions;
 use Yard\PageGuard\Traits\ContentOwners;
 use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Traits\FormField;
 use Yard\PageGuard\Traits\PostTypes;
 
 class Metabox
@@ -22,9 +23,11 @@ class Metabox
 	use Date;
 	use ContentOwners;
 	use PostTypes;
+	use FormField;
 
 	public const NONCE_FIELD = 'ypg_metaboxes_nonce';
 	public const NONCE_ACTION = 'ypg_meta_update';
+	public const REVIEWED_QUERY_PARAM = '_ypg_reviewed';
 
 	public function addMetaboxes(): void
 	{
@@ -37,32 +40,6 @@ class Metabox
 			'high',
 			[ '__back_compat_meta_box' => true ] // Automatically hides this inside Gutenberg
 		);
-	}
-
-	private function shouldSave(int $postId): bool
-	{
-		if (! isset($_POST[self::NONCE_FIELD]) || ! wp_verify_nonce($_POST[self::NONCE_FIELD], self::NONCE_ACTION)) {
-			return false;
-		}
-
-		if (defined('DOING_AUTOSAVE') && \DOING_AUTOSAVE) {
-			return false;
-		}
-
-		$postTypes = $this->getPostTypes();
-		if (! isset($_POST['post_type']) || ! in_array($_POST['post_type'], $postTypes, true)) {
-			return false;
-		}
-
-		if (! current_user_can($this->adminCapability(), $postId)) {
-			return false;
-		}
-
-		if (! $this->currentUserHasAccess($postId)) {
-			return false;
-		}
-
-		return true;
 	}
 
 	private function currentUserHasAccess(int $postId): bool
@@ -92,13 +69,11 @@ class Metabox
 
 	public function renderMetaBox(\WP_Post $post)
 	{
-		wp_nonce_field('ypg_meta_update', 'ypg_metaboxes_nonce');
-
+		wp_nonce_field(self::NONCE_ACTION, self::NONCE_FIELD);
 		$reviewItem = new ReviewItem($post);
-
 		$contentOwner = $reviewItem->contentOwner();
 		?>
-	<div>
+	<div class="form-wrap">
 		<div>
 			<h4><?php esc_html_e('Inhoudseigenaar', 'yard-page-guard'); ?></h4>
 			<p class="description"><?php esc_html_e('Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.', 'yard-page-guard'); ?></p>
@@ -194,7 +169,7 @@ class Metabox
 			<?php echo $this->renderInput(
 				[
 					'type' => 'text',
-					'name' => Meta::LAST_REVIEW_DATE,
+					'name' => Meta::LAST_REVIEW_DATE . '_display',
 					'value' => $reviewItem->lastReviewDateFormatted(),
 					'label' => __('Laatst gecontroleerd', 'yard-page-guard'),
 					'readonly' => true,
@@ -204,14 +179,13 @@ class Metabox
 			<?php echo $this->renderInput(
 				[
 					'type' => 'text',
-					'name' => Meta::REVIEW_DATE,
+					'name' => Meta::REVIEW_DATE . '_display',
 					'value' => $reviewItem->reviewDateFormatted(),
 					'label' => __('Volgende herzieningsdatum', 'yard-page-guard'),
 					'readonly' => true,
 					'disabled' => true,
 				]
 			);?>
-
 
 			<?php if ($reviewItem->reviewDate()) : ?>
 			<a class="button"  href="<?php echo wp_nonce_url(add_query_arg(['action' => 'mark_as_reviewed', 'post_id' => $post->ID], get_edit_post_link($post->ID, 'post.php')), 'mark_as_reviewed'); ?>"><?php esc_html_e('Markeer als gecontroleerd', 'yard-page-guard'); ?></a>
@@ -267,12 +241,11 @@ class Metabox
 
 	public function saveMeta(int $postId, \WP_Post $post, bool $update)
 	{
-		if (! isset($_POST['ypg_metaboxes_nonce']) || ! wp_verify_nonce($_POST['ypg_metaboxes_nonce'], 'ypg_meta_update')) {
-			return;
-		}
 		if (defined('DOING_AUTOSAVE') && \DOING_AUTOSAVE) {
 			return;
 		}
+
+		check_admin_referer(self::NONCE_ACTION, self::NONCE_FIELD);
 
 		if (! current_user_can($this->adminCapability(), $postId)) {
 			return;
@@ -300,95 +273,46 @@ class Metabox
 		}
 	}
 
-	protected function renderInput(array $args): string
-	{
-		$args = wp_parse_args($args, [
-			'type' => 'text',
-			'name' => '',
-			'value' => '',
-			'label' => '',
-			'description' => '',
-			'options' => [],
-			'min' => null,
-			'max' => null,
-			'step' => null,
-			'disabled' => null,
-			'readonly' => null,
-		]);
-
-		$attributes = wp_array_slice_assoc($args, ['min', 'max', 'step', 'disabled', 'readonly']);
-		$attributeString = '';
-		foreach ($attributes as $key => $value) {
-			if (null !== $value) {
-				$attributeString .= sprintf(' %s="%s"', esc_attr($key), esc_attr($value));
-			}
-		}
-
-		switch ($args['type']) {
-			case 'text':
-			case 'email':
-			case 'phone':
-			case 'number':
-			case 'date':
-				return sprintf(
-					'<p><label for="%1$s">%2$s</label><input type="%5$s" name="%1$s" value="%3$s" class="widefat" %6$s/><span class="description">%4$s</span></p>',
-					esc_attr($args['name']),
-					esc_html($args['label']),
-					esc_attr($args['value']),
-					esc_html($args['description']),
-					esc_attr($args['type']),
-					$attributeString
-				);
-			case 'select':
-				$optionsHtml = '';
-				foreach ($args['options'] as $optionValue => $optionLabel) {
-					$selected = selected($args['value'], $optionValue, false);
-					$optionsHtml .= sprintf('<option value="%s" %s>%s</option>', esc_attr($optionValue), $selected, esc_html($optionLabel));
-				}
-
-				return sprintf(
-					'<p><label for="%1$s">%2$s</label><select id="%1$s" name="%1$s">%3$s</select><span class="description">%4$s</span></p>',
-					esc_attr($args['name']),
-					esc_html($args['label']),
-					$optionsHtml,
-					esc_html($args['description'])
-				);
-			case 'radio':
-				$radioHtml = sprintf('<strong style="display: block; margin-bottom: 5px;">%s</strong>', esc_html($args['label']));
-				foreach ($args['options'] as $optionValue => $optionLabel) {
-					$radioHtml .= sprintf(
-						'<label style="display: block; margin-bottom: 5px;"><input type="radio" name="%1$s" value="%2$s" %3$s/>%4$s</label>',
-						esc_attr($args['name']),
-						esc_attr($optionValue),
-						checked($args['value'], $optionValue, false),
-						wp_kses_post($optionLabel)
-					);
-				}
-
-				return sprintf(
-					'<p>%s</p>',
-					$radioHtml
-				);
-			default:
-				return '';
-		}
-	}
-
 	public function handleMarkAsReviewed(): void
 	{
-		if (! isset($_GET['post_id']) || ! isset($_GET['_wpnonce']) || ! wp_verify_nonce($_GET['_wpnonce'], 'mark_as_reviewed')) {
-			wp_die(__('Ongeldige aanvraag.', 'yard-page-guard'));
-		}
+		check_admin_referer('mark_as_reviewed');
 
 		$postId = (int) $_GET['post_id'];
+
+		if (0 >= $postId || ! get_post($postId)) {
+			wp_die(__('Ongeldige post ID.', 'yard-page-guard'));
+		}
+
 		if (! current_user_can($this->adminCapability(), $postId)) {
 			wp_die(__('Je hebt geen toestemming om deze actie uit te voeren.', 'yard-page-guard'));
 		}
 
+		// $postTypes = $this->getPostTypes();
+		// if (! isset($_POST['post_type']) || ! in_array($_POST['post_type'], $postTypes, true)) {
+		// 	return false;
+		// }
+
+		// if (! $this->currentUserHasAccess($postId)) {
+		// 	return false;
+		// }
+
 		$reviewItem = new ReviewItem(get_post($postId));
 		$reviewItem->markAsReviewed();
 
-		wp_redirect(add_query_arg(['post' => $postId, 'action' => 'edit'], admin_url('post.php')));
+		wp_redirect(add_query_arg(['post' => $postId, 'action' => 'edit', self::REVIEWED_QUERY_PARAM => '1'], admin_url('post.php')));
 		exit;
+	}
+
+	public function displayAdminNotices(): void
+	{
+		if (isset($_GET[self::REVIEWED_QUERY_PARAM]) && '1' === $_GET[self::REVIEWED_QUERY_PARAM]) {
+			wp_admin_notice(
+				esc_html__('De inhoud is gemarkeerd als gecontroleerd.', 'yard-page-guard'),
+				[
+					'type' => 'success',
+					'dismissible' => true,
+				]
+			);
+		}
 	}
 }
