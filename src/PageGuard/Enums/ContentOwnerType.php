@@ -9,7 +9,6 @@ final class ContentOwnerType
 	public const USER = 'user';
 	public const EXTERNAL = 'external';
 
-	/** @deprecated Use cases() instead */
 	public static function cases(): array
 	{
 		return [

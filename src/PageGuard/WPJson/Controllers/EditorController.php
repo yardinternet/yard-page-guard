@@ -80,7 +80,7 @@ class EditorController extends WP_REST_Controller
 	public function contentOwners(): WP_REST_Response
 	{
 		$owners = array_map(
-			fn (ContentOwner $owner): array => ['value' => sprintf('%s:%d', $owner->type(), $owner->id()), 'label' => $owner->displayName()],
+			fn (ContentOwner $owner): array => ['value' => $owner->combinedId(), 'label' => $owner->displayName()],
 			$this->getContentOwners()
 		);
 
@@ -137,7 +137,6 @@ class EditorController extends WP_REST_Controller
 			'reminderDate' => $this->datePayload($reviewItem->reminderDate()),
 			'lastReviewDate' => $this->datePayload($reviewItem->lastReviewDate()),
 			'isOverdue' => $reviewItem->isOverdue(),
-			'reviewMailSent' => $reviewItem->reviewMailSent(),
 		];
 	}
 
