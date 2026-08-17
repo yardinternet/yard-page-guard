@@ -60,7 +60,7 @@ class ReminderNotification extends Event
 				// This keeps a wrongly-early reminder date from mailing before the
 				// review mail.
 				[
-					'key' => Meta::REVIEW_MAIL_SENT,
+					'key' => Meta::REVIEW_MAIL_SENT_DATE,
 					'compare' => 'EXISTS',
 				],
 			],
@@ -102,7 +102,7 @@ class ReminderNotification extends Event
 			if (! defined('WP_CLI') || ! WP_CLI) {
 				/** @var ReviewItem $item */
 				foreach ($ownerItems as $item) {
-					$item->setLastReminderDate($item->reminderDate());
+					$item->setReminderMailSentDate(new \DateTime('now', wp_timezone()));
 					$item->setReminderDate();
 				}
 			}

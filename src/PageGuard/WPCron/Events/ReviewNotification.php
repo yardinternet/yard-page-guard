@@ -54,7 +54,7 @@ class ReviewNotification extends Event
 					'type' => 'DATE',
 				],
 				[
-					'key' => Meta::REVIEW_MAIL_SENT,
+					'key' => Meta::REVIEW_MAIL_SENT_DATE,
 					'compare' => 'NOT EXISTS',
 				],
 			],
@@ -94,7 +94,7 @@ class ReviewNotification extends Event
 			}
 			/** @var ReviewItem $item */
 			foreach ($ownerItems as $item) {
-				$item->setReviewMailSent();
+				$item->setReviewMailSentDate(new \DateTime('now', wp_timezone()));
 				$item->setReminderDate();
 			}
 		}
