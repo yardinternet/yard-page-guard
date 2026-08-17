@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Models;
 
 use Yard\PageGuard\Enums\ContentOwnerType;
-use Yard\PageGuard\Enums\TermMeta;
+use Yard\PageGuard\Meta\TermMeta;
 use Yard\PageGuard\Taxonomy\ExternalOwnerTaxonomy;
 
 class ContentOwner

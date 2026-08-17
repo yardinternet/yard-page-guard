@@ -16,15 +16,27 @@ class MetaServiceProvider extends ServiceProvider
 	public function register(): void
 	{
 		$meta = new Meta();
+		$termMeta = new TermMeta();
 		add_action('init', [$meta, 'registerMeta']);
+		add_action('init', [$termMeta, 'registerMeta']);
 		add_action('rest_api_init', [$meta, 'registerMeta']);
+		add_action('rest_api_init', [$termMeta, 'registerMeta']);
 		add_action('rest_api_init', [$this, 'registerReviewDateSync']);
+		add_action('updated_postmeta', [$this, 'resetEmailSentFlag'], 10, 4);
 	}
 
 	public function registerReviewDateSync(): void
 	{
 		foreach ($this->getPostTypes() as $postType) {
 			add_action("rest_after_insert_{$postType}", [$this, 'ensureReviewDate'], 10, 1);
+		}
+	}
+
+	public function resetEmailSentFlag(int $metaId, int $postId, string $metaKey, $metaValue): void
+	{
+		if (Meta::REVIEW_DATE === $metaKey) {
+			$reviewItem = new ReviewItem(get_post($postId));
+			$reviewItem->resetSentEmails();
 		}
 	}
 

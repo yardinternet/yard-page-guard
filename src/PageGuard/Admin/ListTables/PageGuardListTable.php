@@ -36,8 +36,9 @@ class PageGuardListTable extends \WP_List_Table
 			'type' => __('Type', 'yard-page-guard'),
 			'owner' => __('Eigenaar', 'yard-page-guard'),
 			'last_review' => __('Laatst gecontroleerd op', 'yard-page-guard'),
-			'last_reminder' => __('Laatste herinneringsmail', 'yard-page-guard'),
 			'next_review' => __('Volgende herzieningsdatum', 'yard-page-guard'),
+			'next_reminder' => __('Volgende herinneringsmail', 'yard-page-guard'),
+			'last_mail' => __('Laatste mail', 'yard-page-guard'),
 			'status' => __('Status', 'yard-page-guard'),
 		];
 	}
@@ -49,7 +50,7 @@ class PageGuardListTable extends \WP_List_Table
 			'title' => ['post_title'],
 			// 'last_review' => [PostMeta::LAST_REVIEW_DATE],
 			// 'last_reminder' => [PostMeta::LAST_REMINDER_DATE],
-			// 'next_review' => [PostMeta::REVIEW_DATE],
+			'next_review' => [Meta::REVIEW_DATE],
 		];
 	}
 	public function column_cb($item)
@@ -77,10 +78,20 @@ class PageGuardListTable extends \WP_List_Table
 				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->displayName() : __('Niet ingesteld', 'yard-page-guard');
 			case 'last_review':
 				return $reviewItem->lastReviewDateFormatted();
-			case 'last_reminder':
-				return $reviewItem->lastReminderDateFormatted();
+			case 'next_reminder':
+				return $reviewItem->reminderDateFormatted();
 			case 'next_review':
 				return $reviewItem->reviewDateFormatted();
+			case 'last_mail':
+				if ($reviewItem->reminderMailSentDate()) {
+					return sprintf(__('%s <code>herinneringsmail</code>', 'yard-page-guard'), $reviewItem->reminderMailSentDateFormatted());
+				}
+				if ($reviewItem->reviewMailSentDate()) {
+					return sprintf(__('%s <code>herzieningsmail</code>', 'yard-page-guard'), $reviewItem->reviewMailSentDateFormatted());
+				} else {
+					return '&mdash;';
+				}
+				// no break
 			case 'status':
 				return $reviewItem->status();
 			default:
@@ -143,6 +154,11 @@ class PageGuardListTable extends \WP_List_Table
 			'order' => $order,
 			'meta_query' => $metaQuery,
 		];
+
+		if (Meta::REVIEW_DATE === $orderby) {
+			$args['orderby'] = 'meta_value';
+			$args['meta_key'] = Meta::REVIEW_DATE;
+		}
 
 		$query = new \WP_Query($args);
 		$this->items = $query->posts;

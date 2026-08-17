@@ -14,14 +14,15 @@ class TaxonomyServiceProvider extends ServiceProvider
 			$externalOwnerTaxonomy = new ExternalOwnerTaxonomy();
 
 			$externalOwnerTaxonomy->register();
-			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_add_form_fields', [$externalOwnerTaxonomy, 'addInsertEmailFormField']);
-			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_edit_form_fields', [$externalOwnerTaxonomy, 'addUpdateEmailFormField']);
-			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_add_form_fields', [$externalOwnerTaxonomy, 'addInsertPhoneNumberFormField']);
-			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_edit_form_fields', [$externalOwnerTaxonomy, 'addUpdatePhoneNumberFormField']);
-			add_action('created_' . ExternalOwnerTaxonomy::TAXONOMY, [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 1);
-			add_action('edited_' . ExternalOwnerTaxonomy::TAXONOMY, [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 1);
+			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_add_form_fields', [$externalOwnerTaxonomy, 'addInsertFormFields']);
+			add_action(ExternalOwnerTaxonomy::TAXONOMY . '_edit_form_fields', [$externalOwnerTaxonomy, 'addUpdateFormFields']);
+			add_action('created_' . ExternalOwnerTaxonomy::TAXONOMY, [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 3);
+			add_action('edited_' . ExternalOwnerTaxonomy::TAXONOMY, [$externalOwnerTaxonomy, 'handleSaveMeta'], 10, 3);
 			add_filter('pre_insert_term', [$externalOwnerTaxonomy, 'preventDuplicateEmailOnInsert'], 10, 2);
-			add_filter('wp_update_term_data', [$externalOwnerTaxonomy, 'preventDuplicateEmailOnUpdate'], 10, 4);
+			//add_filter('wp_update_term_data', [$externalOwnerTaxonomy, 'preventDuplicateEmailOnUpdate'], 10, 4);
+
+			add_filter('wp_insert_term_data', [$externalOwnerTaxonomy, 'setSlugFromEmailOnInsert'], 10, 3);
+			add_filter('wp_update_term_data', [$externalOwnerTaxonomy, 'setSlugFromEmailOnUpdate'], 10, 4);
 		});
 	}
 }

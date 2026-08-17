@@ -11,7 +11,6 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
-use Yard\PageGuard\Enums\TermMeta;
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Taxonomy\ExternalOwnerTaxonomy;
