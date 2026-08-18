@@ -22,10 +22,17 @@ trait FormField
 			'readonly' => null,
 		]);
 
-		$attributes = wp_array_slice_assoc($args, ['min', 'max', 'step', 'disabled', 'readonly']);
+		$attributes = wp_array_slice_assoc($args, ['min', 'max', 'step', 'disabled', 'readonly', 'required']);
 		$attributeString = '';
 		foreach ($attributes as $key => $value) {
-			if (null !== $value) {
+			if (null === $value) {
+				continue;
+			}
+			if (is_bool($value)) {
+				if (true === $value) {
+					$value = $attributeString .= sprintf(' %s', esc_attr($key));
+				}
+			} else {
 				$attributeString .= sprintf(' %s="%s"', esc_attr($key), esc_attr($value));
 			}
 		}
