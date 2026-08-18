@@ -13,6 +13,10 @@ class FrontendServiceProvider extends ServiceProvider
 {
 	use ReviewUser;
 
+	public const QUERY_PARAM_REVIEW_TOKEN = 'ypg_review_token';
+	public const QUERY_PARAM_MODAL_INFO_ENDPOINT = 'ypg_modal_info_endpoint';
+	public const QUERY_PARAM_POST_ID = 'ypg_post_id';
+
 	public function register(): void
 	{
 		add_action('wp_enqueue_scripts', [$this, 'enqueueFrontendAssets']);
@@ -25,7 +29,7 @@ class FrontendServiceProvider extends ServiceProvider
 
 	public function isReview(): bool
 	{
-		return isset($_GET['ypg_review_token']) && strlen(trim($_GET['ypg_review_token'])) > 0;
+		return isset($_GET[self::QUERY_PARAM_REVIEW_TOKEN]) && strlen(trim($_GET[self::QUERY_PARAM_REVIEW_TOKEN])) > 0;
 	}
 
 	public function renderBodyOpen(): void
@@ -36,10 +40,10 @@ class FrontendServiceProvider extends ServiceProvider
 
 		printf(
 			'<div id="%s" data-review-token="%s" data-modal-info-endpoint="%s" data-post-id="%s"></div>',
-			'ypg-review-modal', //TODO: id naar constante verplaatsen
-			esc_attr(rawurldecode($_GET['ypg_review_token'] ?? '')),
-			esc_attr(rawurldecode($_GET['ypg_modal_info_endpoint'] ?? '')),
-			esc_attr(intval($_GET['ypg_post_id'] ?? 0)),
+			'ypg-review-modal',
+			esc_attr(rawurldecode($_GET[self::QUERY_PARAM_REVIEW_TOKEN] ?? '')),
+			esc_attr(rawurldecode($_GET[self::QUERY_PARAM_MODAL_INFO_ENDPOINT] ?? '')),
+			esc_attr(intval($_GET[self::QUERY_PARAM_POST_ID] ?? 0)),
 		);
 	}
 
