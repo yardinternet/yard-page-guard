@@ -14,10 +14,17 @@ class AdminSettingsController
 
 	public const PAGE_SLUG = 'page-guard-settings';
 
+	public const SECTION_EMAIL = 'email_settings';
+	public const SECTION_REVIEW = 'review_settings';
+	public const SECTION_REMINDER = 'reminder_settings';
+	public const SECTION_MODAL = 'modal_settings';
+	public const SECTION_INTERNAL_INFORMATION = 'internal_information_settings';
+
 	public function init(): void
 	{
 		add_action('admin_menu', [$this, 'addSettingsPage']);
 		add_action('admin_init', [$this, 'addSettingsFields']);
+		add_filter('option_page_capability_ypg_settings', fn () => $this->adminCapability());
 	}
 
 	public function addSettingsPage(): void
@@ -34,7 +41,7 @@ class AdminSettingsController
 	public function addSettingsFields(): void
 	{
 		add_settings_section(
-			'email',
+			self::SECTION_EMAIL,
 			__('E-mails', 'yard-page-guard'),
 			'',
 			self::PAGE_SLUG,
@@ -45,7 +52,7 @@ class AdminSettingsController
 			__('Afzend naam', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
-			'email',
+			self::SECTION_EMAIL,
 			[
 				'type' => 'text',
 				'name' => Settings::EMAIL_FROM_NAME,
@@ -59,7 +66,7 @@ class AdminSettingsController
 			__('Afzend emailadres', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
-			'email',
+			self::SECTION_EMAIL,
 			[
 				'type' => 'email',
 				'name' => Settings::EMAIL_FROM_ADDRESS,
@@ -83,7 +90,7 @@ class AdminSettingsController
 
 		// Herzienings instelling
 		add_settings_section(
-			'review_settings',
+			self::SECTION_REVIEW,
 			__('Herzieningsmail', 'yard-page-guard'),
 			'',
 			self::PAGE_SLUG,
@@ -94,7 +101,7 @@ class AdminSettingsController
 			__('Herzieningsperiode', 'yard-page-guard'),
 			[$this, 'renderPeriodInput'],
 			self::PAGE_SLUG,
-			'review_settings',
+			self::SECTION_REVIEW,
 			[
 				'label_for' => Settings::REVIEW_TIME_PERIOD,
 				'period_name' => Settings::REVIEW_TIME_PERIOD,
@@ -109,7 +116,7 @@ class AdminSettingsController
 			__('Herzieningsmail onderwerp', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
-			'review_settings',
+			self::SECTION_REVIEW,
 			[
 				'type' => 'text',
 				'name' => Settings::REVIEW_EMAIL_SUBJECT,
@@ -122,7 +129,7 @@ class AdminSettingsController
 			__('Herzieningsmail inhoud', 'yard-page-guard'),
 			[$this, 'renderEditor'],
 			self::PAGE_SLUG,
-			'review_settings',
+			self::SECTION_REVIEW,
 			[
 				'name' => Settings::REVIEW_EMAIL_CONTENT,
 				'label_for' => Settings::REVIEW_EMAIL_CONTENT,
@@ -138,7 +145,7 @@ class AdminSettingsController
 
 		// Herinnerings instelling
 		add_settings_section(
-			'reminder_settings',
+			self::SECTION_REMINDER,
 			__('Herinneringsmail', 'yard-page-guard'),
 			'',
 			self::PAGE_SLUG,
@@ -164,7 +171,7 @@ class AdminSettingsController
 			__('Herinneringsmail onderwerp', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
-			'reminder_settings',
+			self::SECTION_REMINDER,
 			[
 				'type' => 'text',
 				'name' => Settings::REMINDER_EMAIL_SUBJECT,
@@ -177,7 +184,7 @@ class AdminSettingsController
 			__('Herinneringsmail inhoud', 'yard-page-guard'),
 			[$this, 'renderEditor'],
 			self::PAGE_SLUG,
-			'reminder_settings',
+			self::SECTION_REMINDER,
 			[
 				'name' => Settings::REMINDER_EMAIL_CONTENT,
 				'label_for' => Settings::REMINDER_EMAIL_CONTENT,
@@ -193,7 +200,7 @@ class AdminSettingsController
 
 		//Modal instellingen
 		add_settings_section(
-			'modal',
+			self::SECTION_MODAL,
 			__('Modal', 'yard-page-guard'),
 			'',
 			self::PAGE_SLUG,
@@ -203,7 +210,7 @@ class AdminSettingsController
 			__('Controleer venster footer inhoud', 'yard-page-guard'),
 			[$this, 'renderEditor'],
 			self::PAGE_SLUG,
-			'modal',
+			self::SECTION_MODAL,
 			[
 				'name' => Settings::MODAL_FOOTER_CONTENT,
 				'label_for' => Settings::MODAL_FOOTER_CONTENT,
@@ -212,7 +219,7 @@ class AdminSettingsController
 			]
 		);
 		add_settings_section(
-			'internal_information',
+			self::SECTION_INTERNAL_INFORMATION,
 			__('Interne informatie', 'yard-page-guard'),
 			'',
 			self::PAGE_SLUG,
@@ -223,7 +230,7 @@ class AdminSettingsController
 			__('Externe eigenaren kunnen interne data inzien', 'yard-page-guard'),
 			[$this, 'renderCheckbox'],
 			self::PAGE_SLUG,
-			'internal_information',
+			self::SECTION_INTERNAL_INFORMATION,
 			[
 				'type' => 'checkbox',
 				'name' => Settings::SHOW_INTERNAL_DATA_ON_REVIEW,
@@ -231,10 +238,8 @@ class AdminSettingsController
 				'checked' => get_option(Settings::SHOW_INTERNAL_DATA_ON_REVIEW, 0) ? true : false,
 			]
 		);
-
-		// FIXME: this is a hack to make sure the settings page is only accessible to users with the correct capability. The settings are registered on init, so they can be accessed via the REST API, but we don't want that. We should find a better way to do this.
-		add_filter('option_page_capability_ypg_settings', fn () => $this->adminCapability());
 	}
+
 	public function renderSettingsPage(): void
 	{
 		?>
