@@ -74,8 +74,8 @@ class AdminOverviewController
 		<div class="wrap">
 			<h1 class="wp-heading-inline"><?php echo esc_html(get_admin_page_title()); ?></h1>
 			<hr class="wp-header-end">
-			<?php $listTable->views();?>
 			<form id="yard-page-guard-table-form" method="post">
+				<?php $listTable->views();?>
 				<?php $listTable->display();?>
 			</form>
 		</div>

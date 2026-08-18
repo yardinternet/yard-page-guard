@@ -22,7 +22,7 @@ class MetaServiceProvider extends ServiceProvider
 		add_action('rest_api_init', [$meta, 'registerMeta']);
 		add_action('rest_api_init', [$termMeta, 'registerMeta']);
 		add_action('rest_api_init', [$this, 'registerReviewDateSync']);
-		add_action('updated_postmeta', [$this, 'resetEmailSentFlag'], 10, 4);
+		add_action('updated_postmeta', [$this, 'resetSentEmails'], 10, 4);
 	}
 
 	public function registerReviewDateSync(): void
@@ -32,7 +32,7 @@ class MetaServiceProvider extends ServiceProvider
 		}
 	}
 
-	public function resetEmailSentFlag(int $metaId, int $postId, string $metaKey, $metaValue): void
+	public function resetSentEmails(int $metaId, int $postId, string $metaKey, $metaValue): void
 	{
 		if (Meta::REVIEW_DATE === $metaKey) {
 			$reviewItem = new ReviewItem(get_post($postId));

@@ -6,7 +6,6 @@ namespace Yard\PageGuard\Meta;
 
 use Yard\PageGuard\Taxonomy\ExternalOwnerTaxonomy;
 
-// TODO: user register_term_meta
 class TermMeta
 {
 	public const EXTERNAL_CONTENT_OWNER_PHONE_NUMBER = 'ypg_external_content_owner_phone_number';

@@ -8,9 +8,12 @@ use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Enums\ReminderTimeType;
 use Yard\PageGuard\Enums\ReviewDateType;
 use Yard\PageGuard\Enums\TimeUnit;
+use Yard\PageGuard\Traits\PostTypes;
 
 class Meta
 {
+	use PostTypes;
+
 	private const DATE_PATTERN = '^(\d{4}-\d{2}-\d{2})?$';
 
 	public const POST_CONTENT_OWNER_ID = 'ypg_post_content_owner_id';
@@ -21,13 +24,8 @@ class Meta
 	public const REMINDER_TIME_TYPE = 'ypg_reminder_time_type';
 	public const REMINDER_TIME_PERIOD = 'ypg_reminder_time_period';
 	public const REMINDER_TIME_UNIT = 'ypg_reminder_time_unit';
-	/** @deprecated */
-	public const REVIEW_MAIL_SENT = 'ypg_review_mail_sent';
 	public const REVIEW_MAIL_SENT_DATE = 'ypg_review_mail_sent_date';
 	public const LAST_REVIEW_DATE = 'ypg_last_review_date';
-
-	/** @deprecated */
-	public const LAST_REMINDER_DATE = 'ypg_last_reminder_date';
 
 	public const REMINDER_MAIL_SENT_DATE = 'ypg_reminder_mail_sent_date';
 
@@ -143,8 +141,9 @@ class Meta
 					'revisions_enabled' => false,
 				]
 			);
-			//FIXME: loop over supported post types
-			register_post_meta('', $key, $config);
+			foreach ($this->getPostTypes() as $postType) {
+				register_post_meta($postType, $key, $config);
+			}
 		}
 	}
 

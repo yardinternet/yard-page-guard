@@ -28,31 +28,39 @@ class PageGuardListTable extends \WP_List_Table
 	public const ACTION_TRANSFER_OWNERSHIP = 'transfer_ownership';
 	public const ACTION_SET_REVIEW_DATE = 'set_review_date';
 
+	public const COLUMN_TITLE = 'title';
+	public const COLUMN_TYPE = 'type';
+	public const COLUMN_OWNER = 'owner';
+	public const COLUMN_LAST_REVIEW = 'last_review';
+	public const COLUMN_NEXT_REVIEW = 'next_review';
+	public const COLUMN_NEXT_REMINDER_MAIL = 'next_reminder';
+	public const COLUMN_LAST_MAIL = 'last_mail';
+	public const COLUMN_STATUS = 'status';
+
 	public function get_columns()
 	{
 		return [
 			'cb' => '<input type="checkbox" />',
-			'title' => __('Pagina', 'yard-page-guard'),
-			'type' => __('Type', 'yard-page-guard'),
-			'owner' => __('Eigenaar', 'yard-page-guard'),
-			'last_review' => __('Laatst gecontroleerd op', 'yard-page-guard'),
-			'next_review' => __('Volgende herzieningsdatum', 'yard-page-guard'),
-			'next_reminder' => __('Volgende herinneringsmail', 'yard-page-guard'),
-			'last_mail' => __('Laatste mail', 'yard-page-guard'),
-			'status' => __('Status', 'yard-page-guard'),
+			self::COLUMN_TITLE => __('Pagina', 'yard-page-guard'),
+			self::COLUMN_TYPE => __('Type', 'yard-page-guard'),
+			self::COLUMN_OWNER => __('Eigenaar', 'yard-page-guard'),
+			self::COLUMN_LAST_REVIEW => __('Laatst gecontroleerd op', 'yard-page-guard'),
+			self::COLUMN_NEXT_REVIEW => __('Volgende herzieningsdatum', 'yard-page-guard'),
+			self::COLUMN_NEXT_REMINDER_MAIL => __('Volgende herinneringsmail', 'yard-page-guard'),
+			self::COLUMN_LAST_MAIL => __('Laatste mail', 'yard-page-guard'),
+			self::COLUMN_STATUS => __('Status', 'yard-page-guard'),
 		];
 	}
 
 	public function get_sortable_columns()
 	{
-		// FIXME: make the columns sortable by meta value, not by post title
 		return [
-			'title' => ['post_title'],
-			// 'last_review' => [PostMeta::LAST_REVIEW_DATE],
-			// 'last_reminder' => [PostMeta::LAST_REMINDER_DATE],
-			'next_review' => [Meta::REVIEW_DATE],
+			self::COLUMN_TITLE => ['post_title'],
+			self::COLUMN_LAST_REVIEW => [Meta::LAST_REVIEW_DATE],
+			self::COLUMN_NEXT_REVIEW => [Meta::REVIEW_DATE],
 		];
 	}
+
 	public function column_cb($item)
 	{
 		return sprintf(
@@ -69,20 +77,20 @@ class PageGuardListTable extends \WP_List_Table
 		$reviewItem = new ReviewItem($item);
 
 		switch ($column_name) {
-			case 'title':
+			case self::COLUMN_TITLE:
 				return sprintf('<a href="%s">%s</a>', get_edit_post_link($item), $item->post_title);
-			case 'type':
+			case self::COLUMN_TYPE:
 				return esc_html(get_post_type_labels(get_post_type_object($item->post_type))->singular_name);
-			case 'owner':
+			case self::COLUMN_OWNER:
 				//TODO: add external/internal owner type to the list table and link to meta/profile or filter current list table by owner
 				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->displayName() : __('Niet ingesteld', 'yard-page-guard');
-			case 'last_review':
+			case self::COLUMN_LAST_REVIEW:
 				return $reviewItem->lastReviewDateFormatted();
-			case 'next_reminder':
+			case self::COLUMN_NEXT_REMINDER_MAIL:
 				return $reviewItem->reminderDateFormatted();
-			case 'next_review':
+			case self::COLUMN_NEXT_REVIEW:
 				return $reviewItem->reviewDateFormatted();
-			case 'last_mail':
+			case self::COLUMN_LAST_MAIL:
 				if ($reviewItem->reminderMailSentDate()) {
 					return sprintf(__('%s <code>herinneringsmail</code>', 'yard-page-guard'), $reviewItem->reminderMailSentDateFormatted());
 				}
@@ -92,7 +100,7 @@ class PageGuardListTable extends \WP_List_Table
 					return '&mdash;';
 				}
 				// no break
-			case 'status':
+			case self::COLUMN_STATUS:
 				return $reviewItem->status();
 			default:
 				return '';
@@ -129,6 +137,7 @@ class PageGuardListTable extends \WP_List_Table
 			],
 		];
 
+		//TODO: status view voor 'ingesteld'
 		if (! empty($_GET['status_view']) && 'expired' === $_GET['status_view']) {
 			$metaQuery[] = [
 				'key' => Meta::REVIEW_DATE,
@@ -171,7 +180,7 @@ class PageGuardListTable extends \WP_List_Table
 
 	protected function extra_tablenav($which)
 	{
-		if ('top' !== $which) {
+		if ('top' === $which) {
 			// FIXME: duplicate buttons and use marryControls to link them
 			return;
 		}
@@ -213,6 +222,12 @@ class PageGuardListTable extends \WP_List_Table
 		$current = (! empty($_GET['status_view'])) ? sanitize_key($_GET['status_view']) : 'all';
 
 		$base_url = admin_url('admin.php?page=' . $_REQUEST['page']);
+		if (isset($_GET['orderby'])) {
+			$base_url = add_query_arg('orderby', sanitize_key($_GET['orderby']), $base_url);
+		}
+		if (isset($_GET['order'])) {
+			$base_url = add_query_arg('order', sanitize_key($_GET['order']), $base_url);
+		}
 
 		$expiredPosts = get_posts(
 			[
@@ -230,16 +245,48 @@ class PageGuardListTable extends \WP_List_Table
 				'fields' => 'ids',
 			]
 		);
-		$nonExpiredPosts = get_posts(
+		$checkedPosts = get_posts(
 			[
 				'post_type' => $this->getPostTypes(),
 				'post_status' => $this->postStatussesToUse(),
 				'meta_query' => [
 					[
-						'key' => Meta::REVIEW_DATE,
-						'value' => current_time('Y-m-d'),
-						'compare' => '>=',
-						'type' => 'DATE',
+						'RELATION' => 'AND',
+						[
+							'key' => Meta::REVIEW_DATE,
+							'value' => current_time('Y-m-d'),
+							'compare' => '>=',
+							'type' => 'DATE',
+						],
+						[
+							'key' => Meta::LAST_REVIEW_DATE,
+							'compare' => 'EXISTS',
+							'type' => 'DATE',
+						],
+					],
+				],
+				'numberposts' => -1,
+				'fields' => 'ids',
+			]
+		);
+		$assignedPosts = get_posts(
+			[
+				'post_type' => $this->getPostTypes(),
+				'post_status' => $this->postStatussesToUse(),
+				'meta_query' => [
+					[
+						'RELATION' => 'AND',
+						[
+							'key' => Meta::REVIEW_DATE,
+							'value' => current_time('Y-m-d'),
+							'compare' => '>=',
+							'type' => 'DATE',
+						],
+						[
+							'key' => Meta::LAST_REVIEW_DATE,
+							'compare' => 'NOT EXISTS',
+							'type' => 'DATE',
+						],
 					],
 				],
 				'numberposts' => -1,
@@ -253,7 +300,7 @@ class PageGuardListTable extends \WP_List_Table
 				esc_url($base_url),
 				('all' === $current) ? 'current' : '',
 				__('All statussen', 'yard-page-guard'),
-				count($expiredPosts) + count($nonExpiredPosts)
+				count($expiredPosts) + count($checkedPosts) + count($assignedPosts)
 			),
 			'expired' => sprintf(
 				'<a href="%s" class="%s">%s <span class="count">(%d)</span></a>',
@@ -267,7 +314,14 @@ class PageGuardListTable extends \WP_List_Table
 				esc_url(add_query_arg('status_view', 'checked', $base_url)),
 				('checked' === $current) ? 'current' : '',
 				__('Gecontroleerd', 'yard-page-guard'),
-				count($nonExpiredPosts)
+				count($checkedPosts)
+			),
+			'assigned' => sprintf(
+				'<a href="%s" class="%s">%s <span class="count">(%d)</span></a>',
+				esc_url(add_query_arg('status_view', 'assigned', $base_url)),
+				('assigned' === $current) ? 'current' : '',
+				__('Toegewezen', 'yard-page-guard'),
+				count($assignedPosts)
 			),
 		];
 

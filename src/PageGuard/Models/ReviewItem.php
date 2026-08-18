@@ -8,6 +8,7 @@ use WP_Post;
 use Yard\PageGuard\Enums\ContentOwnerType;
 use Yard\PageGuard\Enums\ReminderTimeType;
 use Yard\PageGuard\Enums\ReviewDateType;
+use Yard\PageGuard\Frontend\FrontendServiceProvider;
 use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Taxonomy\ExternalOwnerTaxonomy;
@@ -66,10 +67,9 @@ class ReviewItem
 
 		$originSite = get_home_url();
 		$reviewToken = $this->generateToken($this, $originSite);
-		$permalink = add_query_arg('ypg_review_token', rawurlencode($reviewToken), $permalink); //TODO: constantes voor query args
-
-		$permalink = add_query_arg('ypg_modal_info_endpoint', get_rest_url(null, 'yard/page-guard/v2/modal-info'), $permalink);
-		$permalink = add_query_arg('ypg_post_id', $this->ID(), $permalink);
+		$permalink = add_query_arg(FrontendServiceProvider::QUERY_PARAM_REVIEW_TOKEN, rawurlencode($reviewToken), $permalink);
+		$permalink = add_query_arg(FrontendServiceProvider::QUERY_PARAM_MODAL_INFO_ENDPOINT, get_rest_url(null, 'yard/page-guard/v2/modal-info'), $permalink);
+		$permalink = add_query_arg(FrontendServiceProvider::QUERY_PARAM_POST_ID, $this->ID(), $permalink);
 
 		return $permalink;
 	}
@@ -121,20 +121,6 @@ class ReviewItem
 		return $this->formatDate($this->reminderDate(), $format);
 	}
 
-	/** @deprecated Use reminderMailSentDate() instead */
-	public function lastReminderDate(): ?\DateTimeInterface
-	{
-		$date = get_post_meta($this->ID(), Meta::LAST_REMINDER_DATE, true);
-
-		return \DateTime::createFromFormat('Y-m-d', $date, wp_timezone()) ?: null;
-	}
-
-	/** @deprecated Use reminderMailSentDateFormatted() instead */
-	public function lastReminderDateFormatted(?string $format = null): string
-	{
-		return $this->formatDate($this->lastReminderDate(), $format);
-	}
-
 	public function reminderMailSentDate(): ?\DateTimeInterface
 	{
 		$date = get_post_meta($this->ID(), Meta::REMINDER_MAIL_SENT_DATE, true);
@@ -175,7 +161,7 @@ class ReviewItem
 			);
 		}
 		if (null === $this->lastReviewDate()) {
-			return __('Ingesteld', 'yard-page-guard');
+			return __('Toegewezen', 'yard-page-guard');
 		} else {
 			return __('Gecontroleerd', 'yard-page-guard');
 		}
@@ -197,6 +183,7 @@ class ReviewItem
 	{
 		delete_post_meta($this->ID(), Meta::REMINDER_MAIL_SENT_DATE);
 		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT_DATE);
+		delete_post_meta($this->ID(), Meta::REMINDER_DATE);
 	}
 
 	public function markAsReviewed(): bool
