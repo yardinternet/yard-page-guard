@@ -19,6 +19,8 @@ class AdminOverviewController
 {
 	use AdminPermissions;
 
+	public const PAGE_SLUG = 'ypg-overview';
+
 	public function init(): void
 	{
 		add_action('admin_menu', [$this, 'addOverviewPage']);
@@ -37,7 +39,7 @@ class AdminOverviewController
 			__('Inhoudscontrole', 'yard-page-guard'),
 			__('Inhoudscontrole', 'yard-page-guard'),
 			$this->adminCapability(),
-			'ypg-overview',
+			self::PAGE_SLUG,
 			[$this, 'renderOverviewPage'],
 			'dashicons-shield',
 			20
@@ -54,7 +56,7 @@ class AdminOverviewController
 	public function addOverviewSubPage(): void
 	{
 		add_submenu_page(
-			'ypg-overview',
+			self::PAGE_SLUG,
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
 			__('Externe inhoudseigenaren', 'yard-page-guard'),
 			$this->adminCapability(),
