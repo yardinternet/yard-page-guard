@@ -234,6 +234,11 @@ class ReviewItem
 		update_post_meta($this->ID(), Meta::REMINDER_DATE, $date->format('Y-m-d'));
 	}
 
+	public function setReviewMailSentDate(\DateTimeInterface $date): void
+	{
+		update_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT_DATE, $date->format('Y-m-d'));
+	}
+
 	public function setReviewDate(string $type = ReviewDateType::DEFAULT, ?\DateTimeInterface $reviewDate = null): void
 	{
 		if (ReviewDateType::DEFAULT === $type || null === $reviewDate) {
