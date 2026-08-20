@@ -61,7 +61,7 @@ class Meta
 			],
 			self::REVIEW_DATE => [
 				'type' => 'string',
-				'default' => '',
+				'default' => null,
 				'sanitize_callback' => [$this, 'sanitizeDate'],
 				'show_in_rest' => [
 					'schema' => [
@@ -93,7 +93,7 @@ class Meta
 			],
 			self::LAST_REVIEW_DATE => [
 				'type' => 'string',
-				'default' => '',
+				'default' => null,
 				'sanitize_callback' => [$this, 'sanitizeDate'],
 				'show_in_rest' => [
 					'schema' => [
@@ -104,7 +104,7 @@ class Meta
 			],
 			self::REVIEW_MAIL_SENT_DATE => [
 				'type' => 'string',
-				'default' => '',
+				'default' => null,
 				'sanitize_callback' => [$this, 'sanitizeDate'],
 				'show_in_rest' => [
 					'schema' => [
@@ -115,7 +115,7 @@ class Meta
 			],
 			self::REMINDER_MAIL_SENT_DATE => [
 				'type' => 'string',
-				'default' => '',
+				'default' => null,
 				'sanitize_callback' => [$this, 'sanitizeDate'],
 				'show_in_rest' => [
 					'schema' => [
