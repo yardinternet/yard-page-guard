@@ -37,6 +37,8 @@ class PageGuardListTable extends \WP_List_Table
 	public const COLUMN_LAST_MAIL = 'last_mail';
 	public const COLUMN_STATUS = 'status';
 
+	public const QUERY_PARAM_CONTENT_OWNER = 'content_owner';
+
 	public function get_columns()
 	{
 		return [
@@ -82,8 +84,16 @@ class PageGuardListTable extends \WP_List_Table
 			case self::COLUMN_TYPE:
 				return esc_html(get_post_type_labels(get_post_type_object($item->post_type))->singular_name);
 			case self::COLUMN_OWNER:
-				//TODO: add external/internal owner type to the list table and link to meta/profile or filter current list table by owner
-				return $reviewItem->contentOwner() ? $reviewItem->contentOwner()->displayName() : __('Niet ingesteld', 'yard-page-guard');
+				$owner = $reviewItem->contentOwner();
+				if (! $owner) {
+					return __('Niet ingesteld', 'yard-page-guard');
+				}
+
+				return sprintf(
+					'<a href="%s">%s</a>',
+					esc_url(remove_query_arg('paged', add_query_arg(self::QUERY_PARAM_CONTENT_OWNER, $owner->combinedId()))),
+					esc_html($owner->displayName())
+				);
 			case self::COLUMN_LAST_REVIEW:
 				return $reviewItem->lastReviewDateFormatted();
 			case self::COLUMN_NEXT_REMINDER_MAIL:
@@ -114,6 +124,42 @@ class PageGuardListTable extends \WP_List_Table
 		];
 	}
 
+	protected function filteredContentOwner(): ?ContentOwner
+	{
+		if (empty($_GET[self::QUERY_PARAM_CONTENT_OWNER])) {
+			return null;
+		}
+
+		$combinedId = sanitize_text_field($_GET[self::QUERY_PARAM_CONTENT_OWNER]);
+		if (false === strpos($combinedId, ContentOwner::COMBINED_ID_SEPARATOR)) {
+			return null;
+		}
+
+		return ContentOwner::fromCombinedId($combinedId);
+	}
+
+	protected function contentOwnerMetaQuery(): array
+	{
+		$owner = $this->filteredContentOwner();
+		if (! $owner) {
+			return [];
+		}
+
+		return [
+			[
+				'key' => Meta::POST_CONTENT_OWNER_ID,
+				'value' => $owner->id(),
+				'compare' => '=',
+				'type' => 'NUMERIC',
+			],
+			[
+				'key' => Meta::POST_CONTENT_OWNER_TYPE,
+				'value' => $owner->type(),
+				'compare' => '=',
+			],
+		];
+	}
+
 	public function prepare_items()
 	{
 		$columns = $this->get_columns();
@@ -135,6 +181,7 @@ class PageGuardListTable extends \WP_List_Table
 				'value' => 0,
 				'type' => 'NUMERIC',
 			],
+			...$this->contentOwnerMetaQuery(),
 		];
 
 		//TODO: status view voor 'ingesteld'
@@ -228,12 +275,16 @@ class PageGuardListTable extends \WP_List_Table
 		if (isset($_GET['order'])) {
 			$base_url = add_query_arg('order', sanitize_key($_GET['order']), $base_url);
 		}
+		if (! empty($_GET[self::QUERY_PARAM_CONTENT_OWNER])) {
+			$base_url = add_query_arg(self::QUERY_PARAM_CONTENT_OWNER, sanitize_text_field($_GET[self::QUERY_PARAM_CONTENT_OWNER]), $base_url);
+		}
 
 		$expiredPosts = get_posts(
 			[
 				'post_type' => $this->getPostTypes(),
 				'post_status' => $this->postStatussesToUse(),
 				'meta_query' => [
+					...$this->contentOwnerMetaQuery(),
 					[
 						'key' => Meta::REVIEW_DATE,
 						'value' => current_time('Y-m-d'),
@@ -250,6 +301,7 @@ class PageGuardListTable extends \WP_List_Table
 				'post_type' => $this->getPostTypes(),
 				'post_status' => $this->postStatussesToUse(),
 				'meta_query' => [
+					...$this->contentOwnerMetaQuery(),
 					[
 						'RELATION' => 'AND',
 						[
@@ -274,6 +326,7 @@ class PageGuardListTable extends \WP_List_Table
 				'post_type' => $this->getPostTypes(),
 				'post_status' => $this->postStatussesToUse(),
 				'meta_query' => [
+					...$this->contentOwnerMetaQuery(),
 					[
 						'RELATION' => 'AND',
 						[
@@ -324,6 +377,16 @@ class PageGuardListTable extends \WP_List_Table
 				count($assignedPosts)
 			),
 		];
+
+		$filteredContentOwner = $this->filteredContentOwner();
+		if ($filteredContentOwner) {
+			$views['content_owner'] = sprintf(
+				'%s <a href="%s">%s</a>',
+				sprintf(__('Eigenaar: %s', 'yard-page-guard'), esc_html($filteredContentOwner->displayName())),
+				esc_url(remove_query_arg([self::QUERY_PARAM_CONTENT_OWNER, 'paged'])),
+				__('filter wissen', 'yard-page-guard')
+			);
+		}
 
 		return $views;
 	}
