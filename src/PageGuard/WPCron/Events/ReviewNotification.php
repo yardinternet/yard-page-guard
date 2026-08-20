@@ -54,8 +54,16 @@ class ReviewNotification extends Event
 					'type' => 'DATE',
 				],
 				[
-					'key' => Meta::REVIEW_MAIL_SENT_DATE,
-					'compare' => 'NOT EXISTS',
+					'relation' => 'OR',
+					[
+						'key' => Meta::REVIEW_MAIL_SENT_DATE,
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key' => Meta::REVIEW_MAIL_SENT_DATE,
+						'value' => '',
+						'compare' => '=',
+					],
 				],
 			],
 			// Performance
