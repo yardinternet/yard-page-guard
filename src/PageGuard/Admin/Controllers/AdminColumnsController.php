@@ -58,7 +58,7 @@ class AdminColumnsController
 
 			case self::COLUMN_REVIEW_DATE:
 				if ($reviewItem->isOverdue()) {
-					printf('%s<br>2%s', $reviewItem->reviewDateFormatted(), $reviewItem->status());
+					printf('%1$s<br>%2$s', $reviewItem->reviewDateFormatted(), $reviewItem->status());
 				} else {
 					echo $reviewItem->reviewDateFormatted();
 				}
