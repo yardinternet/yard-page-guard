@@ -79,7 +79,7 @@ class AdminSettingsController
 			__('Herinneringmail BCC emailadres', 'yard-page-guard'),
 			[$this, 'renderInput'],
 			self::PAGE_SLUG,
-			'email',
+			self::SECTION_EMAIL,
 			[
 				'type' => 'email',
 				'name' => Settings::REMINDER_EMAIL_BCC,
