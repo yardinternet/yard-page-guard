@@ -55,14 +55,6 @@ class ReminderNotification extends Event
 					'compare' => '<=',
 					'type' => 'DATE',
 				],
-				// A reminder only makes sense after an unanswered review mail; the
-				// flag is set when that mail goes out and cleared on verification.
-				// This keeps a wrongly-early reminder date from mailing before the
-				// review mail.
-				[
-					'key' => Meta::REVIEW_MAIL_SENT_DATE,
-					'compare' => 'EXISTS',
-				],
 			],
 			// Performance
 			'no_found_rows' => true,
