@@ -29,8 +29,8 @@ trait FormField
 				continue;
 			}
 			if (is_bool($value)) {
-				if (true === $value) {
-					$value = $attributeString .= sprintf(' %s', esc_attr($key));
+				if ($value) {
+					$attributeString .= sprintf(' %s', esc_attr($key));
 				}
 			} else {
 				$attributeString .= sprintf(' %s="%s"', esc_attr($key), esc_attr($value));
