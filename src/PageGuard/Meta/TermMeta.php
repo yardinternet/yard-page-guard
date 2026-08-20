@@ -17,12 +17,12 @@ class TermMeta
 			self::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER => [
 				'type' => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
-				'default' => '',
+				'default' => null,
 			],
 			self::EXTERNAL_CONTENT_OWNER_EMAIL => [
 				'type' => 'string',
 				'sanitize_callback' => 'sanitize_email',
-				'default' => '',
+				'default' => null,
 			],
 		];
 
