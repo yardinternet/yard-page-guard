@@ -34,7 +34,7 @@ class MetaServiceProvider extends ServiceProvider
 
 	public function clearMeta(int $metaId, int $postId, string $metaKey, $metaValue): void
 	{
-		if (Meta::POST_CONTENT_OWNER_ID === $metaId && '' === $metaValue) {
+		if (Meta::POST_CONTENT_OWNER_ID === $metaKey && 0 === $metaValue) {
 			$reviewItem = new ReviewItem(get_post($postId));
 			$reviewItem->removeMetaData();
 		}
