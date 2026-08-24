@@ -96,40 +96,52 @@ class ExternalOwnerTaxonomy
 	 * Returning a WP_Error from `pre_insert_term` cancels the insert and WordPress
 	 * displays the error message as an admin notice automatically.
 	 *
+	 * TODO: in the unlikely event https://core.trac.wordpress.org/ticket/58404 is merged we can also create a similar method for `pre_update_term` to prevent duplicates on update.
+	 *
 	 * @param string|\WP_Error $term The term name or a WP_Error.
 	 * @param string $taxonomy The taxonomy slug.
 	 *
 	 * @return string|\WP_Error
 	 */
-	public function preventDuplicateEmailOnInsert($term, string $taxonomy)
+	public function validateMeta($term, string $taxonomy, array $args)
 	{
 		if (ExternalOwnerTaxonomy::TAXONOMY !== $taxonomy) {
 			return $term;
 		}
 
-		return $this->validateEmail($term);
-	}
-
-	/**
-	 * Prevent updating a term if the email is missing, invalid, or already exists on another term.
-	 *
-	 * Returning a WP_Error from `wp_update_term_data` cancels the update and WordPress
-	 * displays the error message as an admin notice automatically.
-	 *
-	 * @param array $data The term data to be updated.
-	 * @param int $termId The term ID.
-	 * @param string $taxonomy The taxonomy slug.
-	 * @param array $args The raw arguments passed to wp_update_term().
-	 *
-	 * @return array|\WP_Error
-	 */
-	public function preventDuplicateEmailOnUpdate(array $data, int $termId, string $taxonomy, array $args)
-	{
-		if (ExternalOwnerTaxonomy::TAXONOMY !== $taxonomy) {
-			return $data;
+		if (is_wp_error($term)) {
+			return $term;
 		}
 
-		return $this->validateEmail($data, $termId);
+		if (! isset($args['tag-name']) || ! is_string($args['tag-name']) || strlen(trim($args['tag-name'])) === 0) {
+			return new \WP_Error(
+				'ypg_invalid_term_name',
+				__('De naam van de externe inhoudseigenaar is verplicht', 'yard-page-guard')
+			);
+		}
+
+		if (! isset($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL]) || ! is_string($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL]) || strlen(trim($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL])) === 0) {
+			return new \WP_Error(
+				'ypg_missing_email',
+				__('Een e-mailadres is verplicht voor een externe inhoudseigenaar.', 'yard-page-guard')
+			);
+		}
+
+		if (! is_email($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL])) {
+			return new \WP_Error(
+				'ypg_invalid_email',
+				__('Voer een geldig e-mailadres in.', 'yard-page-guard')
+			);
+		}
+
+		if ($this->emailExistsOnAnotherTerm($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL])) {
+			return new \WP_Error(
+				'ypg_duplicate_email',
+				__('Er bestaat al een externe inhoudseigenaar met dit e-mailadres.', 'yard-page-guard')
+			);
+		}
+
+		return $term;
 	}
 
 	/**
@@ -158,30 +170,9 @@ class ExternalOwnerTaxonomy
 		update_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, $phoneNumber);
 	}
 
-	/**
-	 * @param mixed $passthrough Value to return on success.
-	 * @param int|null $excludeTermId Term ID to exclude from the duplicate check (for edits).
-	 *
-	 * @return mixed|\WP_Error
-	 */
-	private function validateEmail($passthrough, ?int $excludeTermId = null)
+	private function emailExistsOnAnotherTerm(string $email, ?int $excludeTermId = null): bool
 	{
-		if (! isset($_POST[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL])) {
-			return new \WP_Error(
-				'ypg_missing_email',
-				__('Een e-mailadres is verplicht voor een externe inhoudseigenaar.', 'yard-page-guard')
-			);
-		}
-
-		$email = sanitize_email($_POST[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL]);
-
-		if ('' === $email || ! is_email($email)) {
-			return new \WP_Error(
-				'ypg_invalid_email',
-				__('Voer een geldig e-mailadres in.', 'yard-page-guard')
-			);
-		}
-
+		$email = sanitize_email($email);
 		$existingTerms = get_terms([
 			'taxonomy' => ExternalOwnerTaxonomy::TAXONOMY,
 			'hide_empty' => false,
@@ -191,24 +182,7 @@ class ExternalOwnerTaxonomy
 			'exclude' => $excludeTermId,
 		]);
 
-		if (is_wp_error($existingTerms)) {
-			return $passthrough;
-		}
-
-		if (null !== $excludeTermId) {
-			$existingTerms = array_filter($existingTerms, function ($id) use ($excludeTermId) {
-				return (int) $id !== $excludeTermId;
-			});
-		}
-
-		if (is_array($existingTerms) && count($existingTerms) > 0) {
-			return new \WP_Error(
-				'ypg_duplicate_email',
-				__('Er bestaat al een externe inhoudseigenaar met dit e-mailadres.', 'yard-page-guard')
-			);
-		}
-
-		return $passthrough;
+		return is_array($existingTerms) && count($existingTerms) > 0;
 	}
 
 	public function setSlugFromEmailOnInsert(array $data, string $taxonomy, array $args): array
