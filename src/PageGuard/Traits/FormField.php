@@ -87,7 +87,7 @@ trait FormField
 
 		if ($table) {
 			return sprintf(
-				'<tr class="form-field"><th scope="row">%1$s</th><td>%2$s<span class="description">%3$s</span></td></tr>',
+				'<tr class="form-field"><th scope="row">%1$s</th><td>%2$s<p class="description">%3$s</p></td></tr>',
 				$label,
 				$input,
 				esc_html($args['description'])
@@ -95,7 +95,7 @@ trait FormField
 		}
 
 		return sprintf(
-			'<div class="form-field">%1$s%2$s%3$s</div>',
+			'<div class="form-field">%1$s%2$s<p class="description">%3$s</p></div>',
 			$label,
 			$input,
 			esc_html($args['description'])
