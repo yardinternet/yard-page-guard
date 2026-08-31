@@ -44,31 +44,24 @@ class AdminServiceProvider extends ServiceProvider
 		}
 
 		$handle = 'ypg-editor-sidebar';
+		$asset = $this->plugin->assetMeta('editor-sidebar');
 
 		wp_enqueue_style(
 			$handle,
 			$this->plugin->resourceUrl('editor-sidebar.css'),
 			[],
-			filemtime($this->plugin->resourcePath('editor-sidebar.css')),
+			$asset['version'],
 		);
 
 		wp_enqueue_script(
 			$handle,
 			$this->plugin->resourceUrl('editor-sidebar.js'),
-			$this->getEditorScriptDependencies(),
-			filemtime($this->plugin->resourcePath('editor-sidebar.js')),
+			$asset['dependencies'],
+			$asset['version'],
 			['in_footer' => true],
 		);
 
 		wp_set_script_translations($handle, 'yard-page-guard', $this->plugin->rootPath . '/languages');
-	}
-
-	private function getEditorScriptDependencies(): array
-	{
-		$path = $this->plugin->resourcePath('editor.deps.json', 'assets');
-		$deps = wp_json_file_decode($path, ['associative' => true]) ?? [];
-
-		return array_values(array_unique(array_merge(['wp-element'], is_array($deps) ? $deps : [])));
 	}
 
 	private function isEditorForEnabledPostType(): bool

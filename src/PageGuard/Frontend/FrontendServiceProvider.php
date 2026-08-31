@@ -54,19 +54,20 @@ class FrontendServiceProvider extends ServiceProvider
 		}
 
 		$handle = 'ypg-frontend';
+		$asset = $this->plugin->assetMeta('frontend');
 
 		wp_enqueue_style(
 			$handle,
 			$this->plugin->resourceUrl('frontend.css'),
 			[],
-			filemtime($this->plugin->resourcePath('frontend.css')),
+			$asset['version'],
 		);
 
 		wp_enqueue_script(
 			$handle,
 			$this->plugin->resourceUrl('frontend.js'),
-			['wp-element', 'wp-i18n'],
-			filemtime($this->plugin->resourcePath('frontend.js')),
+			$asset['dependencies'],
+			$asset['version'],
 			['in_footer' => true],
 		);
 
