@@ -245,6 +245,10 @@ class Metabox
 			return;
 		}
 
+		if (! isset($_POST[self::NONCE_FIELD])) {
+			return;
+		}
+
 		check_admin_referer(self::NONCE_ACTION, self::NONCE_FIELD);
 
 		if (! current_user_can($this->adminCapability(), $postId)) {
