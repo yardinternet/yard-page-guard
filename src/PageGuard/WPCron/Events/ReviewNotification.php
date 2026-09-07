@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
+use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
-use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Email;
 use Yard\PageGuard\Traits\Text;
 
 class ReviewNotification extends Event
 {
-	use Date;
 	use Text;
 	use Email;
 
@@ -40,17 +40,17 @@ class ReviewNotification extends Event
 			'meta_query' => [
 				'relation' => 'AND',
 				[
-					'key' => 'ypg_post_content_owner_email',
+					'key' => Meta::POST_CONTENT_OWNER_ID,
 					'compare' => 'EXISTS',
 				],
 				[
-					'key' => 'ypg_review_date',
+					'key' => Meta::REVIEW_DATE,
 					'value' => date('Y-m-d'),
 					'compare' => '<=',
 					'type' => 'DATE',
 				],
 				[
-					'key' => 'ypg_review_mail_sent',
+					'key' => Meta::REVIEW_MAIL_SENT,
 					'compare' => 'NOT EXISTS',
 				],
 			],
@@ -80,7 +80,7 @@ class ReviewNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option(Settings::REVIEW_EMAIL_SUBJECT, __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
@@ -88,9 +88,10 @@ class ReviewNotification extends Event
 
 				continue;
 			}
-
+			/** @var ReviewItem $item */
 			foreach ($ownerItems as $item) {
-				$this->updateModuleMeta($item);
+				$item->setReviewMailSent();
+				$item->setReminderDate();
 			}
 		}
 	}
@@ -100,7 +101,7 @@ class ReviewNotification extends Event
 	 */
 	private function getContent(array $items, ContentOwner $owner): string
 	{
-		$content = wpautop(get_option('ypg_review_email_content', ''));
+		$content = wpautop(get_option(Settings::REVIEW_EMAIL_CONTENT, ''));
 		$itemList = $this->buildItemListHtml($items);
 
 		$values = [
@@ -111,11 +112,5 @@ class ReviewNotification extends Event
 		$contentHtml = $this->replacePlaceholders($content, $values);
 
 		return $this->wrapHtmlEmail($contentHtml);
-	}
-
-	private function updateModuleMeta(ReviewItem $item): void
-	{
-		update_post_meta($item->ID(), 'ypg_is_verified', '0');
-		update_post_meta($item->ID(), 'ypg_review_mail_sent', '1');
 	}
 }

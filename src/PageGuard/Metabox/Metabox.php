@@ -4,284 +4,28 @@ declare(strict_types=1);
 
 namespace Yard\PageGuard\Metabox;
 
-use WP_Post;
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Enums\TimeUnit;
+use Yard\PageGuard\Meta\Meta;
+use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Date;
-use Yard\PageGuard\Traits\Meta;
-use Yard\PageGuard\Traits\Text;
 
 class Metabox
 {
 	use Date;
-	use Text;
-	use Meta;
 
 	public function addMetaboxes(): void
 	{
 		add_meta_box(
-			'yard_page_guard_metaboxes',
-			__('Houdbaarsheidsmodule', 'yard-page-guard'),
-			[$this, 'displayMetaboxes'],
+			'yard_page_guard_metabox',
+			__('Inhoudscontrole module', 'yard-page-guard'),
+			[$this, 'renderMetaBox'],
 			apply_filters('yard::page-guard/post-types-to-use', ['page']),
 			'side',
-			'high'
+			'high',
+			[ '__back_compat_meta_box' => true ] // Automatically hides this inside Gutenberg
 		);
-	}
-
-	public function displayMetaboxes(WP_Post $post): void
-	{
-		wp_nonce_field(basename(__FILE__), 'ypg_metaboxes_nonce');
-		echo $this->displayMetaboxesHTML($post->ID);
-	}
-
-	private function displayMetaboxesHTML(int $postId): string
-	{
-		$html = sprintf('<p>%s</p>', __('Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.', 'yard-page-guard'));
-
-		if ($this->currentUserHasAccess($postId)) {
-			$html = $this->contentOwnerMetabox($html, $postId);
-			$html = $this->isVerifiedMetabox($html, $postId);
-			$html = $this->reviewDateMetabox($html, $postId);
-			$html = $this->reminderMetabox($html, $postId);
-		} else {
-			$html .= sprintf('<p><b>%s</b></p>', __('U heeft geen toestemming om de houdbaarsheids module te bewerken.', 'yard-page-guard'));
-		}
-
-		return $html;
-	}
-
-	private function contentOwnerMetabox(string $html, int $postId): string
-	{
-		$contentOwnerId = get_post_meta($postId, 'ypg_post_content_owner_id', true);
-		$contentOwnerType = get_post_meta($postId, 'ypg_post_content_owner_type', true);
-
-		$wpUsers = get_users([
-			'capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-		]);
-
-		$externalUsers = get_terms([
-			'taxonomy' => 'ypg_external_content_owner',
-			'hide_empty' => false,
-		]);
-
-		if (is_wp_error($externalUsers)) {
-			return '';
-		}
-
-		$optionsHtml = '';
-
-		$optionsHtml .= sprintf(
-			'<option value="none">%s</option>',
-			__('Maak een keuze', 'yard-page-guard')
-		);
-
-		foreach ($wpUsers as $user) {
-			$name = $user->first_name ? $user->first_name . ' ' . $user->last_name : $user->display_name;
-			$selected = ($contentOwnerId == $user->ID && ContentOwnerType::USER === $contentOwnerType) ? ' selected="selected"' : '';
-
-			$optionsHtml .= sprintf(
-				'<option value="%s|%s|%s|user"%s>%s</option>',
-				esc_attr($user->ID),
-				esc_attr($name),
-				esc_attr($user->user_email),
-				$selected,
-				esc_html($user->display_name)
-			);
-		}
-
-		if (! is_wp_error($externalUsers)) {
-			foreach ($externalUsers as $user) {
-				$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
-				$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
-				$selected = ($contentOwnerId == $user->term_id && ContentOwnerType::EXTERNAL === $contentOwnerType) ? ' selected="selected"' : '';
-
-				$optionsHtml .= sprintf(
-					'<option value="%s|%s|%s|external|%s"%s>%s (%s)</option>',
-					esc_attr($user->term_id),
-					esc_attr($user->name),
-					esc_attr($email),
-					esc_attr($phoneNumber),
-					$selected,
-					esc_html($user->name),
-					__('Extern', 'yard-page-guard')
-				);
-			}
-		}
-
-		$label = __('Inhoudseigenaar', 'yard-page-guard');
-
-		$html .= <<<HTML
-		<div class="ypg-metabox-wrapper flex-column">
-			<label for="ypg_post_content_owner">$label:</label>
-			<select name="ypg_post_content_owner" id="ypg_post_content_owner">
-				$optionsHtml
-			</select>
-		</div>
-		HTML;
-
-		return $html;
-	}
-
-	private function isVerifiedMetabox(string $html, int $postId): string
-	{
-		$isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
-		$checked = checked($isVerified, 1, false);
-		$label = __('Gecontroleerd?', 'yard-page-guard');
-
-		$html .= <<<HTML
-		<div class="ypg-metabox-wrapper">
-			<label for="ypg_is_verified">
-				<input type="checkbox" name="ypg_is_verified" id="ypg_is_verified" value="1"$checked/>
-				$label
-			</label>
-		</div>
-		HTML;
-
-		return $html;
-	}
-
-	private function reviewDateMetabox(string $html, int $postId): string
-	{
-		$reviewDate = get_post_meta($postId, 'ypg_review_date', true);
-		$isVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
-
-		$label = $isVerified
-			? __('Volgende herzieningsdatum', 'yard-page-guard')
-			: __('Herzieningsdatum', 'yard-page-guard');
-
-		$message = $isVerified
-			? __('Het vinkje wordt op de datum hierboven weer weggehaald voor een nieuwe controle. Er wordt dan ook een mail verstuurd naar de eigenaar.', 'yard-page-guard')
-			: __('De controle notificatie wordt (of is al) via de e-mail verstuurd op de ingestelde datum.', 'yard-page-guard');
-
-		$reviewDateEscaped = esc_attr($reviewDate);
-		$minDate = esc_attr(date('Y-m-d'));
-
-		$html .= <<<HTML
-		<div class="ypg-metabox-wrapper flex-column">
-			<label for="ypg_review_date">$label:</label>
-			<input type="date" name="ypg_review_date" id="ypg_review_date" value="$reviewDateEscaped" min="$minDate" />
-			<p style="margin-bottom: 0">$message</p>
-		</div>
-		HTML;
-
-		return $html;
-	}
-
-	private function reminderMetabox(string $html, int $postId): string
-	{
-		$postUnit = get_post_meta($postId, 'ypg_reminder_time_unit', true);
-		$postPeriod = get_post_meta($postId, 'ypg_reminder_time_period', true);
-		$isDefault = empty($postPeriod) || empty($postUnit);
-		$customReminderAriaHidden = $isDefault ? 'true' : 'false';
-		$currentUnit = ! empty($postUnit) ? $postUnit : get_option('ypg_reminder_time_unit', 'weeks');
-		$currentPeriod = ! empty($postPeriod) ? $postPeriod : get_option('ypg_reminder_time_period', 1);
-
-		$unitOptionElements = '';
-
-		foreach ($this->getUnitOptions() as $unitValue => $label) {
-			$unitOptionElements .= sprintf('<option value="%s" %s>%s</option>', $unitValue, selected($currentUnit, $unitValue, false), $label);
-		}
-
-		$reminderTypes = ['default' => __('Standaard', 'yard-page-guard'), 'custom' => __('Aangepast', 'yard-page-guard')];
-		$typeOptionElements = '';
-
-		foreach ($reminderTypes as $value => $label) {
-			$checked = checked($isDefault, 'default' === $value, false);
-
-			$typeOptionElements .= <<<HTML
-			<div>
-					<input type="radio" id="ypg-reminder-$value" name="ypg_reminder_type" value="$value" $checked/>
-					<label for="ypg-reminder-$value">$label</label>
-			</div>
-			HTML;
-		}
-
-		$label = __('Herinnering periode', 'yard-page-guard');
-
-		$html .= <<<HTML
-		<div class="ypg-metabox-wrapper flex-column mb-0">
-			<label for="ypg_reminder_date">$label:</label>
-
-			<fieldset id="ypg-reminder-type-radio">
-				$typeOptionElements
-			</fieldset>
-
-			<div class="ypg-reminder-date-input-wrapper" aria-hidden="$customReminderAriaHidden">
-				<div class="d-flex">
-					<input class="w-full" type="number" name="ypg_reminder_time_period" value="$currentPeriod" min="1" />
-					<select class="w-full" name="ypg_reminder_time_unit">
-						$unitOptionElements
-					</select>
-				</div>
-			</div>
-		</div>
-		HTML;
-
-		return $html;
-	}
-
-	public function saveMetaValues(int $postId): void
-	{
-		if (! $this->shouldSave($postId)) {
-			return;
-		}
-
-		if (! isset($_POST['ypg_post_content_owner'])) {
-			return;
-		}
-
-		$contentOwner = sanitize_text_field($_POST['ypg_post_content_owner']);
-
-		if ('none' === $contentOwner) {
-			$this->clearReviewMeta($postId);
-
-			return;
-		}
-
-		$ownerData = $this->parseContentOwnerData($contentOwner);
-		$this->updateOwnerMeta($postId, $ownerData);
-
-		$wasPreviouslyVerified = (bool) get_post_meta($postId, 'ypg_is_verified', true);
-		$toBeVerified = isset($_POST['ypg_is_verified']);
-
-		// Remove mail sent status if verified (date will update) OR post is manually being unverified
-		if ($toBeVerified || ! $toBeVerified && $wasPreviouslyVerified) {
-			delete_post_meta($postId, 'ypg_review_mail_sent');
-			delete_post_meta($postId, 'ypg_last_reminder_date');
-		}
-
-		if ('custom' === ($_POST['ypg_reminder_type'] ?? 'standard')) {
-			update_post_meta($postId, 'ypg_reminder_time_period', $_POST['ypg_reminder_time_period']);
-			update_post_meta($postId, 'ypg_reminder_time_unit', $_POST['ypg_reminder_time_unit']);
-		} else {
-			delete_post_meta($postId, 'ypg_reminder_time_period');
-			delete_post_meta($postId, 'ypg_reminder_time_unit');
-		}
-
-		$reviewDate = $this->computeReviewDate($postId, $toBeVerified, $wasPreviouslyVerified);
-		$reminderDate = $this->computeReminderDate($postId, $toBeVerified, $wasPreviouslyVerified, $reviewDate);
-
-		$this->updateVerificationMeta($postId, $toBeVerified, $reviewDate, $reminderDate);
-	}
-
-	private function updateOwnerMeta(int $postId, array $ownerData): void
-	{
-		update_post_meta($postId, 'ypg_post_content_owner_id', $ownerData['id']);
-		update_post_meta($postId, 'ypg_post_content_owner_name', $ownerData['name']);
-		update_post_meta($postId, 'ypg_post_content_owner_email', $ownerData['email']);
-		update_post_meta($postId, 'ypg_post_content_owner_type', $ownerData['type']);
-		update_post_meta($postId, 'ypg_post_content_owner_phone_number', $ownerData['phone_number']);
-	}
-
-	private function updateVerificationMeta(int $postId, bool $isVerified, string $reviewDate, string $reminderDate): void
-	{
-		update_post_meta($postId, 'ypg_is_verified', (int) $isVerified);
-		update_post_meta($postId, 'ypg_review_date', $reviewDate);
-		update_post_meta($postId, 'ypg_reminder_date', $reminderDate);
-
-		if ($isVerified) {
-			update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
-		}
 	}
 
 	private function shouldSave(int $postId): bool
@@ -291,28 +35,11 @@ class Metabox
 			if (! wp_verify_nonce($_POST['ypg_metaboxes_nonce'], basename(__FILE__))) {
 				return false;
 			}
-		} elseif (isset($_POST['_inline_edit'])) {
-			if (! wp_verify_nonce($_POST['_inline_edit'], 'inlineeditnonce')) {
-				return false;
-			}
-		} elseif (isset($_REQUEST['_wpnonce'])) {
-			if (! wp_verify_nonce($_REQUEST['_wpnonce'], 'bulk-posts')) {
-				return false;
-			}
-
-			// Keys to copy from $_REQUEST (in case of bulk edit) to $_POST
-			$keys = ['ypg_post_content_owner', 'ypg_review_date', 'ypg_is_verified', 'post_type'];
-
-			foreach ($keys as $key) {
-				if (isset($_REQUEST[$key])) {
-					$_POST[$key] = $_REQUEST[$key];
-				}
-			}
 		} else {
 			return false;
 		}
 
-		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+		if (defined('DOING_AUTOSAVE') && \DOING_AUTOSAVE) {
 			return false;
 		}
 
@@ -335,8 +62,8 @@ class Metabox
 	private function currentUserHasAccess(int $postId): bool
 	{
 		$post = get_post($postId);
-		$contentOwnerId = get_post_meta($postId, 'ypg_post_content_owner_id', true) ?: '';
-		$contentOwnerType = get_post_meta($postId, 'ypg_post_content_owner_type', true);
+		$contentOwnerId = get_post_meta($postId, Meta::POST_CONTENT_OWNER_ID, true) ?: '';
+		$contentOwnerType = get_post_meta($postId, Meta::POST_CONTENT_OWNER_TYPE, true);
 		$currentUser = wp_get_current_user();
 
 		// Make admin roles filterable
@@ -366,8 +93,11 @@ class Metabox
 			return;
 		}
 
-		$contentOwnerName = trim((string) (get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: ''));
+		$reviewItem = new ReviewItem(get_post($postId));
 
+		$contentOwnerName = trim((string) ($reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : ''));
+
+		//FIXME: this can be based on the content owner type and id instead of the name, but for now this is the easiest way to check if the content owner is set or not
 		if ('' === $contentOwnerName) {
 			$this->removeInternalData($postId);
 
@@ -412,11 +142,13 @@ class Metabox
 
 	private function addInternalData(int $postId): void
 	{
-		$ownerName = get_post_meta($postId, 'ypg_post_content_owner_name', true) ?: '';
-		$ownerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
-		$ownerPhone = get_post_meta($postId, 'ypg_post_content_owner_phone_number', true) ?: '';
+		$reviewItem = new ReviewItem(get_post($postId));
 
-		$title = __('Houdbaarheidsmodule', 'yard-page-guard');
+		$ownerName = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->name() : '';
+		$ownerEmail = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->email() : '';
+		$ownerPhone = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->phone() : '';
+
+		$title = __('Inhoudscontrole module', 'yard-page-guard');
 		$label = __('Inhoudseigenaar', 'yard-page-guard') . ': ';
 
 		$ownerLink = sprintf(
@@ -521,7 +253,7 @@ class Metabox
 
 	private function removeInternalData(int $postId): void
 	{
-		$newTitle = __('Houdbaarheidsmodule', 'yard-page-guard');
+		$newTitle = __('Inhoudscontrole module', 'yard-page-guard');
 
 		/**
 		 * Remove entry from single meta fields (fusion portal)
@@ -593,5 +325,306 @@ class Metabox
 		}
 
 		return null;
+	}
+
+	public function renderMetaBox(\WP_Post $post)
+	{
+		wp_nonce_field('ypg_meta_update', 'ypg_metaboxes_nonce');
+
+		$reviewItem = new ReviewItem($post);
+
+		$contentOwner = $reviewItem->contentOwner();
+		$contentOwnerId = $contentOwner ? $contentOwner->id() : '';
+		$contentOwnerType = $contentOwner ? $contentOwner->type() : ContentOwnerType::USER;
+
+		//TODO: better
+		$defaultReviewData = get_post_meta($post->ID, Meta::REVIEW_DATE, true) ?: $this->addPeriodToBase(date('Y-m-d'), (int) get_option(Settings::REMINDER_TIME_PERIOD, 1), get_option(Settings::REMINDER_TIME_UNIT, 'weeks'));
+		$defaultReminderData = get_option(Settings::REMINDER_TIME_PERIOD, 1) . ' ' . get_option(Settings::REMINDER_TIME_UNIT, 'weeks');
+		?>
+	<div>
+		<div>
+			<h4><?php esc_html_e('Inhoudseigenaar', 'yard-page-guard'); ?></h4>
+			<p class="description"><?php esc_html_e('Inhoudseigenaren krijgen een herinnering op de ingestelde datum om de inhoud van deze pagina te verifiëren.', 'yard-page-guard'); ?></p>
+			<?php echo $this->renderInput([
+				'type' => 'select',
+				'name' => Meta::POST_CONTENT_OWNER_ID,
+				'value' => sprintf('%s_%s', $contentOwnerType, $contentOwnerId),
+				'options' => $this->getContentOwnerOptions(),
+			]); ?>
+		</div>
+		<hr>
+		<div >
+			<h4><?php esc_html_e('Herzieningsdatum', 'yard-page-guard'); ?></h4>
+			<div
+				data-toggle-control
+				data-toggle-name="<?php echo esc_attr(Meta::REVIEW_DATE_TYPE); ?>"
+				data-toggle-target=".ypg-review-date"
+				data-toggle-value="custom"
+			>
+				<?php echo $this->renderInput(
+					['type' => 'radio',
+						'name' => Meta::REVIEW_DATE_TYPE,
+						'value' => $reviewItem->reviewDateType(),
+						'options' => [
+							'default' => __('Volgens de standaardinstelling', 'yard-page-guard') . sprintf('<code>%s</code>', esc_html($defaultReviewData)),
+							'custom' => __('Kies eenmalig een afwijkende datum', 'yard-page-guard'),
+						],
+						'label' => __('Wanneer moet de inhoudseigenaar de eerste controlemail ontvangen?', 'yard-page-guard'),
+					]);?>
+			</div>
+			<div class="ypg-review-date">
+				<?php echo $this->renderInput(
+					['type' => 'date',
+						'name' => Meta::REVIEW_DATE,
+						'value' => $reviewItem->reviewDate() ? $reviewItem->reviewDate()->format('Y-m-d') : '',
+						'label' => __('Kies een datum:', 'yard-page-guard'),
+						'min' => date('Y-m-d'),
+					]
+				);?>
+			</div>
+		</div>
+		<hr>
+		<div>
+			<h4><?php esc_html_e('Herinneringsperiode', 'yard-page-guard'); ?></h4>
+			<div
+				data-toggle-control
+				data-toggle-name="<?php echo esc_attr(Meta::REMINDER_TIME_TYPE); ?>"
+				data-toggle-target=".ypg-reminder-interval"
+				data-toggle-value="custom"
+			>
+				<?php echo $this->renderInput(
+					['type' => 'radio',
+						'name' => Meta::REMINDER_TIME_TYPE,
+						'value' => $reviewItem->reminderTimeType(),
+						'options' => [
+							'default' => __('Volgens de standaardinstelling', 'yard-page-guard') . sprintf('<code>%s</code>', esc_html($defaultReminderData)),
+							'custom' => __('Kies afwijkende periode:', 'yard-page-guard'),
+						],
+						'label' => __('Wanneer moet de herinnneringsmail verstuurd worden als de controle nog niet is afgerond?', 'yard-page-guard'),
+					]
+				);?>
+			</div>
+			<div class="ypg-reminder-interval">
+				<?php echo $this->renderInput(
+					['type' => 'number',
+						'name' => Meta::REMINDER_TIME_PERIOD,
+						'value' => $reviewItem->reminderTimePeriod(),
+						'label' => __('Aantal:', 'yard-page-guard'),
+						'min' => 1,
+					]
+				);?>
+				<?php echo $this->renderInput(
+					['type' => 'select',
+						'name' => Meta::REMINDER_TIME_UNIT,
+						'value' => $reviewItem->reminderTimeUnit(),
+						'options' => TimeUnit::options(),
+						'label' => __('Eenheid:', 'yard-page-guard'),
+					]
+				);?>
+			</div>
+		</div>
+		<hr>
+		<div>
+			<h4><?php esc_html_e('Status', 'yard-page-guard'); ?></h4>
+			<?php echo $this->renderInput(
+				[
+					'type' => 'date',
+					'name' => Meta::LAST_REVIEW_DATE,
+					'value' => $reviewItem->lastReviewDate() ? $reviewItem->lastReviewDate()->format('Y-m-d') : '',
+					'label' => __('Wanneer voor het laatst gecontroleerd?', 'yard-page-guard'),
+					'readonly' => true,
+					'disabled' => true,
+				]
+			);?>
+			<button type="button" class="button" onclick="alert('Action Triggered!')"><?php esc_html_e('Markeer als gecontroleerd', 'yard-page-guard'); ?></button>
+		</div>
+	</div>
+	<?php
+	wp_print_inline_script_tag("
+		document.addEventListener('DOMContentLoaded', function() {
+			var controls = document.querySelectorAll('[data-toggle-control]');
+
+			function updateVisibility(control) {
+				var groupName = control.dataset.toggleName;
+				var targetSelector = control.dataset.toggleTarget;
+				var expectedValue = control.dataset.toggleValue;
+				var selected = null;
+
+				selected = document.querySelector('select[name=\"' + groupName + '\"]') ?? document.querySelector('input[name=\"' + groupName + '\"]:checked');
+				if (!selected) {
+					selected = document.querySelector('[name=\"' + groupName + '\"]');
+				}
+
+				var targets = document.querySelectorAll(targetSelector);
+
+				if (!targets.length) {
+					return;
+				}
+
+				targets.forEach(function(target) {
+					var shouldShow = false;
+
+					if (selected) {
+						if (expectedValue === '*') {
+							shouldShow = selected.value !== '';
+						} else {
+							shouldShow = selected.value === expectedValue;
+						}
+					}
+
+					target.style.display = shouldShow ? 'block' : 'none';
+				});
+			}
+
+			controls.forEach(function(control) {
+				updateVisibility(control);
+				control.addEventListener('change', function() {
+					updateVisibility(control);
+				});
+			});
+		});
+		");
+	}
+
+	public function saveMeta(int $postId, \WP_Post $post, bool $update)
+	{
+		if (! isset($_POST['ypg_metaboxes_nonce']) || ! wp_verify_nonce($_POST['ypg_metaboxes_nonce'], 'ypg_meta_update')) {
+			return;
+		}
+		if (defined('DOING_AUTOSAVE') && \DOING_AUTOSAVE) {
+			return;
+		}
+
+		if (! current_user_can(apply_filters('yard::page-guard/capability/admin', 'edit_pages'), $postId)) {
+			return;
+		}
+
+		$reviewItem = new ReviewItem($post);
+
+		$postContentOwner = sanitize_text_field($_POST[Meta::POST_CONTENT_OWNER_ID] ?? '');
+		if ('' === $postContentOwner) {
+			$reviewItem->removeMetaData();
+		} else {
+			$postContentOwnerParts = explode('_', $postContentOwner, 2);
+			$postContentOwnerType = $postContentOwnerParts[0] ?? null;
+			$postContentOwnerId = isset($postContentOwnerParts[1]) ? (int) $postContentOwnerParts[1] : null;
+
+			$reviewDateType = sanitize_text_field($_POST[Meta::REVIEW_DATE_TYPE] ?? '');
+			$reviewDate = sanitize_text_field($_POST[Meta::REVIEW_DATE] ?? '');
+			$reminderTimeType = sanitize_text_field($_POST[Meta::REMINDER_TIME_TYPE] ?? null);
+			$reminderTimePeriod = isset($_POST[Meta::REMINDER_TIME_PERIOD]) ? intval($_POST[Meta::REMINDER_TIME_PERIOD]) : null;
+			$reminderTimeUnit = sanitize_text_field($_POST[Meta::REMINDER_TIME_UNIT] ?? null);
+
+			$reviewItem->setContentOwner($postContentOwnerId, $postContentOwnerType);
+			$reviewItem->setReviewDate($reviewDateType, \DateTime::createFromFormat('Y-m-d', $reviewDate)?: null);
+			$reviewItem->setReminderTime($reminderTimeType, $reminderTimePeriod, $reminderTimeUnit);
+		}
+	}
+
+	// TODO: move to to trait?
+	protected function renderInput(array $args): string
+	{
+		$args = wp_parse_args($args, [
+			'type' => 'text',
+			'name' => '',
+			'value' => '',
+			'label' => '',
+			'description' => '',
+			'options' => [],
+			'min' => null,
+			'max' => null,
+			'step' => null,
+			'disabled' => null,
+			'readonly' => null,
+		]);
+
+		$attributes = wp_array_slice_assoc($args, ['min', 'max', 'step', 'disabled', 'readonly']);
+		$attributeString = '';
+		foreach ($attributes as $key => $value) {
+			if (null !== $value) {
+				$attributeString .= sprintf(' %s="%s"', esc_attr($key), esc_attr($value));
+			}
+		}
+
+		switch ($args['type']) {
+			case 'text':
+			case 'email':
+			case 'phone':
+			case 'number':
+			case 'date':
+				return sprintf(
+					'<p><label for="%1$s">%2$s</label><input type="%5$s" name="%1$s" value="%3$s" class="widefat" %6$s/><span class="description">%4$s</span></p>',
+					esc_attr($args['name']),
+					esc_html($args['label']),
+					esc_attr($args['value']),
+					esc_html($args['description']),
+					esc_attr($args['type']),
+					$attributeString
+				);
+			case 'select':
+				$optionsHtml = '';
+				foreach ($args['options'] as $optionValue => $optionLabel) {
+					$selected = selected($args['value'], $optionValue, false);
+					$optionsHtml .= sprintf('<option value="%s" %s>%s</option>', esc_attr($optionValue), $selected, esc_html($optionLabel));
+				}
+
+				return sprintf(
+					'<p><label for="%1$s">%2$s</label><select id="%1$s" name="%1$s">%3$s</select><span class="description">%4$s</span></p>',
+					esc_attr($args['name']),
+					esc_html($args['label']),
+					$optionsHtml,
+					esc_html($args['description'])
+				);
+			case 'radio':
+				$radioHtml = sprintf('<strong style="display: block; margin-bottom: 5px;">%s</strong>', esc_html($args['label']));
+				foreach ($args['options'] as $optionValue => $optionLabel) {
+					$radioHtml .= sprintf(
+						'<label style="display: block; margin-bottom: 5px;"><input type="radio" name="%1$s" value="%2$s" %3$s/>%4$s</label>',
+						$args['name'],
+						$optionValue,
+						checked($args['value'], $optionValue, false),
+						wp_kses_post($optionLabel)
+					);
+				}
+
+				return sprintf(
+					'<p>%s</p>',
+					$radioHtml
+				);
+			default:
+				return '';
+		}
+	}
+
+	protected function getContentOwnerOptions(): array
+	{
+		$wpUsers = get_users([
+			'capability' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+		]);
+		$wpUsers = array_map(function (\WP_User $user) {
+			return [
+				'id' => sprintf('%s_%s', ContentOwnerType::USER, $user->ID),
+				'name' => $user->display_name,
+			];
+		}, $wpUsers);
+
+		$externalUsers = get_terms([
+			'taxonomy' => 'ypg_external_content_owner',
+			'hide_empty' => false,
+		]);
+		$externalUsers = array_map(function (\WP_Term $term) {
+			return [
+				'id' => sprintf('%s_%s', ContentOwnerType::EXTERNAL, $term->term_id),
+				'name' => sprintf('%s (extern)', $term->name),
+			];
+		}, $externalUsers);
+
+		$noOwnerOption = [[
+			'id' => '',
+			'name' => __('Geen inhoudseigenaar', 'yard-page-guard'),
+		]];
+		$contentOwnerOptions = array_merge($noOwnerOption, $wpUsers, $externalUsers);
+
+		return array_column($contentOwnerOptions, 'name', 'id');
 	}
 }

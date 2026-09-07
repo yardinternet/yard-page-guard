@@ -83,7 +83,7 @@ class ReviewModal
 			<button class="ypg-close-modal" aria-label="<?= __('Sluit venster', 'yard-page-guard') ?>"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
 
             <form class="ypg-review-form" hx-post="<?= $this->displayInfo['endpoint'] ?>">
-                <h2 class="ypg-title"><?= __('Houdbaarheidscontrole', 'yard-page-guard') ?></h2>
+                <h2 class="ypg-title"><?= __('Inhoudscontrole', 'yard-page-guard') ?></h2>
                 <p class="ypg-description"><?= sprintf($description, $this->displayInfo['title']) ?></p>
 				<input type="hidden" name="post_id" value="<?= $this->displayInfo['id'] ?>">
 				<input type="hidden" name="ypg_review_token" value="<?= esc_attr(sanitize_text_field($_GET['ypg_review_token'])); ?>">
