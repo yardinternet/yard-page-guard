@@ -91,12 +91,10 @@ class ReminderNotification extends Event
 				continue;
 			}
 
-			if (! defined('WP_CLI') || ! WP_CLI) {
-				/** @var ReviewItem $item */
-				foreach ($ownerItems as $item) {
-					$item->setReminderMailSentDate(new \DateTime('now', wp_timezone()));
-					$item->setReminderDate();
-				}
+			/** @var ReviewItem $item */
+			foreach ($ownerItems as $item) {
+				$item->setReminderMailSentDate(new \DateTime('now', wp_timezone()));
+				$item->setReminderDate();
 			}
 		}
 	}
