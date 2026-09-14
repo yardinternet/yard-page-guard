@@ -192,13 +192,33 @@ class PageGuardListTable extends \WP_List_Table
 				'compare' => '<',
 				'type' => 'DATE',
 			];
-		} elseif (! empty($_GET['status_view']) && 'checked' === $_GET['status_view']) {
+		} elseif ('' !== ($_GET['status_view']) && in_array($_GET['status_view'], ['checked', 'assigned'], true)) {
 			$metaQuery[] = [
 				'key' => Meta::REVIEW_DATE,
 				'value' => current_time('Y-m-d'),
 				'compare' => '>=',
 				'type' => 'DATE',
 			];
+			// The meta row is written as '' by the REST/block editor save, so EXISTS says nothing
+			// about whether the item was ever reviewed. Compare the value, like ReviewItem::status().
+			$metaQuery[] = 'checked' === $_GET['status_view']
+				? [
+					'key' => Meta::LAST_REVIEW_DATE,
+					'value' => '',
+					'compare' => '!=',
+				]
+				: [
+					'relation' => 'OR',
+					[
+						'key' => Meta::LAST_REVIEW_DATE,
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key' => Meta::LAST_REVIEW_DATE,
+						'value' => '',
+						'compare' => '=',
+					],
+				];
 		}
 
 		$args = [
@@ -312,8 +332,8 @@ class PageGuardListTable extends \WP_List_Table
 						],
 						[
 							'key' => Meta::LAST_REVIEW_DATE,
-							'compare' => 'EXISTS',
-							'type' => 'DATE',
+							'value' => '',
+							'compare' => '!=',
 						],
 					],
 				],
@@ -336,9 +356,16 @@ class PageGuardListTable extends \WP_List_Table
 							'type' => 'DATE',
 						],
 						[
-							'key' => Meta::LAST_REVIEW_DATE,
-							'compare' => 'NOT EXISTS',
-							'type' => 'DATE',
+							'relation' => 'OR',
+							[
+								'key' => Meta::LAST_REVIEW_DATE,
+								'compare' => 'NOT EXISTS',
+							],
+							[
+								'key' => Meta::LAST_REVIEW_DATE,
+								'value' => '',
+								'compare' => '=',
+							],
 						],
 					],
 				],
