@@ -192,7 +192,7 @@ class PageGuardListTable extends \WP_List_Table
 				'compare' => '<',
 				'type' => 'DATE',
 			];
-		} elseif ('' !== ($_GET['status_view']) && in_array($_GET['status_view'], ['checked', 'assigned'], true)) {
+		} elseif (! empty($_GET['status_view']) && in_array($_GET['status_view'], ['checked', 'assigned'], true)) {
 			$metaQuery[] = [
 				'key' => Meta::REVIEW_DATE,
 				'value' => current_time('Y-m-d'),
