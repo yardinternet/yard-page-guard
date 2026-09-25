@@ -138,6 +138,51 @@ class PageGuardListTable extends \WP_List_Table
 		return ContentOwner::fromCombinedId($combinedId);
 	}
 
+	/**
+	 * WP_Query can't OR `s` with a meta_query, so collect ids for the regular WP search
+	 * and for posts whose content owner name matches, then feed them to post__in.
+	 */
+	protected function searchPostIds(string $search): array
+	{
+		$baseArgs = [
+			'post_type' => $this->getPostTypes(),
+			'post_status' => $this->postStatussesToUse(),
+			'numberposts' => -1,
+			'fields' => 'ids',
+		];
+
+		$ids = get_posts(array_merge($baseArgs, ['s' => $search]));
+
+		$owners = array_filter(
+			$this->getContentOwners(),
+			fn (ContentOwner $owner) => false !== stripos($owner->displayName(), $search)
+		);
+
+		if ($owners) {
+			$ids = array_merge($ids, get_posts(array_merge($baseArgs, [
+				'meta_query' => [
+					'relation' => 'OR',
+					...array_map(fn (ContentOwner $owner) => [
+						[
+							'key' => Meta::POST_CONTENT_OWNER_ID,
+							'value' => $owner->id(),
+							'compare' => '=',
+							'type' => 'NUMERIC',
+						],
+						[
+							'key' => Meta::POST_CONTENT_OWNER_TYPE,
+							'value' => $owner->type(),
+							'compare' => '=',
+						],
+					], $owners),
+				],
+			])));
+		}
+
+		// post__in with an empty array means "no restriction", [0] means "no results".
+		return array_unique($ids) ?: [0];
+	}
+
 	protected function contentOwnerMetaQuery(): array
 	{
 		$owner = $this->filteredContentOwner();
@@ -230,6 +275,10 @@ class PageGuardListTable extends \WP_List_Table
 			'order' => $order,
 			'meta_query' => $metaQuery,
 		];
+
+		if (! empty($_GET['s'])) {
+			$args['post__in'] = $this->searchPostIds(sanitize_text_field(wp_unslash($_GET['s'])));
+		}
 
 		if (Meta::REVIEW_DATE === $orderby) {
 			$args['orderby'] = 'meta_value';

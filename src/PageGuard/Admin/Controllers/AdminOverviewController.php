@@ -73,7 +73,17 @@ class AdminOverviewController
 		?>
 		<div class="wrap">
 			<h1 class="wp-heading-inline"><?php echo esc_html(get_admin_page_title()); ?></h1>
+			<?php if (! empty($_GET['s'])) : ?>
+				<span class="subtitle">
+					<?php printf(__('Zoekresultaten voor: %s', 'yard-page-guard'), '<strong>' . esc_html(sanitize_text_field(wp_unslash($_GET['s']))) . '</strong>');
+				?>
+				</span>
+			<?php endif; ?>
 			<hr class="wp-header-end">
+			<form method="get">
+				<input type="hidden" name="page" value="<?php echo esc_attr(self::PAGE_SLUG); ?>" />
+				<?php $listTable->search_box(__('Zoeken', 'yard-page-guard'), 'ypg-search'); ?>
+			</form>
 			<form id="yard-page-guard-table-form" method="post">
 				<?php $listTable->views();?>
 				<?php $listTable->display();?>
