@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yard\PageGuard\Models;
 
 use Yard\PageGuard\Enums\ContentOwnerType;
+use Yard\PageGuard\Enums\TermMeta;
 
 class ContentOwner
 {
@@ -13,17 +14,47 @@ class ContentOwner
 	protected string $email;
 	protected string $type;
 
-	public function __construct(int $id, string $name, string $email, string $type)
+	protected string $phone;
+
+	/** @deprecated */
+	public function __construct(int $id, string $name, string $email, string $type, string $phone = '')
 	{
 		$this->id = $id;
 		$this->name = $name;
 		$this->email = $email;
-
 		if (! ContentOwnerType::isValid($type)) {
 			throw new \InvalidArgumentException("Invalid content owner type: $type");
 		}
-		
+
 		$this->type = $type;
+		$this->phone = $phone;
+	}
+
+	public static function fromUser(\WP_User $user): self
+	{
+		return new self(
+			$user->ID,
+			$user->display_name,
+			$user->user_email,
+			ContentOwnerType::USER,
+			''
+		);
+	}
+
+	public static function fromTerm(\WP_Term $term): self
+	{
+		// TODO: check if term is of type external_content_owner, otherwise throw exception
+		if ('ypg_external_content_owner' !== $term->taxonomy) {
+			throw new \InvalidArgumentException("Term is not of type external_content_owner: {$term->taxonomy}");
+		}
+
+		return new self(
+			$term->term_id,
+			$term->name,
+			get_term_meta($term->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true) ?: '',
+			ContentOwnerType::EXTERNAL,
+			get_term_meta($term->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true) ?: ''
+		);
 	}
 
 	public function id(): int
@@ -39,6 +70,11 @@ class ContentOwner
 	public function email(): string
 	{
 		return $this->email;
+	}
+
+	public function phone(): string
+	{
+		return $this->phone;
 	}
 
 	public function type(): string
