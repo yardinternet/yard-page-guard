@@ -158,23 +158,26 @@ class PageGuardListTable extends \WP_List_Table
 			fn (ContentOwner $owner) => false !== stripos($owner->displayName(), $search)
 		);
 
-		if ($owners) {
+		// Group by type: one (id IN, type =) pair per type keeps the postmeta joins constant.
+		// A pair per owner costs 2 joins each and stalls MySQL once a search matches many owners.
+		$idsByType = [];
+		foreach ($owners as $owner) {
+			$idsByType[$owner->type()][] = $owner->id();
+		}
+
+		foreach ($idsByType as $type => $ownerIds) {
 			$ids = array_merge($ids, get_posts(array_merge($baseArgs, [
 				'meta_query' => [
-					'relation' => 'OR',
-					...array_map(fn (ContentOwner $owner) => [
-						[
-							'key' => Meta::POST_CONTENT_OWNER_ID,
-							'value' => $owner->id(),
-							'compare' => '=',
-							'type' => 'NUMERIC',
-						],
-						[
-							'key' => Meta::POST_CONTENT_OWNER_TYPE,
-							'value' => $owner->type(),
-							'compare' => '=',
-						],
-					], $owners),
+					[
+						'key' => Meta::POST_CONTENT_OWNER_ID,
+						'value' => $ownerIds,
+						'compare' => 'IN',
+					],
+					[
+						'key' => Meta::POST_CONTENT_OWNER_TYPE,
+						'value' => $type,
+						'compare' => '=',
+					],
 				],
 			])));
 		}
