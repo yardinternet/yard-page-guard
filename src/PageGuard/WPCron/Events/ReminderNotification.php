@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
+use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
+use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Email;
 use Yard\PageGuard\Traits\Text;
@@ -40,11 +42,11 @@ class ReminderNotification extends Event
 			'meta_query' => [
 				'relation' => 'AND',
 				[
-					'key' => 'ypg_post_content_owner_email',
+					'key' => Meta::POST_CONTENT_OWNER_ID,
 					'compare' => 'EXISTS',
 				],
 				[
-					'key' => 'ypg_reminder_date',
+					'key' => Meta::REMINDER_DATE,
 					'value' => date('Y-m-d'),
 					'compare' => '<=',
 					'type' => 'DATE',
@@ -54,7 +56,7 @@ class ReminderNotification extends Event
 				// This keeps a wrongly-early reminder date from mailing before the
 				// review mail.
 				[
-					'key' => 'ypg_review_mail_sent',
+					'key' => Meta::REVIEW_MAIL_SENT,
 					'compare' => 'EXISTS',
 				],
 			],
@@ -80,11 +82,11 @@ class ReminderNotification extends Event
 			$owner = $group['owner'];
 			$ownerItems = $group['items'];
 
-			$headers = $this->buildMailHeaders('ypg_reminder_email_bcc');
+			$headers = $this->buildMailHeaders(Settings::REMINDER_EMAIL_BCC);
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_reminder_email_subject', __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option(Settings::REMINDER_EMAIL_SUBJECT, __('Herinnering controle webpagina(\'s)', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
@@ -94,8 +96,10 @@ class ReminderNotification extends Event
 			}
 
 			if (! defined('WP_CLI') || ! WP_CLI) {
+				/** @var ReviewItem $item */
 				foreach ($ownerItems as $item) {
-					$this->updateModuleMeta($item);
+					$item->setLastReminderDate($item->reminderDate());
+					$item->setReminderDate();
 				}
 			}
 		}
@@ -106,7 +110,7 @@ class ReminderNotification extends Event
 	 */
 	private function getContent(array $items, ContentOwner $owner): string
 	{
-		$content = wpautop(get_option('ypg_reminder_email_content', ''));
+		$content = wpautop(get_option(Settings::REMINDER_EMAIL_CONTENT, ''));
 		$itemList = $this->buildItemListHtml($items, true);
 
 		$values = [
@@ -117,24 +121,5 @@ class ReminderNotification extends Event
 		$contentHtml = $this->replacePlaceholders($content, $values);
 
 		return $this->wrapHtmlEmail($contentHtml);
-	}
-
-	private function updateModuleMeta(ReviewItem $item): void
-	{
-		$currentReminderDate = $item->reminderDate('Y-m-d');
-
-		if (! $this->isValidDate($currentReminderDate)) {
-			$currentReminderDate = date('Y-m-d');
-		}
-
-		$overrideDateUnit = get_post_meta($item->ID(), 'ypg_reminder_time_unit', true);
-		$overrideDatePeriod = (int) get_post_meta($item->ID(), 'ypg_reminder_time_period', true);
-		$finalDateUnit = ! empty($overrideDateUnit) ? $overrideDateUnit : get_option('ypg_reminder_time_unit', 'weeks');
-		$finalDatePeriod = ! empty($overrideDatePeriod) ? $overrideDatePeriod : (int) get_option('ypg_reminder_time_period', 1);
-
-		update_post_meta($item->ID(), 'ypg_last_reminder_date', date('Y-m-d'));
-		// Advance in whole periods past today (not a single bump from a possibly
-		// stale date) so an overdue reminder can't re-mail on every cron run.
-		update_post_meta($item->ID(), 'ypg_reminder_date', $this->advanceToFuture($currentReminderDate, $finalDatePeriod, $finalDateUnit));
 	}
 }

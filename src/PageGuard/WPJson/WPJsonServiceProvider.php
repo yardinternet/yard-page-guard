@@ -68,14 +68,17 @@ class WPJsonServiceProvider extends ServiceProvider
 				'type' => 'string',
 				'validate_callback' => function (string $reviewToken, WP_REST_Request $request, string $param) {
 					$postId = (int) $request->get_param('post_id');
-					$contentOwnerEmail = get_post_meta($postId, 'ypg_post_content_owner_email', true) ?: '';
-					$reviewDate = get_post_meta($postId, 'ypg_review_date', true) ?: '';
-					if ('' === $contentOwnerEmail || '' === $reviewDate) {
+
+					$reviewItem = new \Yard\PageGuard\Models\ReviewItem(get_post($postId));
+
+					$contentOwnerEmail = $reviewItem->contentOwner() ? $reviewItem->contentOwner()->email() : '';
+					$reviewDate = $reviewItem->reviewDate();
+					if ('' === $contentOwnerEmail || null === $reviewDate) {
 						return false;
 					}
 
 					try {
-						return $this->verifyReviewToken($postId, $contentOwnerEmail, $reviewDate, $reviewToken);
+						return $this->verifyReviewToken($postId, $contentOwnerEmail, $reviewDate->format('Y-m-d'), $reviewToken);
 					} catch (RuntimeException $e) {
 						return new WP_Error(
 							'review_token_verification_error',

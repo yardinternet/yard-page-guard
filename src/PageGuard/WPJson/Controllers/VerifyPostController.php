@@ -5,50 +5,29 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPJson\Controllers;
 
 use WP_REST_Request;
-use Yard\PageGuard\Traits\Date;
 use Yard\PageGuard\Traits\Text;
-use Yard\PageGuard\Traits\Token;
 
 class VerifyPostController
 {
-	use Date;
 	use Text;
-	use Token;
 
 	/**
-	 * Updates a post's meta so it gets verified and receives its next review and reminder dates.
+	 * Updates a post's meta so it gets verified and receives its next review date
 	 * Returns a HTML response since it gets handled by htmx on the frontend.
 	 */
 	public function handleRequest(WP_REST_Request $request): void
 	{
 		$postId = (int) $request->get_param('post_id');
 
-		$newReviewDate = $this->computeReviewDate($postId);
-		$updatedReviewDate = update_post_meta($postId, 'ypg_review_date', $newReviewDate);
-
-		$newReminderDate = $this->computeReminderDate($postId, true, false, $newReviewDate);
-		$updatedReminderDate = update_post_meta($postId, 'ypg_reminder_date', $newReminderDate);
-
-		$updatedVerifiedStatus = update_post_meta($postId, 'ypg_is_verified', '1');
-		$updatedLastReviewDate = update_post_meta($postId, 'ypg_last_review_date', date('Y-m-d'));
-
-		delete_post_meta($postId, 'ypg_review_mail_sent');
-		delete_post_meta($postId, 'ypg_last_reminder_date');
+		$reviewItem = new \Yard\PageGuard\Models\ReviewItem(get_post($postId));
+		$reviewItem->markAsReviewed();
 
 		header('Content-Type: text/html; charset=utf-8');
 		header('Access-Control-Allow-Origin: *');
 		header('Access-Control-Allow-Headers: Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type, HX-Current-URL, HX-Request');
 		http_response_code(200); # HTML needs to be returned properly, so no 500 in case of an error.
 
-		if ($updatedReviewDate && $updatedReminderDate && $updatedVerifiedStatus && $updatedLastReviewDate) {
-			echo self::getSuccessResponse();
-
-			exit();
-		}
-
-		trigger_error("[yard-page-guard] Failed to process review for post ID: $postId", E_USER_WARNING);
-		echo self::getErrorResponse();
-
+		echo self::getSuccessResponse();
 		exit();
 	}
 
