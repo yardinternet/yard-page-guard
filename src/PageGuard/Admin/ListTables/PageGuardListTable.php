@@ -373,6 +373,15 @@ class PageGuardListTable extends \WP_List_Table
 		<?php
 	}
 
+	public function search_box($text, $input_id)
+	{
+		if (! empty($_GET['status_view'])) {
+			printf('<input type="hidden" name="status_view" value="%s" />', esc_attr(sanitize_key($_GET['status_view'])));
+		}
+
+		parent::search_box($text, $input_id);
+	}
+
 	protected function get_views()
 	{
 		$current = (! empty($_GET['status_view'])) ? sanitize_key($_GET['status_view']) : 'all';
@@ -493,16 +502,6 @@ class PageGuardListTable extends \WP_List_Table
 				count($assignedPosts)
 			),
 		];
-
-		$filteredContentOwner = $this->filteredContentOwner();
-		if ($filteredContentOwner) {
-			$views['content_owner'] = sprintf(
-				'%s <a href="%s">%s</a>',
-				sprintf(__('Eigenaar: %s', 'yard-page-guard'), esc_html($filteredContentOwner->displayName())),
-				esc_url(remove_query_arg([self::QUERY_PARAM_CONTENT_OWNER, 'paged'])),
-				__('filter wissen', 'yard-page-guard')
-			);
-		}
 
 		return $views;
 	}
