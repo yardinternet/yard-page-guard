@@ -80,7 +80,7 @@ class AdminOverviewController
 				</span>
 			<?php endif; ?>
 			<hr class="wp-header-end">
-			<form method="get">
+			<form id="<?php echo PageGuardListTable::FILTER_FORM_ID; ?>" method="get">
 				<input type="hidden" name="page" value="<?php echo esc_attr(self::PAGE_SLUG); ?>" />
 				<?php $listTable->search_box(__('Zoeken', 'yard-page-guard'), 'ypg-search'); ?>
 			</form>

@@ -39,6 +39,8 @@ class PageGuardListTable extends \WP_List_Table
 
 	public const QUERY_PARAM_CONTENT_OWNER = 'content_owner';
 
+	public const FILTER_FORM_ID = 'yard-page-guard-filter-form';
+
 	public function get_columns()
 	{
 		return [
@@ -300,6 +302,15 @@ class PageGuardListTable extends \WP_List_Table
 	protected function extra_tablenav($which)
 	{
 		if ('top' === $which) {
+			?>
+			<div class="alignleft actions">
+				<?php
+				$this->contentOwnerDropdown();
+			submit_button(__('Filter'), '', '', false, ['id' => 'post-query-submit', 'form' => self::FILTER_FORM_ID]);
+			?>
+			</div>
+			<?php
+
 			// FIXME: duplicate buttons and use marryControls to link them
 			return;
 		}
@@ -334,6 +345,32 @@ class PageGuardListTable extends \WP_List_Table
 		</div>
 
 	<?php
+	}
+
+	/**
+	 * The table is in a POST form for the bulk actions, so the filter controls join
+	 * the GET search form through the `form` attribute.
+	 */
+	protected function contentOwnerDropdown(): void
+	{
+		$filteredContentOwner = $this->filteredContentOwner();
+		$selected = $filteredContentOwner ? $filteredContentOwner->combinedId() : '';
+
+		?>
+		<label for="filter-by-content-owner" class="screen-reader-text"><?php _e('Filteren op eigenaar', 'yard-page-guard'); ?></label>
+		<select form="<?php echo self::FILTER_FORM_ID; ?>" name="<?php echo self::QUERY_PARAM_CONTENT_OWNER; ?>" id="filter-by-content-owner">
+			<option value=""><?php _e('Alle eigenaren', 'yard-page-guard'); ?></option>
+			<?php
+			foreach ($this->getContentOwners() as $owner) {
+				printf(
+					'<option value="%s"%s>%s</option>',
+					esc_attr($owner->combinedId()),
+					selected($owner->combinedId(), $selected, false),
+					esc_html($owner->displayName())
+				);
+			}?>
+		</select>
+		<?php
 	}
 
 	protected function get_views()
