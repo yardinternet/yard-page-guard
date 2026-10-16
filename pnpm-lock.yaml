@@ -2602,8 +2602,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  adm-zip@0.6.0:
-    resolution: {integrity: sha512-XleryMhbuksdKtofnWZ9Sk+4CUTbms4Mb/EU32SZwToAyZ5RgVos/ki8n+yr0LWHOGKuakbXTuuYNHLQjhddgg==}
+  adm-zip@0.6.1:
+    resolution: {integrity: sha512-Xwrja8nx9e5o2N1my4DsKCeKpdrnACyr1wtbPxBDgGzKzKyE9kRtBFA8mWldI+RVlD7CBZNWY/wQ2+ydwOR6kQ==}
     engines: {node: '>=14.0'}
 
   agent-base@7.1.4:
@@ -10504,7 +10504,7 @@ snapshots:
       '@wordpress/postcss-plugins-preset': 5.54.0(postcss@8.5.19)
       '@wordpress/prettier-config': 4.54.0(wp-prettier@3.0.3)
       '@wordpress/stylelint-config': 24.3.0(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(postcss@8.5.19)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(stylelint-scss@6.14.0(stylelint@17.14.1(supports-color@10.2.2)(typescript@6.0.2)))(stylelint@16.26.1(supports-color@10.2.2)(typescript@6.0.2))(vite@8.1.5(@types/node@20.19.43)(jiti@1.21.7)(sass@1.102.0)(terser@5.49.0))
-      adm-zip: 0.6.0
+      adm-zip: 0.6.1
       babel-jest: 30.4.1(@babel/core@7.29.7(supports-color@10.2.2))(supports-color@10.2.2)
       babel-loader: 9.2.1(@babel/core@7.29.7(supports-color@10.2.2))(webpack@5.109.2)
       browserslist: 4.28.6
@@ -10753,7 +10753,7 @@ snapshots:
 
   acorn@8.17.0: {}
 
-  adm-zip@0.6.0: {}
+  adm-zip@0.6.1: {}
 
   agent-base@7.1.4: {}
 
@@ -11457,7 +11457,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
-      js-yaml: 4.3.0
+      js-yaml: 4.3.2
       parse-json: 5.2.0
     optionalDependencies:
       typescript: 6.0.2
