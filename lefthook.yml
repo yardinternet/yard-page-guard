@@ -4,7 +4,7 @@ pre-commit:
     - name: prettier
       glob: '*.{js,ts,jsx,tsx,json,css,scss,md,yml,yaml,html,blade.php}'
       exclude:
-        - 'build/**'
+        - 'public/**'
       run: npx prettier --write {staged_files}
       stage_fixed: true
 

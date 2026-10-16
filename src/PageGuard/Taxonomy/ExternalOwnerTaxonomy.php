@@ -1,14 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Yard\PageGuard\Taxonomy;
 
 use WP_Term;
+use Yard\PageGuard\Meta\TermMeta;
+use Yard\PageGuard\Traits\AdminPermissions;
+use Yard\PageGuard\Traits\FormField;
+use Yard\PageGuard\Traits\PostTypes;
 
 class ExternalOwnerTaxonomy
 {
+	public const TAXONOMY = 'ypg_external_content_owner';
+
+	use AdminPermissions;
+	use PostTypes;
+	use FormField;
+
 	public function register(): void
 	{
-		register_taxonomy('ypg_external_content_owner', apply_filters('yard::page-guard/post-types-to-use', ['page']), [
+		register_taxonomy(self::TAXONOMY, $this->getPostTypes(), [
 			'labels' => [
 				'name' => __('Externe inhoudseigenaren', 'yard-page-guard'),
 				'singular_name' => __('Externe inhoudseigenaar', 'yard-page-guard'),
@@ -28,82 +40,54 @@ class ExternalOwnerTaxonomy
 			'show_ui' => true,
 			'show_in_quick_edit' => false,
 			'show_admin_column' => false,
+			'meta_box_cb' => false,
 			'show_in_menu' => false,
 			'hierarchical' => false,
-			'rewrite' => [
-				'slug' => 'ypg-external-content-owner',
-				'with_front' => false,
-			],
 			'capabilities' => [
-				'manage_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-				'edit_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-				'delete_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
-				'assign_terms' => apply_filters('yard::page-guard/capability/admin', 'edit_pages'),
+				'manage_terms' => $this->adminCapability(),
+				'edit_terms' => $this->adminCapability(),
+				'delete_terms' => $this->adminCapability(),
+				'assign_terms' => $this->adminCapability(),
 			],
 		]);
 	}
 
-	public function addInsertEmailFormField(): void
+	public function addInsertFormFields(): void
 	{
-		?>
-        <div class="form-field">
-            <label for="ypg_external_content_owner_email"><?php _e('E-mailadres', 'yard-page-guard'); ?></label>
-            <input type="email" name="ypg_external_content_owner_email" id="ypg_external_content_owner_email" required />
-            <p><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
-        </div>
-        <?php
+		echo $this->renderInput([
+			'type' => 'email',
+			'name' => TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL,
+			'label' => __('E-mailadres', 'yard-page-guard'),
+			'required' => true,
+			'description' => __('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'),
+		]);
+
+		echo $this->renderInput([
+			'type' => 'text',
+			'name' => TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER,
+			'label' => __('Telefoonnummer', 'yard-page-guard'),
+			'description' => __('Voer het telefoonnummer van de externe inhoudseigenaar in.', 'yard-page-guard'),
+		]);
 	}
 
-	public function addInsertPhoneNumberFormField(): void
+	public function addUpdateFormFields(WP_Term $user): void
 	{
-		?>
-        <div class="form-field">
-            <label for="ypg_external_content_owner_phone_number"><?php _e('Telefoonnummer', 'yard-page-guard'); ?></label>
-            <input type="text" name="ypg_external_content_owner_phone_number" id="ypg_external_content_owner_phone_number" />
-            <p><?php _e('Voer het telefoonnummer van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
-        </div>
-        <?php
-	}
+		echo $this->renderInput([
+			'type' => 'email',
+			'name' => TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL,
+			'label' => __('E-mailadres', 'yard-page-guard'),
+			'required' => true,
+			'value' => get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, true) ?: '',
+			'description' => __('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'),
+		], true);
 
-	public function addUpdateEmailFormField(WP_Term $user): void
-	{
-		$email = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_email', true) ?: '');
-		?>
-        <tr class="form-field">
-            <th scope="row">
-                <label for="ypg_external_content_owner_email"><?php _e('E-mailadres', 'yard-page-guard'); ?></label>
-            </th>
-            <td>
-                <input type="email"
-                       name="ypg_external_content_owner_email"
-                       id="ypg_external_content_owner_email"
-                       size="40"
-                       required
-                       value="<?= esc_attr($email); ?>" />
-                <p class="description"><?php _e('Voer het e-mailadres van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
-            </td>
-        </tr>
-        <?php
-	}
-
-	public function addUpdatePhoneNumberFormField(WP_Term $user): void
-	{
-		$phoneNumber = (string) (get_term_meta($user->term_id, 'ypg_external_content_owner_phone_number', true) ?: '');
-		?>
-        <tr class="form-field">
-            <th scope="row">
-                <label for="ypg_external_content_owner_phone_number"><?php _e('Telefoonnummer', 'yard-page-guard'); ?></label>
-            </th>
-            <td>
-                <input type="text"
-                       name="ypg_external_content_owner_phone_number"
-                       id="ypg_external_content_owner_phone_number"
-                       size="40"
-                       value="<?= esc_attr($phoneNumber); ?>" />
-                <p class="description"><?php _e('Voer het telefoonnummer van de externe inhoudseigenaar in.', 'yard-page-guard'); ?></p>
-            </td>
-        </tr>
-        <?php
+		echo $this->renderInput([
+			'type' => 'text',
+			'name' => TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER,
+			'label' => __('Telefoonnummer', 'yard-page-guard'),
+			'value' => get_term_meta($user->term_id, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, true) ?: '',
+			'description' => __('Voer het telefoonnummer van de externe inhoudseigenaar in.', 'yard-page-guard'),
+		], true);
 	}
 
 	/**
@@ -112,128 +96,114 @@ class ExternalOwnerTaxonomy
 	 * Returning a WP_Error from `pre_insert_term` cancels the insert and WordPress
 	 * displays the error message as an admin notice automatically.
 	 *
+	 * TODO: in the unlikely event https://core.trac.wordpress.org/ticket/58404 is merged we can also create a similar method for `pre_update_term` to prevent duplicates on update.
+	 *
 	 * @param string|\WP_Error $term The term name or a WP_Error.
 	 * @param string $taxonomy The taxonomy slug.
 	 *
 	 * @return string|\WP_Error
 	 */
-	public function preventDuplicateEmailOnInsert($term, string $taxonomy)
+	public function validateMeta($term, string $taxonomy, array $args)
 	{
-		if ('ypg_external_content_owner' !== $taxonomy) {
+		if (ExternalOwnerTaxonomy::TAXONOMY !== $taxonomy) {
 			return $term;
 		}
 
-		return $this->validateEmail($term);
-	}
-
-	/**
-	 * Prevent updating a term if the email is missing, invalid, or already exists on another term.
-	 *
-	 * Returning a WP_Error from `wp_update_term_data` cancels the update and WordPress
-	 * displays the error message as an admin notice automatically.
-	 *
-	 * @param array $data The term data to be updated.
-	 * @param int $termId The term ID.
-	 * @param string $taxonomy The taxonomy slug.
-	 * @param array $args The raw arguments passed to wp_update_term().
-	 *
-	 * @return array|\WP_Error
-	 */
-	public function preventDuplicateEmailOnUpdate(array $data, int $termId, string $taxonomy, array $args)
-	{
-		if ('ypg_external_content_owner' !== $taxonomy) {
-			return $data;
+		if (is_wp_error($term)) {
+			return $term;
 		}
 
-		return $this->validateEmail($data, $termId);
-	}
-
-	/**
-	 * Force the term slug to be based on the email address after creating or editing.
-	 */
-	public function handleSaveMeta(int $termId): void
-	{
-		if (! isset($_POST['ypg_external_content_owner_email'])) {
-			return;
+		if (! isset($args['tag-name']) || ! is_string($args['tag-name']) || strlen(trim($args['tag-name'])) === 0) {
+			return new \WP_Error(
+				'ypg_invalid_term_name',
+				__('De naam van de externe inhoudseigenaar is verplicht', 'yard-page-guard')
+			);
 		}
 
-		$email = sanitize_email($_POST['ypg_external_content_owner_email']);
-		$phoneNumber = trim(sanitize_text_field($_POST['ypg_external_content_owner_phone_number'] ?? ''));
-
-		if ('' === $email || ! is_email($email)) {
-			delete_term_meta($termId, 'ypg_external_content_owner_email');
-
-			return;
-		}
-
-		if ('' === $phoneNumber) {
-			delete_term_meta($termId, 'ypg_external_content_owner_phone_number');
-		}
-
-		update_term_meta($termId, 'ypg_external_content_owner_email', $email);
-		update_term_meta($termId, 'ypg_external_content_owner_phone_number', $phoneNumber);
-
-		// Force the slug to be based on the email address.
-		$slug = sanitize_title($email);
-
-		remove_action('created_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10);
-		remove_action('edited_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10);
-
-		wp_update_term($termId, 'ypg_external_content_owner', ['slug' => $slug]);
-
-		add_action('created_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10, 1);
-		add_action('edited_ypg_external_content_owner', [$this, 'handleSaveMeta'], 10, 1);
-	}
-
-	/**
-	 * @param mixed $passthrough Value to return on success.
-	 * @param int|null $excludeTermId Term ID to exclude from the duplicate check (for edits).
-	 *
-	 * @return mixed|\WP_Error
-	 */
-	private function validateEmail($passthrough, ?int $excludeTermId = null)
-	{
-		if (! isset($_POST['ypg_external_content_owner_email'])) {
+		if (! isset($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL]) || ! is_string($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL]) || strlen(trim($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL])) === 0) {
 			return new \WP_Error(
 				'ypg_missing_email',
 				__('Een e-mailadres is verplicht voor een externe inhoudseigenaar.', 'yard-page-guard')
 			);
 		}
 
-		$email = sanitize_email($_POST['ypg_external_content_owner_email']);
-
-		if ('' === $email || ! is_email($email)) {
+		if (! is_email($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL])) {
 			return new \WP_Error(
 				'ypg_invalid_email',
 				__('Voer een geldig e-mailadres in.', 'yard-page-guard')
 			);
 		}
 
-		$existingTerms = get_terms([
-			'taxonomy' => 'ypg_external_content_owner',
-			'hide_empty' => false,
-			'meta_key' => 'ypg_external_content_owner_email',
-			'meta_value' => $email,
-			'fields' => 'ids',
-		]);
-
-		if (is_wp_error($existingTerms)) {
-			return $passthrough;
-		}
-
-		if (null !== $excludeTermId) {
-			$existingTerms = array_filter($existingTerms, function ($id) use ($excludeTermId) {
-				return (int) $id !== $excludeTermId;
-			});
-		}
-
-		if (is_array($existingTerms) && count($existingTerms) > 0) {
+		if ($this->emailExistsOnAnotherTerm($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL])) {
 			return new \WP_Error(
 				'ypg_duplicate_email',
 				__('Er bestaat al een externe inhoudseigenaar met dit e-mailadres.', 'yard-page-guard')
 			);
 		}
 
-		return $passthrough;
+		return $term;
+	}
+
+	/**
+	 * Force the term slug to be based on the email address after creating or editing.
+	 */
+	public function handleSaveMeta(int $termId, int $ttId, array $args): void
+	{
+		if (! isset($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL])) {
+			return;
+		}
+
+		$email = sanitize_email($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL]);
+		$phoneNumber = trim(sanitize_text_field($args[TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER] ?? ''));
+
+		if ('' === $email || ! is_email($email)) {
+			delete_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL); //FIXME: dit kan niet gebeuren
+
+			return;
+		}
+
+		if ('' === $phoneNumber) {
+			delete_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER);
+		}
+
+		update_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL, $email);
+		update_term_meta($termId, TermMeta::EXTERNAL_CONTENT_OWNER_PHONE_NUMBER, $phoneNumber);
+	}
+
+	private function emailExistsOnAnotherTerm(string $email, ?int $excludeTermId = null): bool
+	{
+		$email = sanitize_email($email);
+		$existingTerms = get_terms([
+			'taxonomy' => ExternalOwnerTaxonomy::TAXONOMY,
+			'hide_empty' => false,
+			'meta_key' => TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL,
+			'meta_value' => $email,
+			'fields' => 'ids',
+			'exclude' => $excludeTermId,
+		]);
+
+		return is_array($existingTerms) && count($existingTerms) > 0;
+	}
+
+	public function setSlugFromEmailOnInsert(array $data, string $taxonomy, array $args): array
+	{
+		if (ExternalOwnerTaxonomy::TAXONOMY !== $taxonomy || ! isset($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL])) {
+			return $data;
+		}
+
+		$email = sanitize_email($args[TermMeta::EXTERNAL_CONTENT_OWNER_EMAIL]);
+
+		if ('' === $email || ! is_email($email)) {
+			return $data;
+		}
+
+		$data['slug'] = sanitize_title($email);
+
+		return $data;
+	}
+
+	public function setSlugFromEmailOnUpdate(array $data, int $termId, string $taxonomy, array $args): array
+	{
+		return $this->setSlugFromEmailOnInsert($data, $taxonomy, $args);
 	}
 }

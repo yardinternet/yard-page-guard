@@ -10,6 +10,8 @@ return [
 		Yard\PageGuard\WPCron\WPCronServiceProvider::class,
 		Yard\PageGuard\WPJson\WPJsonServiceProvider::class,
 		Yard\PageGuard\Frontend\FrontendServiceProvider::class,
+		Yard\PageGuard\Meta\MetaServiceProvider::class,
+		Yard\PageGuard\Settings\SettingsServiceProvider::class,
 		Yard\PageGuard\Taxonomy\TaxonomyServiceProvider::class,
 
 		/** Providers specific to the admin */

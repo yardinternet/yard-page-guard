@@ -5,17 +5,21 @@ declare(strict_types=1);
 namespace Yard\PageGuard\WPCron\Events;
 
 use WP_Query;
+use Yard\PageGuard\Meta\Meta;
 use Yard\PageGuard\Models\ContentOwner;
 use Yard\PageGuard\Models\ReviewItem;
-use Yard\PageGuard\Traits\Date;
+use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\Email;
+use Yard\PageGuard\Traits\PostStatusses;
+use Yard\PageGuard\Traits\PostTypes;
 use Yard\PageGuard\Traits\Text;
 
 class ReviewNotification extends Event
 {
-	use Date;
+	use PostTypes;
 	use Text;
 	use Email;
+	use PostStatusses;
 
 	protected function execute(): void
 	{
@@ -34,24 +38,32 @@ class ReviewNotification extends Event
 	private function getItems(): array
 	{
 		$args = [
-			'post_type' => apply_filters('yard::page-guard/post-types-to-use', ['page']),
+			'post_type' => $this->getPostTypes(),
 			'posts_per_page' => -1,
-			'post_status' => apply_filters('yard::page-guard/post-statusses-to-use', ['publish', 'draft', 'future']),
+			'post_status' => $this->postStatussesToUse(),
 			'meta_query' => [
 				'relation' => 'AND',
 				[
-					'key' => 'ypg_post_content_owner_email',
+					'key' => Meta::POST_CONTENT_OWNER_ID,
 					'compare' => 'EXISTS',
 				],
 				[
-					'key' => 'ypg_review_date',
+					'key' => Meta::REVIEW_DATE,
 					'value' => date('Y-m-d'),
 					'compare' => '<=',
 					'type' => 'DATE',
 				],
 				[
-					'key' => 'ypg_review_mail_sent',
-					'compare' => 'NOT EXISTS',
+					'relation' => 'OR',
+					[
+						'key' => Meta::REVIEW_MAIL_SENT_DATE,
+						'compare' => 'NOT EXISTS',
+					],
+					[
+						'key' => Meta::REVIEW_MAIL_SENT_DATE,
+						'value' => '',
+						'compare' => '=',
+					],
 				],
 			],
 			// Performance
@@ -80,7 +92,7 @@ class ReviewNotification extends Event
 
 			if (! $this->sendEmail(
 				$owner->email(),
-				$this->formatSubject(get_option('ypg_review_email_subject', __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
+				$this->formatSubject(get_option(Settings::REVIEW_EMAIL_SUBJECT, __('Controleer jouw webpagina(\'s)', 'yard-page-guard'))),
 				$this->getContent($ownerItems, $owner),
 				$headers
 			)) {
@@ -88,9 +100,10 @@ class ReviewNotification extends Event
 
 				continue;
 			}
-
+			/** @var ReviewItem $item */
 			foreach ($ownerItems as $item) {
-				$this->updateModuleMeta($item);
+				$item->setReviewMailSentDate(new \DateTime('now', wp_timezone()));
+				$item->setReminderDate();
 			}
 		}
 	}
@@ -100,22 +113,16 @@ class ReviewNotification extends Event
 	 */
 	private function getContent(array $items, ContentOwner $owner): string
 	{
-		$content = wpautop(get_option('ypg_review_email_content', ''));
+		$content = wpautop(get_option(Settings::REVIEW_EMAIL_CONTENT, ''));
 		$itemList = $this->buildItemListHtml($items);
 
 		$values = [
-			$owner->salutation(),
+			$owner->name(),
 			$itemList,
 		];
 
 		$contentHtml = $this->replacePlaceholders($content, $values);
 
 		return $this->wrapHtmlEmail($contentHtml);
-	}
-
-	private function updateModuleMeta(ReviewItem $item): void
-	{
-		update_post_meta($item->ID(), 'ypg_is_verified', '0');
-		update_post_meta($item->ID(), 'ypg_review_mail_sent', '1');
 	}
 }

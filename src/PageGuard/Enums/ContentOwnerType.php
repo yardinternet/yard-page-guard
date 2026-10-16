@@ -9,11 +9,11 @@ final class ContentOwnerType
 	public const USER = 'user';
 	public const EXTERNAL = 'external';
 
-	public static function isValid(string $value): bool
+	public static function cases(): array
 	{
-		return in_array($value, [
+		return [
 			self::USER,
 			self::EXTERNAL,
-		], true);
+		];
 	}
 }

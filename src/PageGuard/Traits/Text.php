@@ -25,29 +25,4 @@ trait Text
 
 		return trim($html);
 	}
-
-	private static function getUnitOptions(): array
-	{
-		return ['days' => __('Dagen', 'yard-page-guard'), 'weeks' => __('Weken', 'yard-page-guard'), 'months' => __('Maanden', 'yard-page-guard')];
-	}
-
-	/**
-	 * @throws \InvalidArgumentException
-	 */
-	private function parseContentOwnerData(string $contentOwner): array
-	{
-		$ownerData = explode('|', $contentOwner);
-
-		if (count($ownerData) < 4) {
-			throw new \InvalidArgumentException('[yard-page-guard] Invalid content owner data format.');
-		}
-
-		return [
-			'id' => $ownerData[0] ?? '',
-			'name' => $ownerData[1] ?? '',
-			'email' => $ownerData[2] ?? '',
-			'type' => $ownerData[3] ?? '',
-			'phone_number' => $ownerData[4] ?? '',
-		];
-	}
 }
