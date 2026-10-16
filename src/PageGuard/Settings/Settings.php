@@ -32,8 +32,8 @@ class Settings
 				'default' => 1,
 			],
 			self::REVIEW_TIME_UNIT => [
-				'default' => TimeUnit::DAYS,
-				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, TimeUnit::cases(), TimeUnit::DAYS),
+				'default' => TimeUnit::WEEKS,
+				'sanitize_callback' => fn ($value) => $this->sanitizeEnum($value, TimeUnit::cases(), TimeUnit::WEEKS),
 			],
 			self::REMINDER_TIME_PERIOD => [
 				'sanitize_callback' => 'absint',
