@@ -6,6 +6,7 @@ namespace Yard\PageGuard\Frontend;
 
 use WP_User;
 use Yard\PageGuard\Foundation\ServiceProvider;
+use Yard\PageGuard\Models\ReviewItem;
 use Yard\PageGuard\Settings\Settings;
 use Yard\PageGuard\Traits\ReviewUser;
 
@@ -23,8 +24,57 @@ class FrontendServiceProvider extends ServiceProvider
 		add_action('wp_body_open', [$this, 'renderBodyOpen'], 5, 0);
 
 		if (get_option(Settings::SHOW_INTERNAL_DATA_ON_REVIEW, false)) {
+			add_action('template_redirect', [$this, 'loginReviewUser'], 5, 0);
 			add_filter('show_admin_bar', [$this, 'disableAdminBarForReviewUsers'], 10, 1);
 		}
+	}
+
+	/**
+	 * Log anonymous reviewers in as the review user so content gated to logged-in
+	 * users is visible while reviewing. Only runs on a valid review token.
+	 */
+	public function loginReviewUser(): void
+	{
+		if (! $this->isReview() || is_user_logged_in()) {
+			return;
+		}
+
+		$post = get_post(intval($_GET[self::QUERY_PARAM_POST_ID] ?? 0));
+		if (! $post instanceof \WP_Post) {
+			return;
+		}
+
+		$token = sanitize_text_field(rawurldecode($_GET[self::QUERY_PARAM_REVIEW_TOKEN]));
+		$reviewItem = new ReviewItem($post);
+		if (! $reviewItem->verifyToken($reviewItem, home_url(), $token)) {
+			return;
+		}
+
+		$username = $this->resolveReviewUserLogin();
+		if ('' === $username) {
+			return;
+		}
+
+		$user = get_user_by('login', $username);
+
+		if (! $user) {
+			$userId = wp_create_user($username, wp_generate_password(20), $username . '@yard.nl');
+
+			if (is_wp_error($userId)) {
+				return;
+			}
+
+			$user = new WP_User($userId);
+			$user->set_role('subscriber');
+		}
+
+		// Refuse to log in as any user that can edit/administer content, this prevents a
+		// misconfigured filter from escalating visitors to a privileged account.
+		if (user_can($user, 'edit_posts') || user_can($user, 'edit_pages') || user_can($user, 'manage_options') || user_can($user, 'promote_users')) {
+			return;
+		}
+
+		wp_set_current_user($user->ID);
 	}
 
 	public function isReview(): bool
