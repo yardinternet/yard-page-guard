@@ -28,7 +28,13 @@ class ContentOwner
 
 	public static function fromCombinedId(string $combinedId): ?self
 	{
-		[$type, $id] = explode(self::COMBINED_ID_SEPARATOR, $combinedId, 2);
+		$parts = explode(self::COMBINED_ID_SEPARATOR, $combinedId, 2);
+
+		if (2 !== count($parts)) {
+			return null;
+		}
+
+		[$type, $id] = $parts;
 
 		if (ContentOwnerType::USER === $type) {
 			$user = get_user_by('id', (int) $id);
