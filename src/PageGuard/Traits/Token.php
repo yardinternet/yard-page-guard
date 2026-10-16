@@ -22,6 +22,10 @@ trait Token
 
 	public function verifyToken(ReviewItem $item, string $originSite, string $tokenToCheck): bool
 	{
+		if (null === $item->contentOwner() || null === $item->reviewDate()) {
+			return false;
+		}
+
 		$expectedToken = $this->generateToken($item, $originSite);
 
 		return hash_equals($expectedToken, $tokenToCheck);

@@ -16,18 +16,16 @@ class FrontEndController extends WP_REST_Controller
 	{
 		register_rest_route($this->namespace, '/modal-info', [
 			'methods' => \WP_REST_Server::READABLE,
-			'validate_callback' => [$this, 'validateRequest'],
 			'callback' => [$this, 'modalInfo'],
 			'args' => $this->getArgs(),
-			'permission_callback' => '__return_true',
+			'permission_callback' => [$this, 'validateRequest'],
 		]);
 
 		register_rest_route($this->namespace, '/verify-post', [
 			'methods' => \WP_REST_Server::CREATABLE,
-			'validate_callback' => [$this, 'validateRequest'],
 			'callback' => [$this, 'verifyPost'],
 			'args' => $this->getArgs(),
-			'permission_callback' => '__return_true',
+			'permission_callback' => [$this, 'validateRequest'],
 		]);
 	}
 
