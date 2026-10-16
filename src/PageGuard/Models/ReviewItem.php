@@ -65,6 +65,10 @@ class ReviewItem
 			return '';
 		}
 
+		if (null === $this->contentOwner() || null === $this->reviewDate()) {
+			return '';
+		}
+
 		$originSite = get_home_url();
 		$reviewToken = $this->generateToken($this, $originSite);
 		$permalink = add_query_arg(FrontendServiceProvider::QUERY_PARAM_REVIEW_TOKEN, rawurlencode($reviewToken), $permalink);
