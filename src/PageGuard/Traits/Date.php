@@ -22,12 +22,12 @@ trait Date
 		}
 	}
 
-	public function defaultReviewDate(): \DateTimeInterface
+	public function defaultReviewDate(?\DateTimeInterface $from = null): \DateTimeInterface
 	{
 		$period = get_option(Settings::REVIEW_TIME_PERIOD);
 		$unit = get_option(Settings::REVIEW_TIME_UNIT);
 
-		return (new \DateTime('now', wp_timezone()))
+		return (new \DateTime($from ? $from->format('Y-m-d') : 'now', wp_timezone()))
 			->add(\DateInterval::createFromDateString("{$period} {$unit}"));
 	}
 }
