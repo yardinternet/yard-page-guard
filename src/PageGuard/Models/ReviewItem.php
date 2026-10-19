@@ -193,8 +193,8 @@ class ReviewItem
 	public function markAsReviewed(): bool
 	{
 		update_post_meta($this->ID(), Meta::LAST_REVIEW_DATE, current_time('Y-m-d'));
-		update_post_meta($this->ID(), Meta::REVIEW_DATE_TYPE, ReviewDateType::DEFAULT);
-		$this->setReviewDate();
+		// Next review date counts from the due date, not from reviewed date.
+		update_post_meta($this->ID(), Meta::REVIEW_DATE, $this->defaultReviewDate($this->reviewDate())->format('Y-m-d'));
 
 		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT_DATE);
 		delete_post_meta($this->ID(), Meta::REMINDER_MAIL_SENT_DATE);
