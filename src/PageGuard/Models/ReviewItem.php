@@ -194,7 +194,12 @@ class ReviewItem
 	{
 		update_post_meta($this->ID(), Meta::LAST_REVIEW_DATE, current_time('Y-m-d'));
 		// Next review date counts from the due date, not from reviewed date.
-		update_post_meta($this->ID(), Meta::REVIEW_DATE, $this->defaultReviewDate($this->reviewDate())->format('Y-m-d'));
+		// Unless that already lies in the past (reviewed more than a period late): then count from today.
+		$next = $this->defaultReviewDate($this->reviewDate());
+		if ($next->format('Y-m-d') < current_time('Y-m-d')) {
+			$next = $this->defaultReviewDate();
+		}
+		update_post_meta($this->ID(), Meta::REVIEW_DATE, $next->format('Y-m-d'));
 
 		delete_post_meta($this->ID(), Meta::REVIEW_MAIL_SENT_DATE);
 		delete_post_meta($this->ID(), Meta::REMINDER_MAIL_SENT_DATE);
