@@ -9,6 +9,8 @@ require __DIR__ . '/../vendor/autoload.php';
 
 define('WP_PLUGIN_DIR', __DIR__);
 define('WP_DEBUG', false);
+define('YPG_PLUGIN_NAME', 'yard-page-guard');
+define('YPG_VERSION', '0.0.0');
 
 /**
  * Bootstrap WordPress Mock.
@@ -27,6 +29,13 @@ if (! class_exists('WP_CLI')) {
 		public static function add_command()
 		{
 		}
+	}
+}
+
+if (! class_exists('WP_User')) {
+	class WP_User
+	{
+		public int $ID = 0;
 	}
 }
 

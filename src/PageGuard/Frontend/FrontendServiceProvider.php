@@ -39,14 +39,24 @@ class FrontendServiceProvider extends ServiceProvider
 			return;
 		}
 
-		$post = get_post(intval($_GET[self::QUERY_PARAM_POST_ID] ?? 0));
-		if (! $post instanceof \WP_Post) {
-			return;
+		$postId = intval($_GET[self::QUERY_PARAM_POST_ID] ?? 0);
+		$token = sanitize_text_field(rawurldecode($_GET[self::QUERY_PARAM_REVIEW_TOKEN]));
+		$post = get_post($postId);
+		$reviewItem = $post instanceof \WP_Post ? new ReviewItem($post) : null;
+		$verified = $reviewItem && $reviewItem->verifyToken($reviewItem, home_url(), $token);
+
+		if (! $verified) {
+			// The post lives on another site (PDC/PUB item shown on a portal): let that site verify the token.
+			// Only the host of the endpoint in the URL is used, and only when a filter marks it as trusted;
+			$host = wp_parse_url(rawurldecode($_GET[self::QUERY_PARAM_MODAL_INFO_ENDPOINT] ?? ''), PHP_URL_HOST);
+			$trusted = in_array($host, apply_filters('yard::page-guard/trusted-review-origins', []), true);
+			$verified = $trusted && 200 === wp_remote_retrieve_response_code(wp_remote_get(
+				add_query_arg(['post_id' => $postId, 'token' => $token], 'https://' . $host . '/wp-json/yard/page-guard/v2/modal-info'),
+				['timeout' => 10],
+			));
 		}
 
-		$token = sanitize_text_field(rawurldecode($_GET[self::QUERY_PARAM_REVIEW_TOKEN]));
-		$reviewItem = new ReviewItem($post);
-		if (! $reviewItem->verifyToken($reviewItem, home_url(), $token)) {
+		if (! $verified) {
 			return;
 		}
 

@@ -76,12 +76,19 @@ add_filter('yard::page-guard/admin-roles', function (array $roles): array {
 
 4. Override the login name of the dummy WordPress user whose admin bar is hidden on the review modal:
 
-````php
+```php
 add_filter('yard::page-guard/review-user-login', function (string $login): string {
   return 'ypg_review_user';
 });
-``
+```
 
+5. Hosts that may verify a review token for posts that don't exist locally (a PDC/PUB item shown on a portal). The portal asks the origin site's `modal-info` endpoint over https; without this filter the review user is only logged in for local posts:
+
+```php
+add_filter('yard::page-guard/trusted-review-origins', function (array $hosts): array {
+  return [...$hosts, 'openpdc.example.nl'];
+});
+```
 
 ## Local Development
 
@@ -90,7 +97,7 @@ Inside the `register` method of the `Yard\PageGuard\WPCron\WPCronServiceProvider
 
 ```php
 wp_schedule_event($this->timeToExecute(), 'daily', 'ypg_site_cron');
-````
+```
 
 To make testing easier, first ensure you use the filter below before scheduling the event:
 
