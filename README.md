@@ -90,6 +90,12 @@ add_filter('yard::page-guard/trusted-review-origins', function (array $hosts): a
 });
 ```
 
+4. Modify the review permalink 
+
+```php
+apply_filters('yard::page-guard/review-permalink', get_permalink($this->ID()), $this->ID());
+```
+
 ## Local Development
 
 The scheduled event `ypg_site_cron` is executed once a day, which can make testing a bit difficult. However, you can temporarily alter the code in your local development environment to make testing easier.
