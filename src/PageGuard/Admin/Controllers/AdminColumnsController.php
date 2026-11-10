@@ -36,6 +36,28 @@ class AdminColumnsController
 		add_filter('manage_edit-' . ExternalOwnerTaxonomy::TAXONOMY . '_columns', [$this, 'manageExternalContentOwnerColumns']);
 		add_filter('manage_' . ExternalOwnerTaxonomy::TAXONOMY . '_custom_column', [$this, 'renderExternalContentOwnerColumn'], 10, 3);
 		add_action('pre_get_posts', [$this, 'appendMetaQueryForSorting']);
+		add_action('admin_enqueue_scripts', [$this, 'enqueueColumnStyles']);
+	}
+
+	/**
+	 * Without a width, fixed-layout list tables split the leftover space evenly
+	 * over every unsized column, so these short values took as much room as the title.
+	 */
+	public function enqueueColumnStyles(string $hookSuffix): void
+	{
+		$screen = get_current_screen();
+
+		if ('edit.php' !== $hookSuffix || ! $screen instanceof \WP_Screen || ! in_array($screen->post_type, $this->getPostTypes(), true)) {
+			return;
+		}
+
+		wp_register_style('ypg-admin-columns', false);
+		wp_add_inline_style('ypg-admin-columns', sprintf(
+			'.fixed .column-%1$s, .fixed .column-%2$s { width: 10%%; }',
+			self::COLUMN_CONTENT_OWNER,
+			self::COLUMN_REVIEW_DATE,
+		));
+		wp_enqueue_style('ypg-admin-columns');
 	}
 
 	public function addColumns(array $columns): array
