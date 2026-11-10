@@ -39,10 +39,6 @@ class AdminColumnsController
 		add_action('admin_enqueue_scripts', [$this, 'enqueueColumnStyles']);
 	}
 
-	/**
-	 * Without a width, fixed-layout list tables split the leftover space evenly
-	 * over every unsized column, so these short values took as much room as the title.
-	 */
 	public function enqueueColumnStyles(string $hookSuffix): void
 	{
 		$screen = get_current_screen();
