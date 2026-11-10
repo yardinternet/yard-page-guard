@@ -57,6 +57,10 @@ msgstr "Review date"
 msgid "Eigenaar"
 msgstr "Owner"
 
+#: PageGuard/Admin/Controllers/AdminColumnsController.php:66
+msgid "Herziening"
+msgstr "Review"
+
 #: PageGuard/Admin/AdminServiceProvider.php:227
 #: PageGuard/Admin/Views/AdminOverviewPage.php:47
 #: PageGuard/Admin/Views/AdminOverviewPage.php:71
