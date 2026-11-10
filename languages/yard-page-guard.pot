@@ -57,7 +57,7 @@ msgid "Eigenaar"
 msgstr ""
 
 #: PageGuard/Admin/Controllers/AdminColumnsController.php:66
-msgid "Herziening"
+msgid "Volgende herziening"
 msgstr ""
 
 #: PageGuard/Admin/AdminServiceProvider.php:227

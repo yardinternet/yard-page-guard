@@ -59,7 +59,7 @@ class AdminColumnsController
 	public function addColumns(array $columns): array
 	{
 		$columns[self::COLUMN_CONTENT_OWNER] = __('Eigenaar', 'yard-page-guard');
-		$columns[self::COLUMN_REVIEW_DATE] = __('Herziening', 'yard-page-guard');
+		$columns[self::COLUMN_REVIEW_DATE] = __('Volgende herziening', 'yard-page-guard');
 
 		return $columns;
 	}
