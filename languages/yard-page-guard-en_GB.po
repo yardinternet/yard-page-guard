@@ -58,8 +58,8 @@ msgid "Eigenaar"
 msgstr "Owner"
 
 #: PageGuard/Admin/Controllers/AdminColumnsController.php:66
-msgid "Herziening"
-msgstr "Review"
+msgid "Volgende herziening"
+msgstr "Next review"
 
 #: PageGuard/Admin/AdminServiceProvider.php:227
 #: PageGuard/Admin/Views/AdminOverviewPage.php:47
