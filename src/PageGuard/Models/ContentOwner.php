@@ -117,4 +117,26 @@ class ContentOwner
 	{
 		return $this->type;
 	}
+
+	public function toHtml(): string
+	{
+		$text = '' !== $this->name ? $this->name : $this->email;
+		if ('' === $text) {
+			return '';
+		}
+
+		$html = '' !== $this->email
+			? sprintf('<a href="%s">%s</a>', esc_url('mailto:' . $this->email), esc_html($text))
+			: esc_html($text);
+
+		if ('' !== $this->phone) {
+			$html .= sprintf(
+				' (<a href="%s">%s</a>)',
+				esc_url('tel:' . preg_replace('/[^\d+]/', '', $this->phone)),
+				esc_html($this->phone)
+			);
+		}
+
+		return $html;
+	}
 }
