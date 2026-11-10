@@ -53,7 +53,7 @@ class AdminColumnsController
 
 		wp_register_style('ypg-admin-columns', false);
 		wp_add_inline_style('ypg-admin-columns', sprintf(
-			'.fixed .column-%1$s, .fixed .column-%2$s { width: 10%%; }',
+			'.fixed .column-%1$s { width: 10%%; } .fixed .column-%2$s { width: 8%%; }',
 			self::COLUMN_CONTENT_OWNER,
 			self::COLUMN_REVIEW_DATE,
 		));
@@ -62,8 +62,8 @@ class AdminColumnsController
 
 	public function addColumns(array $columns): array
 	{
-		$columns[self::COLUMN_CONTENT_OWNER] = __('Inhoudseigenaar', 'yard-page-guard');
-		$columns[self::COLUMN_REVIEW_DATE] = __('Volgende herzieningsdatum', 'yard-page-guard');
+		$columns[self::COLUMN_CONTENT_OWNER] = __('Eigenaar', 'yard-page-guard');
+		$columns[self::COLUMN_REVIEW_DATE] = __('Herziening', 'yard-page-guard');
 
 		return $columns;
 	}
